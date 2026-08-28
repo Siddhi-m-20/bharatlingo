@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Volume2 } from 'lucide-react'
-import { speak } from '../services/speech'
+import { speak } from '../../services/speech'
 
 export default function AudioButton({ 
   text, 
