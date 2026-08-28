@@ -1,0 +1,57 @@
+export const punjabiAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ਪਾਣੀ" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ਸਤ ਸ੍ਰੀ ਅਕਾਲ" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Punjabi',
+    correctAnswer: 'ਧੰਨਵਾਦ',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ਘਰ" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: ਧੰਨਵਾਦ',
+    options: ['ਸਤ ਸ੍ਰੀ ਅਕਾਲ', 'ਧੰਨਵਾਦ', 'ਕਿਰਪਾ ਕਰਕੇ', 'ਸ਼ੁਭ ਸਵੇਰ'],
+    correctAnswer: 'ਧੰਨਵਾਦ',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ਖਾਣਾ" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: ਮੈਨੂੰ ___ ਚਾਹੀਦਾ ਹੈ (I want water)',
+    options: ['ਪਾਣੀ', 'ਖਾਣਾ', 'ਘਰ', 'ਕੰਮ'],
+    correctAnswer: 'ਪਾਣੀ',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ਮਾਂ" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

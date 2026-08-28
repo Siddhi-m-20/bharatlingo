@@ -1,0 +1,58 @@
+export const achievements = [
+  {
+    id: 'first_step',
+    name: 'First Step',
+    description: 'Complete your first lesson',
+    icon: '🎯',
+    condition: (user) => user.completedLessons.length >= 1,
+  },
+  {
+    id: 'word_collector',
+    name: 'Word Collector',
+    description: 'Learn 50 words',
+    icon: '📚',
+    condition: (user) => Object.keys(user.vocabulary || {}).length >= 50,
+  },
+  {
+    id: 'streak_7',
+    name: '7 Day Flame',
+    description: 'Maintain a 7-day streak',
+    icon: '🔥',
+    condition: (user) => user.streak >= 7,
+  },
+  {
+    id: 'speaking_star',
+    name: 'Speaking Star',
+    description: 'Complete 10 speaking exercises',
+    icon: '🎤',
+    condition: (user) => (user.speakingExercises || 0) >= 10,
+  },
+  {
+    id: 'perfect_lesson',
+    name: 'Perfect Lesson',
+    description: 'Finish a lesson without mistakes',
+    icon: '⭐',
+    condition: (user) => (user.perfectLessons || 0) >= 1,
+  },
+  {
+    id: 'polyglot',
+    name: 'Polyglot',
+    description: 'Study three languages',
+    icon: '🌍',
+    condition: (user) => (user.languagesStudied || []).length >= 3,
+  },
+  {
+    id: 'streak_30',
+    name: 'Monthly Master',
+    description: 'Maintain a 30-day streak',
+    icon: '💎',
+    condition: (user) => user.streak >= 30,
+  },
+  {
+    id: 'xp_1000',
+    name: 'XP Champion',
+    description: 'Earn 1000 XP',
+    icon: '⚡',
+    condition: (user) => user.xp >= 1000,
+  },
+]

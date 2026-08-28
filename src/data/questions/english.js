@@ -1,0 +1,57 @@
+export const englishAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "Water" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "Hello" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to English',
+    correctAnswer: 'Thank you',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "Home" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: Thank you',
+    options: ['Hello', 'Thank you', 'Please', 'Good morning'],
+    correctAnswer: 'Thank you',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "Food" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: I need ___ (I want water)',
+    options: ['Water', 'Food', 'Home', 'Work'],
+    correctAnswer: 'Water',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "Mother" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

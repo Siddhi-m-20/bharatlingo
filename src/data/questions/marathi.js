@@ -1,0 +1,57 @@
+export const marathiAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "पाणी" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "नमस्कार" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Marathi',
+    correctAnswer: 'धन्यवाद',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "घर" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: धन्यवाद',
+    options: ['नमस्कार', 'धन्यवाद', 'कृपया', 'शुभ सकाळ'],
+    correctAnswer: 'धन्यवाद',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "अन्न" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: मला ___ हवे आहे (I want water)',
+    options: ['पाणी', 'अन्न', 'घर', 'काम'],
+    correctAnswer: 'पाणी',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "आई" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

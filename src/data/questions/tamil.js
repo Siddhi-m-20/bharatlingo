@@ -1,0 +1,57 @@
+export const tamilAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "தண்ணீர்" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "வணக்கம்" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Tamil',
+    correctAnswer: 'நன்றி',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "வீடு" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: நன்றி',
+    options: ['வணக்கம்', 'நன்றி', 'தயவு', 'காலை வணக்கம்'],
+    correctAnswer: 'நன்றி',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "உணவு" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: எனக்கு ___ வேண்டும் (I want water)',
+    options: ['தண்ணீர்', 'உணவு', 'வீடு', 'வேலை'],
+    correctAnswer: 'தண்ணீர்',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "அம்மா" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

@@ -1,0 +1,57 @@
+export const hindiAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "पानी" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "नमस्कार" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Hindi',
+    correctAnswer: 'धन्यवाद',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "घर" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: धन्यवाद',
+    options: ['नमस्कार', 'धन्यवाद', 'कृपया', 'शुभ प्रभात'],
+    correctAnswer: 'धन्यवाद',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "खाना" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: मुझे ___ चाहिए (I want water)',
+    options: ['पानी', 'खाना', 'घर', 'काम'],
+    correctAnswer: 'पानी',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "मां" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

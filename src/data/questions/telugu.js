@@ -1,0 +1,57 @@
+export const teluguAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "నీరు" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "నమస్కారం" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Telugu',
+    correctAnswer: 'ధన్యవాదాలు',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ఇల్లు" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: ధన్యవాదాలు',
+    options: ['నమస్కారం', 'ధన్యవాదాలు', 'దయచేసి', 'శుభోదయం'],
+    correctAnswer: 'ధన్యవాదాలు',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ఆహారం" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: నాకు ___ కావాలి (I want water)',
+    options: ['నీరు', 'ఆహారం', 'ఇల్లు', 'పని'],
+    correctAnswer: 'నీరు',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "అమ్మ" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]

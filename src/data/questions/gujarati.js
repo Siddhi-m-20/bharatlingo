@@ -1,0 +1,57 @@
+export const gujaratiAssessmentQuestions = [
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "પાણી" mean?',
+    options: ['Food', 'Water', 'Home', 'Book'],
+    correctAnswer: 'Water',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "નમસ્તે" mean?',
+    options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
+    correctAnswer: 'Hello',
+    xp: 10,
+  },
+  {
+    type: 'translation',
+    prompt: 'Translate "Thank you" to Gujarati',
+    correctAnswer: 'આભાર',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ઘર" mean?',
+    options: ['School', 'Home', 'Market', 'Road'],
+    correctAnswer: 'Home',
+    xp: 10,
+  },
+  {
+    type: 'listening',
+    prompt: 'Select the word you hear: આભાર',
+    options: ['નમસ્તે', 'આભાર', 'કૃપા કરીને', 'સુપ્રભાત'],
+    correctAnswer: 'આભાર',
+    xp: 10,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "ખોરાક" mean?',
+    options: ['Water', 'Food', 'Work', 'Time'],
+    correctAnswer: 'Food',
+    xp: 10,
+  },
+  {
+    type: 'fill-blank',
+    prompt: 'Complete: મને ___ જોઈએ છે (I want water)',
+    options: ['પાણી', 'ખોરાક', 'ઘર', 'કામ'],
+    correctAnswer: 'પાણી',
+    xp: 15,
+  },
+  {
+    type: 'multiple-choice',
+    prompt: 'What does "માતા" mean?',
+    options: ['Father', 'Mother', 'Sister', 'Brother'],
+    correctAnswer: 'Mother',
+    xp: 10,
+  },
+]
