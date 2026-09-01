@@ -62,9 +62,12 @@ export function AuthProvider({ children }) {
   }
 
   const updateUser = (updates) => {
-    const updatedUser = { ...user, ...updates }
-    setUser(updatedUser)
-    localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
+    setUser(prev => {
+      const resolved = typeof updates === 'function' ? updates(prev) : updates
+      const updatedUser = { ...prev, ...resolved }
+      localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
+      return updatedUser
+    })
   }
 
   return (

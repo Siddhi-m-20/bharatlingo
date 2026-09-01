@@ -19,38 +19,48 @@ export function ProgressProvider({ children }) {
 
   const addXP = (amount) => {
     if (user && updateUser) {
-      updateUser({ xp: user.xp + amount })
+      updateUser(prev => ({ xp: prev.xp + amount }))
     }
   }
 
   const updateStreak = () => {
     if (user && updateUser) {
-      const today = new Date().toDateString()
-      const lastActive = user.lastActiveDate
-      
-      if (lastActive !== today) {
+      updateUser(prev => {
+        const today = new Date().toDateString()
+        const lastActive = prev.lastActiveDate
+
+        if (lastActive === today) {
+          return {}
+        }
+
         const yesterday = new Date()
         yesterday.setDate(yesterday.getDate() - 1)
-        
+
         if (lastActive === yesterday.toDateString()) {
-          updateUser({ streak: user.streak + 1, lastActiveDate: today })
-        } else {
-          updateUser({ streak: 1, lastActiveDate: today })
+          return { streak: prev.streak + 1, lastActiveDate: today }
         }
-      }
+        return { streak: 1, lastActiveDate: today }
+      })
     }
   }
 
   const completeLesson = (lessonId) => {
     if (user && updateUser) {
-      const completedLessons = [...user.completedLessons, lessonId]
-      updateUser({ completedLessons })
+      updateUser(prev => (
+        prev.completedLessons.includes(lessonId)
+          ? {}
+          : { completedLessons: [...prev.completedLessons, lessonId] }
+      ))
     }
   }
 
   const unlockAchievement = (achievementId) => {
-    if (user && updateUser && !user.achievements.includes(achievementId)) {
-      updateUser({ achievements: [...user.achievements, achievementId] })
+    if (user && updateUser) {
+      updateUser(prev => (
+        prev.achievements.includes(achievementId)
+          ? {}
+          : { achievements: [...prev.achievements, achievementId] }
+      ))
     }
   }
 
