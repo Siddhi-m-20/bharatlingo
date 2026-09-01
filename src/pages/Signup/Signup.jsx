@@ -51,9 +51,14 @@ export default function Signup() {
     setLoading(true)
     try {
       await signup(formData.name, formData.email, formData.password)
-      navigate('/onboarding')
+      navigate('/login', {
+        state: {
+          successMessage: 'Account created successfully! Please log in with your credentials.',
+          email: formData.email,
+        },
+      })
     } catch (error) {
-      setErrors({ general: 'Failed to create account. Please try again.' })
+      setErrors({ general: error.message || 'Failed to create account. Please try again.' })
     } finally {
       setLoading(false)
     }

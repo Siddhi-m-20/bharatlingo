@@ -38,15 +38,25 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` to configure optional AI services:
+Edit `.env` to configure Supabase and optional AI services:
 ```env
+# Supabase Authentication & Database
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional AI Services
 PORT=5000
 INDICTRANS_URL=http://127.0.0.1:8000
 INDICCONFORMER_URL=http://127.0.0.1:8001
 TTS_URL=http://127.0.0.1:8002
 ```
 
-**Note**: The application works fully without these AI services. They are optional enhancements for translation and speech recognition.
+### Supabase Database Setup
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open the **SQL Editor** in your Supabase dashboard.
+3. Paste and run the contents of [`supabase/schema.sql`](supabase/schema.sql).
+4. Copy your project URL and anon public key into `.env`.
+*(If Supabase keys are not set, BharatLingo automatically operates in local offline mode using browser storage).*
 
 ## Running the Application
 
@@ -341,4 +351,4 @@ Future enhancements:
 
 **Made with ❤️ for Indian language learners**
 
-© 2024 BharatLingo. Learn Indian languages with confidence.
+© 2026 BharatLingo. Learn Indian languages with confidence.

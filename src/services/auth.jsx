@@ -1,24 +1,224 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { supabase, isSupabaseConfigured } from './supabase'
 
 const AuthContext = createContext(null)
+
+// Helper: map DB snake_case profile to App user format
+function mapProfileToUser(profile, authUser) {
+  if (!profile && !authUser) return null
+  return {
+    id: profile?.id || authUser?.id,
+    name: profile?.name || authUser?.user_metadata?.name || authUser?.email?.split('@')[0] || 'Learner',
+    email: profile?.email || authUser?.email,
+    preferredLanguage: profile?.preferred_language || 'en',
+    learningLanguage: profile?.learning_language || null,
+    level: profile?.level || 'beginner',
+    dailyGoal: profile?.daily_goal || 10,
+    xp: profile?.xp || 0,
+    streak: profile?.streak || 0,
+    lastActiveDate: profile?.last_active_date || null,
+    completedLessons: profile?.completed_lessons || [],
+    vocabulary: profile?.vocabulary || {},
+    achievements: profile?.achievements || [],
+    createdAt: profile?.created_at || new Date().toISOString(),
+  }
+}
+
+// Helper: map App user updates to DB snake_case columns
+function mapUserUpdatesToProfile(updates) {
+  const mapped = {}
+  if (updates.name !== undefined) mapped.name = updates.name
+  if (updates.preferredLanguage !== undefined) mapped.preferred_language = updates.preferredLanguage
+  if (updates.learningLanguage !== undefined) mapped.learning_language = updates.learningLanguage
+  if (updates.level !== undefined) mapped.level = updates.level
+  if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
+  if (updates.xp !== undefined) mapped.xp = updates.xp
+  if (updates.streak !== undefined) mapped.streak = updates.streak
+  if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate
+  if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
+  if (updates.vocabulary !== undefined) mapped.vocabulary = updates.vocabulary
+  if (updates.achievements !== undefined) mapped.achievements = updates.achievements
+  return mapped
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const userRef = useRef(null)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('bharatlingo_user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    userRef.current = user
+  }, [user])
+
+  // Local storage helpers for offline/fallback mode
+  const getLocalRegisteredUsers = () => {
+    try {
+      const users = localStorage.getItem('bharatlingo_users')
+      return users ? JSON.parse(users) : []
+    } catch (e) {
+      return []
     }
-    setLoading(false)
+  }
+
+  const saveLocalRegisteredUsers = (users) => {
+    localStorage.setItem('bharatlingo_users', JSON.stringify(users))
+  }
+
+  // Fetch user profile from Supabase
+  const fetchSupabaseProfile = async (authUserData) => {
+    if (!supabase || !authUserData) return null
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUserData.id)
+        .maybeSingle()
+
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Error fetching Supabase profile:', error.message)
+      }
+
+      if (profile) {
+        return mapProfileToUser(profile, authUserData)
+      }
+
+      // If profile row doesn't exist yet, insert a default one
+      const defaultUser = mapProfileToUser(null, authUserData)
+      const { data: inserted } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: authUserData.id,
+            name: defaultUser.name,
+            email: defaultUser.email,
+            preferred_language: 'en',
+            learning_language: null,
+            level: 'beginner',
+            daily_goal: 10,
+            xp: 0,
+            streak: 0,
+          },
+        ])
+        .select()
+        .maybeSingle()
+
+      return mapProfileToUser(inserted || defaultUser, authUserData)
+    } catch (err) {
+      console.warn('Failed to fetch/create profile in Supabase:', err)
+      return mapProfileToUser(null, authUserData)
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true
+
+    const initAuth = async () => {
+      if (isSupabaseConfigured() && supabase) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession()
+          if (error) throw error
+
+          if (session?.user && isMounted) {
+            const userProfile = await fetchSupabaseProfile(session.user)
+            if (isMounted) {
+              setUser(userProfile)
+              localStorage.setItem('bharatlingo_user', JSON.stringify(userProfile))
+            }
+          }
+        } catch (err) {
+          console.warn('Supabase session load error, falling back to local session:', err)
+          const storedUser = localStorage.getItem('bharatlingo_user')
+          if (storedUser && isMounted) {
+            setUser(JSON.parse(storedUser))
+          }
+        }
+      } else {
+        // Fallback to localStorage
+        const storedUser = localStorage.getItem('bharatlingo_user')
+        if (storedUser && isMounted) {
+          try {
+            setUser(JSON.parse(storedUser))
+          } catch (e) {
+            console.error('Error loading stored local user:', e)
+          }
+        }
+      }
+
+      if (isMounted) {
+        setLoading(false)
+      }
+    }
+
+    initAuth()
+
+    // Listen to Supabase auth events if active
+    let authListener = null
+    if (isSupabaseConfigured() && supabase) {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!isMounted) return
+        if (event === 'SIGNED_IN' && session?.user) {
+          const userProfile = await fetchSupabaseProfile(session.user)
+          if (isMounted) {
+            setUser(userProfile)
+            localStorage.setItem('bharatlingo_user', JSON.stringify(userProfile))
+          }
+        } else if (event === 'SIGNED_OUT') {
+          if (isMounted) {
+            setUser(null)
+            localStorage.removeItem('bharatlingo_user')
+          }
+        }
+      })
+      authListener = data?.subscription
+    }
+
+    return () => {
+      isMounted = false
+      if (authListener) {
+        authListener.unsubscribe()
+      }
+    }
   }, [])
 
-  const login = (email, password) => {
-    const mockUser = {
-      id: '1',
-      name: email.split('@')[0],
-      email,
+  // Sign up
+  const signup = async (name, email, password) => {
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (isSupabaseConfigured() && supabase) {
+      const { data, error } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password: password,
+        options: {
+          data: {
+            name: name.trim(),
+          },
+        },
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      // Explicitly sign out so the user does NOT auto-login and is redirected to /login
+      if (data.session) {
+        await supabase.auth.signOut()
+      }
+
+      return { name: name.trim(), email: normalizedEmail }
+    }
+
+    // Local fallback
+    const users = getLocalRegisteredUsers()
+    const existing = users.find((u) => u.email.toLowerCase() === normalizedEmail)
+    if (existing) {
+      throw new Error('An account with this email already exists.')
+    }
+
+    const newUser = {
+      id: Date.now().toString(),
+      name: name.trim(),
+      email: normalizedEmail,
+      password: password,
       preferredLanguage: 'en',
       learningLanguage: null,
       level: 'beginner',
@@ -29,17 +229,56 @@ export function AuthProvider({ children }) {
       completedLessons: [],
       vocabulary: {},
       achievements: [],
+      createdAt: new Date().toISOString(),
     }
-    setUser(mockUser)
-    localStorage.setItem('bharatlingo_user', JSON.stringify(mockUser))
-    return mockUser
+
+    users.push(newUser)
+    saveLocalRegisteredUsers(users)
+
+    return { name: newUser.name, email: newUser.email }
   }
 
-  const signup = (name, email, password) => {
+  // Login
+  const login = async (email, password) => {
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (isSupabaseConfigured() && supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: password,
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      if (data.user) {
+        const userProfile = await fetchSupabaseProfile(data.user)
+        setUser(userProfile)
+        localStorage.setItem('bharatlingo_user', JSON.stringify(userProfile))
+        return userProfile
+      }
+    }
+
+    // Local fallback
+    const users = getLocalRegisteredUsers()
+    const found = users.find((u) => u.email.toLowerCase() === normalizedEmail)
+
+    if (found) {
+      if (found.password && found.password !== password) {
+        throw new Error('Incorrect password. Please try again.')
+      }
+      const { password: _, ...userData } = found
+      setUser(userData)
+      localStorage.setItem('bharatlingo_user', JSON.stringify(userData))
+      return userData
+    }
+
+    // If account was not pre-registered locally, create demo profile
     const mockUser = {
       id: Date.now().toString(),
-      name,
-      email,
+      name: normalizedEmail.split('@')[0],
+      email: normalizedEmail,
       preferredLanguage: 'en',
       learningLanguage: null,
       level: 'beginner',
@@ -50,25 +289,82 @@ export function AuthProvider({ children }) {
       completedLessons: [],
       vocabulary: {},
       achievements: [],
+      createdAt: new Date().toISOString(),
     }
+    users.push({ ...mockUser, password })
+    saveLocalRegisteredUsers(users)
+
     setUser(mockUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(mockUser))
     return mockUser
   }
 
-  const logout = () => {
+  // Logout
+  const logout = async () => {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.auth.signOut()
+      } catch (err) {
+        console.warn('Supabase signout error:', err)
+      }
+    }
     setUser(null)
     localStorage.removeItem('bharatlingo_user')
   }
 
-  const updateUser = (updates) => {
-    const updatedUser = { ...user, ...updates }
+  // Update User profile & progress
+  const updateUser = async (updates) => {
+    const currentUser = userRef.current
+    if (!currentUser) return null
+
+    const resolvedUpdates = typeof updates === 'function' ? updates(currentUser) : updates
+    const updatedUser = { ...currentUser, ...resolvedUpdates }
+    userRef.current = updatedUser
     setUser(updatedUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
+
+    // Update in Supabase if active
+    if (isSupabaseConfigured() && supabase && currentUser.id) {
+      try {
+        const dbUpdates = mapUserUpdatesToProfile(resolvedUpdates)
+        const { error } = await supabase
+          .from('profiles')
+          .update(dbUpdates)
+          .eq('id', currentUser.id)
+
+        if (error) {
+          console.warn('Failed to update profile in Supabase:', error.message)
+        }
+      } catch (err) {
+        console.warn('Error saving to Supabase:', err)
+      }
+    }
+
+    // Also update in local storage users list
+    const users = getLocalRegisteredUsers()
+    const index = users.findIndex(
+      (u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase()
+    )
+    if (index !== -1) {
+      users[index] = { ...users[index], ...resolvedUpdates }
+      saveLocalRegisteredUsers(users)
+    }
+
+    return updatedUser
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        signup,
+        logout,
+        updateUser,
+        isSupabaseActive: isSupabaseConfigured(),
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

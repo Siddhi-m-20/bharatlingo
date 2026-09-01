@@ -1,108 +1,156 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
-import Button from '../../components/Button'
+import { supabase, isSupabaseConfigured } from '../../services/supabase'
+import AppSidebar from '../../components/Navigation/AppSidebar'
+import RightSidebar from '../../components/RightSidebar/RightSidebar'
+import { Trophy, Flame, Zap, ShieldCheck } from 'lucide-react'
 
 const DEMO_USERS = [
-  { id: 1, name: 'Aarav', xp: 820, streak: 12 },
-  { id: 2, name: 'Meera', xp: 760, streak: 8 },
-  { id: 3, name: 'Siddhi', xp: 710, streak: 15 },
-  { id: 4, name: 'Rohan', xp: 640, streak: 5 },
-  { id: 5, name: 'Priya', xp: 590, streak: 7 },
-  { id: 6, name: 'Arjun', xp: 520, streak: 3 },
-  { id: 7, name: 'Kavya', xp: 480, streak: 10 },
-  { id: 8, name: 'Dev', xp: 420, streak: 6 },
+  { id: 'demo-1', name: 'Aarav Sharma', xp: 820, streak: 12, avatarSeed: 'Aarav' },
+  { id: 'demo-2', name: 'Priya Patel', xp: 760, streak: 8, avatarSeed: 'Priya' },
+  { id: 'demo-3', name: 'Rohan Deshmukh', xp: 710, streak: 15, avatarSeed: 'Rohan' },
+  { id: 'demo-4', name: 'Meera Iyer', xp: 640, streak: 5, avatarSeed: 'Meera' },
+  { id: 'demo-5', name: 'Gurpreet Singh', xp: 590, streak: 7, avatarSeed: 'Gurpreet' },
+  { id: 'demo-6', name: 'Tanvi Roy', xp: 520, streak: 3, avatarSeed: 'Tanvi' },
+  { id: 'demo-7', name: 'Karthik Rao', xp: 480, streak: 10, avatarSeed: 'Karthik' },
+  { id: 'demo-8', name: 'Ananya Verma', xp: 420, streak: 6, avatarSeed: 'Ananya' },
 ]
 
 export default function Leaderboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [boardUsers, setBoardUsers] = useState(DEMO_USERS)
 
-  const allUsers = [...DEMO_USERS, { id: user.id, name: user.name, xp: user.xp || 0, streak: user.streak || 0 }]
-    .sort((a, b) => b.xp - a.xp)
+  useEffect(() => {
+    const fetchTopLearners = async () => {
+      if (isSupabaseConfigured() && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, name, xp, streak')
+            .order('xp', { ascending: false })
+            .limit(20)
 
-  const userRank = allUsers.findIndex(u => u.id === user.id) + 1
+          if (!error && data && data.length > 0) {
+            setBoardUsers(data)
+          }
+        } catch (err) {
+          console.warn('Leaderboard fetch fallback to demo list:', err)
+        }
+      }
+    }
+
+    fetchTopLearners()
+  }, [])
+
+  // Combine user into list if not already present
+  const allUsers = user
+    ? boardUsers.some((u) => u.id === user.id)
+      ? [...boardUsers].sort((a, b) => (b.xp || 0) - (a.xp || 0))
+      : [...boardUsers, { id: user.id, name: user.name, xp: user.xp || 0, streak: user.streak || 0 }].sort(
+          (a, b) => (b.xp || 0) - (a.xp || 0)
+        )
+    : boardUsers
+
+  const userRank = user ? allUsers.findIndex((u) => u.id === user.id) + 1 : 1
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF]">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              ← Back
-            </Button>
-            <h1 className="text-xl font-bold text-[#25231F]">Weekly League</h1>
-            <div />
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
+      {/* 1. LEFT SIDEBAR */}
+      <AppSidebar />
+
+      {/* 2. CENTER LEADERBOARDS CONTENT */}
+      <main className="flex-1 max-w-[620px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+        {/* League Banner Header */}
+        <div className="bg-gradient-to-r from-[#F39A45] via-[#FB923C] to-[#EA580C] rounded-3xl p-6 text-white shadow-md flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-black uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-md">
+              Current League
+            </span>
+            <h1 className="text-2xl font-black">Diamond League</h1>
+            <p className="text-xs text-white/90">Top 3 learners advance to the Champion's Tier!</p>
+          </div>
+          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl shadow-inner">
+            💎
           </div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
-        >
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="text-center mb-6">
-              <p className="text-sm text-[#77736B] mb-1">Your rank</p>
-              <p className="text-4xl font-bold text-[#0B8F62]">#{userRank}</p>
+        {/* User Rank Sticky Pill */}
+        {user && (
+          <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border-2 border-[#0B8F62] shadow-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#0B8F62] text-white flex items-center justify-center font-black text-sm">
+                #{userRank}
+              </span>
+              <div>
+                <p className="text-sm font-black text-[#25231F] dark:text-white">{user.name} (You)</p>
+                <p className="text-xs text-[#0B8F62] font-bold">{user.xp || 0} Total XP</p>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-[#25231F]">{user.xp || 0}</p>
-                <p className="text-sm text-[#77736B]">XP</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#25231F]">{user.streak || 0}</p>
-                <p className="text-sm text-[#77736B]">Day Streak</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#25231F]">{user.completedLessons?.length || 0}</p>
-                <p className="text-sm text-[#77736B]">Lessons</p>
-              </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#F39A45]">
+              <Flame size={16} fill="currentColor" />
+              <span>{user.streak || 0} Day Streak</span>
             </div>
           </div>
+        )}
 
-          <h2 className="text-xl font-bold text-[#25231F] mb-4">Top Learners</h2>
-          <div className="space-y-3">
-            {allUsers.map((userItem, index) => (
+        {/* Leaderboard Table List */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm overflow-hidden divide-y divide-[#E8E6E0] dark:divide-slate-800">
+          {allUsers.map((player, idx) => {
+            const rank = idx + 1
+            const isCurrentUser = user && player.id === user.id
+
+            return (
               <motion.div
-                key={userItem.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`
-                  bg-white rounded-xl shadow p-4 flex items-center justify-between
-                  ${userItem.id === user.id ? 'border-2 border-[#0B8F62]' : ''}
-                `}
+                key={player.id || idx}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                className={`p-4 flex items-center justify-between transition-colors ${
+                  isCurrentUser
+                    ? 'bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 font-black'
+                    : 'hover:bg-[#F7F5EF] dark:hover:bg-slate-800/50'
+                }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center font-bold
-                    ${index < 3 ? 'bg-[#F39A45] text-white' : 'bg-[#E8E6E0] text-[#77736B]'}
-                  `}>
-                    {index + 1}
+                {/* Rank & User Info */}
+                <div className="flex items-center gap-3.5">
+                  <div className="w-7 text-center font-black text-sm">
+                    {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
                   </div>
+                  {/* Avatar (DiceBear API) */}
+                  <img
+                    src={`https://api.dicebear.com/7.x/bottts/svg?seed=${player.name || idx}&backgroundColor=b6e3f4,c0aede,d1d4f9`}
+                    alt={player.name}
+                    className="w-10 h-10 rounded-full border border-[#E8E6E0] dark:border-slate-700 bg-white"
+                  />
                   <div>
-                    <p className="font-semibold text-[#25231F]">{userItem.name}</p>
-                    <p className="text-sm text-[#77736B]">🔥 {userItem.streak} day streak</p>
+                    <p className={`text-sm ${isCurrentUser ? 'font-black text-[#0B8F62] dark:text-[#34D399]' : 'font-bold text-[#25231F] dark:text-white'}`}>
+                      {player.name} {isCurrentUser && '(You)'}
+                    </p>
+                    <div className="flex items-center gap-2 text-[11px] text-[#77736B] dark:text-slate-400">
+                      <span className="flex items-center gap-0.5">
+                        <Flame size={12} className="text-[#D84B42]" fill="currentColor" />
+                        {player.streak || 1}d
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-[#0B8F62]">{userItem.xp} XP</p>
+
+                {/* XP Score */}
+                <div className="flex items-center gap-1 font-black text-sm text-[#25231F] dark:text-white">
+                  <span>{player.xp || 0}</span>
+                  <span className="text-xs text-[#77736B] font-bold">XP</span>
                 </div>
               </motion.div>
-            ))}
-          </div>
-
-          <div className="mt-6 p-4 bg-[#E8E6E0] rounded-xl text-center">
-            <p className="text-sm text-[#77736B]">
-              Weekly league resets every Sunday at midnight. Keep learning to climb the ranks!
-            </p>
-          </div>
-        </motion.div>
+            )
+          })}
+        </div>
       </main>
+
+      {/* 3. RIGHT SIDEBAR */}
+      <RightSidebar />
     </div>
   )
 }

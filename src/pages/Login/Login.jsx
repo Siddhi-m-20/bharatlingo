@@ -1,18 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import Button from '../../components/Button'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login } = useAuth()
+  
+  const successMessage = location.state?.successMessage
+  const prefillEmail = location.state?.email || ''
+
   const [formData, setFormData] = useState({
-    email: '',
+    email: prefillEmail,
     password: '',
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (prefillEmail) {
+      setFormData(prev => ({ ...prev, email: prefillEmail }))
+    }
+  }, [prefillEmail])
 
   const validate = () => {
     const newErrors = {}
@@ -38,16 +49,15 @@ export default function Login() {
     
     setLoading(true)
     try {
-      await login(formData.email, formData.password)
+      const loggedUser = await login(formData.email, formData.password)
       // Check if user has completed onboarding
-      const user = JSON.parse(localStorage.getItem('bharatlingo_user'))
-      if (user.learningLanguage) {
+      if (loggedUser?.learningLanguage) {
         navigate('/dashboard')
       } else {
         navigate('/onboarding')
       }
     } catch (error) {
-      setErrors({ general: 'Invalid email or password' })
+      setErrors({ general: error.message || 'Invalid email or password' })
     } finally {
       setLoading(false)
     }
@@ -82,6 +92,15 @@ export default function Login() {
             <h1 className="text-2xl font-bold text-[#25231F] mb-2">Welcome back</h1>
             <p className="text-[#77736B]">Log in to continue learning</p>
           </div>
+
+          {successMessage && (
+            <div className="mb-4 p-3 bg-[#0B8F62]/10 border border-[#0B8F62] rounded-lg text-[#0B8F62] text-sm flex items-start gap-2">
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{successMessage}</span>
+            </div>
+          )}
 
           {errors.general && (
             <div className="mb-4 p-3 bg-[#D84B42]/10 border border-[#D84B42] rounded-lg text-[#D84B42] text-sm">

@@ -20,11 +20,11 @@ export default function Assessment() {
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const questions = getAssessmentQuestions(user.learningLanguage)
-  const language = getLanguageById(user.learningLanguage)
+  const questions = getAssessmentQuestions(user?.learningLanguage, user?.preferredLanguage || 'en')
+  const language = getLanguageById(user?.learningLanguage)
 
   useEffect(() => {
-    if (!user.learningLanguage) {
+    if (!user?.learningLanguage) {
       navigate('/onboarding')
     }
   }, [user, navigate])
@@ -138,9 +138,10 @@ export default function Assessment() {
               <h3 className="text-xl md:text-2xl font-semibold text-[#25231F]">
                 {question.prompt}
               </h3>
-              <AudioButton 
-                text={question.prompt.replace('Select the word you hear: ', '')} 
-                language={language.voiceCode}
+              <AudioButton
+                text={question.prompt.replace('Select the word you hear: ', '')}
+                languageId={user?.learningLanguage || 'hi'}
+                variant="icon"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

@@ -1,19 +1,83 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Default Light Theme (Warm Ivory & Emerald) */
 :root {
   --primary: #0B8F62;
   --primary-dark: #173F34;
   --primary-light: #0FB878;
   --background: #F7F5EF;
+  --background-card: #FFFFFF;
   --background-dark: #E8E6E0;
+  --border: #E8E6E0;
   --warm-accent: #F39A45;
   --text: #25231F;
   --text-light: #77736B;
   --error: #D84B42;
   --success: #2F9E69;
   --white: #FFFFFF;
-  --shadow: rgba(0, 0, 0, 0.1);
-  --shadow-lg: rgba(0, 0, 0, 0.15);
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-lg: rgba(0, 0, 0, 0.12);
+}
+
+/* Dark Theme (Midnight Onyx & Emerald) */
+[data-theme='dark'] {
+  --primary: #10B981;
+  --primary-dark: #064E3B;
+  --primary-light: #34D399;
+  --background: #0F172A;
+  --background-card: #1E293B;
+  --background-dark: #334155;
+  --border: #334155;
+  --warm-accent: #F59E0B;
+  --text: #F8FAFC;
+  --text-light: #94A3B8;
+  --error: #F87171;
+  --success: #34D399;
+  --white: #1E293B;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+/* Saffron / Vedic Theme (Tricolor Gold & Royal Amber) */
+[data-theme='saffron'] {
+  --primary: #EA580C;
+  --primary-dark: #7C2D12;
+  --primary-light: #FB923C;
+  --background: #FFFBEB;
+  --background-card: #FFFFFF;
+  --background-dark: #FEF3C7;
+  --border: #FDE68A;
+  --warm-accent: #D97706;
+  --text: #451A03;
+  --text-light: #78350F;
+  --error: #DC2626;
+  --success: #16A34A;
+  --white: #FFFFFF;
+  --shadow: rgba(120, 53, 15, 0.1);
+  --shadow-lg: rgba(120, 53, 15, 0.18);
+}
+
+/* Emerald Nature Theme (Bharat Deep Forest) */
+[data-theme='emerald'] {
+  --primary: #059669;
+  --primary-dark: #064E3B;
+  --primary-light: #10B981;
+  --background: #ECFDF5;
+  --background-card: #FFFFFF;
+  --background-dark: #D1FAE5;
+  --border: #A7F3D0;
+  --warm-accent: #F59E0B;
+  --text: #064E3B;
+  --text-light: #047857;
+  --error: #E11D48;
+  --success: #059669;
+  --white: #FFFFFF;
+  --shadow: rgba(6, 78, 59, 0.1);
+  --shadow-lg: rgba(6, 78, 59, 0.16);
 }
 
 * {
@@ -27,8 +91,34 @@ body {
   background-color: var(--background);
   color: var(--text);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme='dark'] .bg-white {
+  background-color: var(--background-card) !important;
+  color: var(--text) !important;
+}
+
+[data-theme='dark'] .bg-\[\#F7F5EF\] {
+  background-color: var(--background) !important;
+}
+
+[data-theme='dark'] .bg-\[\#FBFBFA\] {
+  background-color: #162032 !important;
+}
+
+[data-theme='dark'] .text-\[\#25231F\] {
+  color: var(--text) !important;
+}
+
+[data-theme='dark'] .text-\[\#77736B\] {
+  color: var(--text-light) !important;
+}
+
+[data-theme='dark'] .border-\[\#E8E6E0\] {
+  border-color: var(--border) !important;
 }
 
 #root {
@@ -67,18 +157,6 @@ a {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 :focus-visible {

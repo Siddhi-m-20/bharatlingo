@@ -1,32 +1,22 @@
-export function speak(text, language = 'en-US') {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = language
-    utterance.rate = 0.9
-    
-    const voices = window.speechSynthesis.getVoices()
-    const matchingVoice = voices.find(voice => voice.lang.startsWith(language.split('-')[0]))
-    if (matchingVoice) {
-      utterance.voice = matchingVoice
-    }
-    
-    window.speechSynthesis.speak(utterance)
-    return true
-  }
-  return false
+/**
+ * speech.js — Thin wrapper for backward compatibility
+ * All new code should use src/services/audio/AudioService directly.
+ */
+
+import { ttsService, voiceLocales } from './audio/AudioService'
+
+export function speak(text, language = 'hi-IN') {
+  // Determine langId from locale string
+  const langId = Object.keys(voiceLocales).find((k) =>
+    voiceLocales[k].some?.((l) => l === language || language.startsWith(k)) ||
+    voiceLocales[k] === language ||
+    language.startsWith(k)
+  ) || 'hi'
+  return ttsService.speak(text, langId)
 }
 
 export function getLanguageVoiceCode(langId) {
-  const voiceMap = {
-    'hi': 'hi-IN',
-    'mr': 'mr-IN',
-    'ta': 'ta-IN',
-    'te': 'te-IN',
-    'bn': 'bn-IN',
-    'pa': 'pa-IN',
-    'gu': 'gu-IN',
-    'raj': 'hi-IN',
-    'en': 'en-US',
-  }
-  return voiceMap[langId] || 'en-US'
+  const locales = voiceLocales[langId]
+  if (Array.isArray(locales)) return locales[0]
+  return locales || 'hi-IN'
 }

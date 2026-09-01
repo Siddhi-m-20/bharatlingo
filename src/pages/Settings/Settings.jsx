@@ -1,16 +1,74 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
+import { useTheme } from '../../services/themeContext'
 import { languages } from '../../data/languages'
+import { API_CATALOGUE } from '../../services/freeLanguageApi'
+import AppSidebar from '../../components/Navigation/AppSidebar'
+import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import Button from '../../components/Button'
+import { Sun, Moon, Sparkles, Leaf, Globe2, Check, Volume2, VolumeX, Mic, MicOff } from 'lucide-react'
+import { speechRecognitionService } from '../../services/audio/SpeechRecognitionService'
+
+const THEMES = [
+  { id: 'light', name: 'Light Theme', icon: Sun, color: '#0B8F62' },
+  { id: 'dark', name: 'Dark Theme', icon: Moon, color: '#10B981' },
+  { id: 'saffron', name: 'Saffron Theme', icon: Sparkles, color: '#EA580C' },
+  { id: 'emerald', name: 'Emerald Theme', icon: Leaf, color: '#059669' },
+]
+
+// Audio settings stored in localStorage
+function useAudioSettings() {
+  const [audioEnabled, setAudioEnabledState] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bl_audio_enabled') ?? 'true') } catch { return true }
+  })
+  const [soundFX, setSoundFXState] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bl_sound_fx') ?? 'true') } catch { return true }
+  })
+  const [speakingEnabled, setSpeakingEnabledState] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bl_speaking_enabled') ?? 'true') } catch { return true }
+  })
+
+  const setAudioEnabled = (v) => {
+    localStorage.setItem('bl_audio_enabled', JSON.stringify(v))
+    setAudioEnabledState(v)
+  }
+  const setSoundFX = (v) => {
+    localStorage.setItem('bl_sound_fx', JSON.stringify(v))
+    setSoundFXState(v)
+  }
+  const setSpeakingEnabled = (v) => {
+    localStorage.setItem('bl_speaking_enabled', JSON.stringify(v))
+    setSpeakingEnabledState(v)
+  }
+
+  return { audioEnabled, setAudioEnabled, soundFX, setSoundFX, speakingEnabled, setSpeakingEnabled }
+}
+
+function Toggle({ checked, onChange, label }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:ring-offset-2 ${checked ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0]'}`}
+      aria-label={label}
+    >
+      <span
+        className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+      />
+    </button>
+  )
+}
 
 export default function Settings() {
   const navigate = useNavigate()
   const { user, updateUser, logout } = useAuth()
-  const [soundEffects, setSoundEffects] = useState(true)
-  const [pronunciation, setPronunciation] = useState(true)
-  const [reducedMotion, setReducedMotion] = useState(false)
+  const { theme, setTheme, siteLanguage, setSiteLanguage, t } = useTheme()
+  const { audioEnabled, setAudioEnabled, soundFX, setSoundFX, speakingEnabled, setSpeakingEnabled } = useAudioSettings()
+  const asrSupported = speechRecognitionService.isSupported()
 
   const handleLanguageChange = (field, value) => {
     updateUser({ [field]: value })
@@ -40,167 +98,224 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF]">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              ← Back
-            </Button>
-            <h1 className="text-xl font-bold text-[#25231F]">Settings</h1>
-            <div />
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
+      {/* 1. LEFT SIDEBAR */}
+      <AppSidebar />
+
+      {/* 2. CENTER SETTINGS CONTENT */}
+      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+        {/* Appearance & Themes */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">
+            {t('theme')} (Color Palette)
+          </h3>
+          <p className="text-xs text-[#77736B] dark:text-slate-400 mb-4">Choose your preferred visual theme</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {THEMES.map((th) => {
+              const Icon = th.icon
+              const isSelected = theme === th.id
+              return (
+                <button
+                  key={th.id}
+                  onClick={() => setTheme(th.id)}
+                  className={`p-3.5 rounded-2xl border-2 text-center flex flex-col items-center gap-2 text-xs font-black transition-all ${
+                    isSelected
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/15 text-[#0B8F62] dark:text-[#34D399] shadow-md ring-2 ring-[#0B8F62]/30'
+                      : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-800/80 text-[#25231F] dark:text-slate-300 hover:border-[#0B8F62]/40'
+                  }`}
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm"
+                    style={{ backgroundColor: th.color }}
+                  >
+                    <Icon size={18} />
+                  </div>
+                  <span className="flex items-center gap-1">
+                    {th.name}
+                    {isSelected && <Check size={13} className="text-[#0B8F62] dark:text-[#34D399]" />}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto space-y-6"
-        >
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-[#25231F] mb-4">Language Settings</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#25231F] mb-2">
-                  Interface Language
-                </label>
-                <select
-                  value={user.preferredLanguage}
-                  onChange={(e) => handleLanguageChange('preferredLanguage', e.target.value)}
-                  className="w-full px-4 py-2 border border-[#E8E6E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62]"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.id} value={lang.id}>
-                      {lang.name} ({lang.nativeName})
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {/* Site Language & Courses */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-4">
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white">Language Options</h3>
 
-              <div>
-                <label className="block text-sm font-medium text-[#25231F] mb-2">
-                  Learning Language
-                </label>
-                <select
-                  value={user.learningLanguage}
-                  onChange={(e) => handleLanguageChange('learningLanguage', e.target.value)}
-                  className="w-full px-4 py-2 border border-[#E8E6E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62]"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.id} value={lang.id}>
-                      {lang.name} ({lang.nativeName})
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
+              {t('site_language')} (UI Text)
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {languages.map((lang) => {
+                const isSelected = siteLanguage === lang.id
+                return (
+                  <button
+                    key={lang.id}
+                    onClick={() => setSiteLanguage(lang.id)}
+                    className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:border-[#0B8F62]/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <LanguageFlag languageId={lang.id} size={18} />
+                      <span>{lang.name} ({lang.nativeName})</span>
+                    </div>
+                    {isSelected && <Check size={14} />}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-[#25231F] mb-4">Learning Goals</h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-[#25231F] mb-2">
-                Daily Goal (XP)
-              </label>
-              <select
-                value={user.dailyGoal}
-                onChange={(e) => handleDailyGoalChange(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E8E6E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62]"
+          <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800">
+            <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
+              Active Learning Course
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {languages.filter((l) => l.id !== 'en').map((lang) => {
+                const isSelected = user?.learningLanguage === lang.id
+                return (
+                  <button
+                    key={lang.id}
+                    onClick={() => handleLanguageChange('learningLanguage', lang.id)}
+                    className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'border-[#3B82F6] bg-[#3B82F6]/10 text-[#3B82F6] dark:text-[#60A5FA] shadow-sm'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:border-[#3B82F6]/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <LanguageFlag languageId={lang.id} size={18} />
+                      <span>{lang.name} ({lang.nativeName})</span>
+                    </div>
+                    {isSelected && <Check size={14} />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Free Public Language APIs Documentation */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <Globe2 size={18} className="text-[#0B8F62]" />
+            <h3 className="text-lg font-black text-[#25231F] dark:text-white">Active Free Language APIs</h3>
+          </div>
+          <p className="text-xs text-[#77736B] dark:text-slate-400">
+            BharatLingo uses 100% free, production-ready open APIs for linguistic intelligence:
+          </p>
+
+          <div className="space-y-2 pt-1">
+            {API_CATALOGUE.map((api, idx) => (
+              <div
+                key={idx}
+                className="p-3.5 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-2xl border border-[#E8E6E0] dark:border-slate-700 text-xs"
               >
-                <option value={5}>5 minutes (5 XP)</option>
-                <option value={10}>10 minutes (10 XP)</option>
-                <option value={15}>15 minutes (15 XP)</option>
-                <option value={20}>20 minutes (20 XP)</option>
-                <option value={30}>30 minutes (30 XP)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-[#25231F] mb-4">Accessibility</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-[#25231F]">Sound Effects</p>
-                  <p className="text-sm text-[#77736B]">Play sounds for correct/incorrect answers</p>
+                <div className="flex items-center justify-between font-black text-[#25231F] dark:text-white">
+                  <span>{api.name}</span>
+                  <span className="text-[10px] text-[#0B8F62] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">FREE</span>
                 </div>
-                <button
-                  onClick={() => setSoundEffects(!soundEffects)}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    soundEffects ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0]'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                      soundEffects ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
+                <p className="text-[#77736B] dark:text-slate-400 mt-1">{api.description}</p>
+                <p className="text-[11px] font-bold text-[#0B8F62] dark:text-[#34D399] mt-1">
+                  Used in: {api.usageLocation}
+                </p>
               </div>
+            ))}
+          </div>
+        </div>
 
-              <div className="flex items-center justify-between">
+        {/* Audio Settings */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-4">
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">Audio Settings</h3>
+
+          <div className="space-y-4">
+            {/* Audio ON/OFF */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {audioEnabled ? <Volume2 size={16} className="text-[#0B8F62]" /> : <VolumeX size={16} className="text-[#77736B]" />}
                 <div>
-                  <p className="font-medium text-[#25231F]">Pronunciation Audio</p>
-                  <p className="text-sm text-[#77736B]">Play audio for vocabulary words</p>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Audio</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400">Enable or disable all audio playback</p>
                 </div>
-                <button
-                  onClick={() => setPronunciation(!pronunciation)}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    pronunciation ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0]'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                      pronunciation ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
               </div>
+              <Toggle checked={audioEnabled} onChange={setAudioEnabled} label="Toggle audio" />
+            </div>
 
-              <div className="flex items-center justify-between">
+            {/* Sound FX */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🎵</span>
                 <div>
-                  <p className="font-medium text-[#25231F]">Reduced Motion</p>
-                  <p className="text-sm text-[#77736B]">Minimize animations throughout the app</p>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Sound Effects</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400">Correct / wrong answer sounds</p>
                 </div>
-                <button
-                  onClick={() => setReducedMotion(!reducedMotion)}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    reducedMotion ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0]'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                      reducedMotion ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
               </div>
+              <Toggle checked={soundFX} onChange={setSoundFX} label="Toggle sound effects" />
             </div>
-          </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-[#25231F] mb-4">Data Management</h3>
-            
-            <div className="space-y-3">
-              <Button variant="danger" onClick={handleResetProgress}>
-                Reset Progress
-              </Button>
-              <Button variant="outline" onClick={handleLogout}>
-                Log Out
-              </Button>
+            {/* Speaking practice */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {speakingEnabled ? <Mic size={16} className="text-[#0B8F62]" /> : <MicOff size={16} className="text-[#77736B]" />}
+                <div>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Speaking Practice</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400">
+                    {asrSupported
+                      ? 'Uses your microphone to evaluate pronunciation'
+                      : 'Speech recognition not available in this browser'}
+                  </p>
+                </div>
+              </div>
+              <Toggle checked={speakingEnabled && asrSupported} onChange={setSpeakingEnabled} label="Toggle speaking practice" />
             </div>
-          </div>
 
-          <div className="text-center text-sm text-[#77736B]">
-            <p>BharatLingo v1.0.0</p>
-            <p>© 2024 BharatLingo. All rights reserved.</p>
+            {!asrSupported && (
+              <p className="text-xs text-[#F39A45] bg-[#F39A45]/10 rounded-xl p-3">
+                ⚠ Speech recognition requires Chrome or Edge. Other browsers don't support this API.
+              </p>
+            )}
           </div>
-        </motion.div>
+        </div>
+
+        {/* Daily Learning Goals */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-2">{t('daily_goal')}</h3>
+          <select
+            value={user?.dailyGoal || 10}
+            onChange={(e) => handleDailyGoalChange(e.target.value)}
+            className="w-full px-4 py-2.5 bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl font-bold focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white"
+          >
+            <option value={5}>5 minutes casual (5 XP)</option>
+            <option value={10}>10 minutes regular (10 XP)</option>
+            <option value={15}>15 minutes serious (15 XP)</option>
+            <option value={20}>20 minutes intense (20 XP)</option>
+          </select>
+        </div>
+
+        {/* Account Actions */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-3">
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-2">Account Actions</h3>
+          <div className="flex gap-3">
+            <Button variant="danger" className="flex-1 font-bold" onClick={handleResetProgress}>
+              Reset Progress
+            </Button>
+            <Button variant="outline" className="flex-1 font-bold" onClick={handleLogout}>
+              Log Out
+            </Button>
+          </div>
+        </div>
+
+        <div className="text-center text-xs text-[#77736B] pt-2">
+          <p>BharatLingo v1.0.0</p>
+          <p>© {new Date().getFullYear()} BharatLingo. All rights reserved.</p>
+        </div>
       </main>
     </div>
   )
