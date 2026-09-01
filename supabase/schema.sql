@@ -125,7 +125,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT NOT NULL,
   avatar_url TEXT,
   preferred_language VARCHAR(10) DEFAULT 'en',
-  learning_language VARCHAR(10) DEFAULT 'hi',
+  learning_language VARCHAR(10) DEFAULT NULL,
+  goal VARCHAR(50) DEFAULT NULL,
   level VARCHAR(50) DEFAULT 'beginner',
   daily_goal INTEGER DEFAULT 10, -- in minutes or XP
   xp INTEGER DEFAULT 0,
@@ -381,13 +382,14 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (
-    id, name, email, preferred_language, learning_language, level, daily_goal, xp, streak, hearts, completed_lessons, vocabulary, achievements
+    id, name, email, preferred_language, learning_language, goal, level, daily_goal, xp, streak, hearts, completed_lessons, vocabulary, achievements
   ) VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
     new.email,
     'en',
-    'hi',
+    NULL,
+    NULL,
     'beginner',
     10,
     0,

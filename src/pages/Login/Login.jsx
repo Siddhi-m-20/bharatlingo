@@ -50,8 +50,8 @@ export default function Login() {
     setLoading(true)
     try {
       const loggedUser = await login(formData.email, formData.password)
-      // Check if user has completed onboarding
-      if (loggedUser?.learningLanguage) {
+      // Require a completed onboarding profile before sending the user to the dashboard.
+      if (loggedUser?.learningLanguage && loggedUser?.goal) {
         navigate('/dashboard')
       } else {
         navigate('/onboarding')

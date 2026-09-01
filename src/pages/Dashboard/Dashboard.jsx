@@ -32,7 +32,7 @@ export default function Dashboard() {
   })
 
   useEffect(() => {
-    if (!user?.learningLanguage) {
+    if (!user?.learningLanguage || !user?.goal) {
       navigate('/onboarding')
       return
     }

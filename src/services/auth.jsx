@@ -12,6 +12,7 @@ function mapProfileToUser(profile, authUser) {
     email: profile?.email || authUser?.email,
     preferredLanguage: profile?.preferred_language || 'en',
     learningLanguage: profile?.learning_language || null,
+    goal: profile?.goal || null,
     level: profile?.level || 'beginner',
     dailyGoal: profile?.daily_goal || 10,
     xp: profile?.xp || 0,
@@ -30,6 +31,7 @@ function mapUserUpdatesToProfile(updates) {
   if (updates.name !== undefined) mapped.name = updates.name
   if (updates.preferredLanguage !== undefined) mapped.preferred_language = updates.preferredLanguage
   if (updates.learningLanguage !== undefined) mapped.learning_language = updates.learningLanguage
+  if (updates.goal !== undefined) mapped.goal = updates.goal
   if (updates.level !== undefined) mapped.level = updates.level
   if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
   if (updates.xp !== undefined) mapped.xp = updates.xp
@@ -93,6 +95,7 @@ export function AuthProvider({ children }) {
             email: defaultUser.email,
             preferred_language: 'en',
             learning_language: null,
+            goal: null,
             level: 'beginner',
             daily_goal: 10,
             xp: 0,
@@ -159,6 +162,17 @@ export function AuthProvider({ children }) {
         if (event === 'SIGNED_IN' && session?.user) {
           const userProfile = await fetchSupabaseProfile(session.user)
           if (isMounted) {
+            // Don't overwrite an in-memory user that already has onboarding data
+            // with a stale DB read (race between updateUser and the auth event).
+            const current = userRef.current
+            if (
+              current &&
+              current.learningLanguage &&
+              current.goal &&
+              !userProfile?.learningLanguage
+            ) {
+              return
+            }
             setUser(userProfile)
             localStorage.setItem('bharatlingo_user', JSON.stringify(userProfile))
           }
@@ -221,6 +235,7 @@ export function AuthProvider({ children }) {
       password: password,
       preferredLanguage: 'en',
       learningLanguage: null,
+      goal: null,
       level: 'beginner',
       dailyGoal: 10,
       xp: 0,
@@ -281,6 +296,7 @@ export function AuthProvider({ children }) {
       email: normalizedEmail,
       preferredLanguage: 'en',
       learningLanguage: null,
+      goal: null,
       level: 'beginner',
       dailyGoal: 10,
       xp: 0,

@@ -54,8 +54,8 @@ export default function Onboarding() {
     }
   }
 
-  const completeOnboarding = () => {
-    updateUser({
+  const completeOnboarding = async () => {
+    await updateUser({
       preferredLanguage: selectedPreferredLang,
       learningLanguage: selectedTargetLang,
       goal: selectedGoal,
