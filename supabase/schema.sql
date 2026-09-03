@@ -129,6 +129,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   goal VARCHAR(50) DEFAULT NULL,
   level VARCHAR(50) DEFAULT 'beginner',
   daily_goal INTEGER DEFAULT 10, -- in minutes or XP
+  age_range VARCHAR(20) DEFAULT NULL, -- 'child', 'teen', 'young-adult', 'adult', 'senior'
+  assessment_score INTEGER DEFAULT NULL, -- 0-100 from initial placement assessment
+  learning_plan JSONB DEFAULT NULL, -- Personalized plan generated after assessment
   xp INTEGER DEFAULT 0,
   streak INTEGER DEFAULT 0,
   hearts INTEGER DEFAULT 5,
@@ -435,3 +438,11 @@ DROP TRIGGER IF EXISTS tr_user_progress_updated_at ON public.user_progress;
 CREATE TRIGGER tr_user_progress_updated_at
   BEFORE UPDATE ON public.user_progress
   FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
+
+-- ==============================================================================
+-- MIGRATION: Add age_range, assessment_score, learning_plan to existing profiles
+-- Run this if you already have the profiles table in production
+-- ==============================================================================
+-- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS age_range VARCHAR(20) DEFAULT NULL;
+-- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS assessment_score INTEGER DEFAULT NULL;
+-- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS learning_plan JSONB DEFAULT NULL;

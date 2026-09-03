@@ -6,7 +6,15 @@ import { getLanguageById } from '../../data/languages'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import Button from '../../components/Button'
-import { Award, Flame, Zap, BookOpen, Calendar } from 'lucide-react'
+import { Award, Flame, Zap, BookOpen, Calendar, Target } from 'lucide-react'
+
+const AGE_LABELS = {
+  'child':       'Under 13',
+  'teen':        '13–17',
+  'young-adult': '18–25',
+  'adult':       '26–49',
+  'senior':      '50+',
+}
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -74,6 +82,44 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        {/* Learning Plan Summary (if available) */}
+        {user?.learningPlan && (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm space-y-3">
+            <div className="flex items-center gap-2">
+              <Target size={18} className="text-[#0B8F62]" />
+              <h3 className="text-base font-black text-[#25231F] dark:text-white uppercase tracking-wider">
+                My Learning Plan
+              </h3>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
+                <p className="font-black text-sm text-[#0B8F62]">{user.learningPlan.startingLevel}</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Level</p>
+              </div>
+              <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
+                <p className="font-black text-sm text-[#3B82F6]">{user.learningPlan.goal}</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Goal</p>
+              </div>
+              <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
+                <p className="font-black text-sm text-[#F39A45]">{user.learningPlan.dailyPractice}</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Daily</p>
+              </div>
+            </div>
+            {user.ageRange && (
+              <p className="text-xs text-[#77736B] dark:text-slate-400">
+                Age group: <span className="font-bold text-[#25231F] dark:text-white">{AGE_LABELS[user.ageRange] || user.ageRange}</span>
+              </p>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {(user.learningPlan.focusAreas || []).slice(0, 4).map((area, i) => (
+                <span key={i} className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Achievements Showcase */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm space-y-4">

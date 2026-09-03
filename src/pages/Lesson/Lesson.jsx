@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { getLessonById, getLessonsForLanguage } from '../../data/lessons'
+import { fetchLessonById, fetchDynamicLessons } from '../../services/dynamicLessonService'
 import { getLanguageById } from '../../data/languages'
 import QuestionCard from '../../components/QuestionCard'
 import Button from '../../components/Button'
@@ -50,34 +51,71 @@ export default function Lesson() {
       return
     }
 
+    let cancelled = false
     const preferredLang = user.preferredLanguage || 'en'
-    const loadedLesson = getLessonById(user.learningLanguage, lessonId, preferredLang)
-    if (!loadedLesson) {
-      navigate('/dashboard')
-      return
+
+    async function loadLesson() {
+      // Fetch lesson — supports both static and dynamic lesson IDs
+      let loadedLesson = await fetchLessonById({
+        languageId: user.learningLanguage,
+        lessonId,
+        goal: user.goal,
+        ageRange: user.ageRange || 'adult',
+        level: user.level || 'beginner',
+        preferredLangId: preferredLang,
+      })
+
+      if (!loadedLesson) {
+        // Final fallback to static
+        loadedLesson = getLessonById(user.learningLanguage, lessonId, preferredLang)
+      }
+
+      if (!loadedLesson) {
+        navigate('/dashboard')
+        return
+      }
+
+      if (cancelled) return
+
+      // Get the list of all lessons for next-lesson navigation
+      let lessonsList = []
+      try {
+        lessonsList = await fetchDynamicLessons({
+          languageId: user.learningLanguage,
+          goal: user.goal,
+          ageRange: user.ageRange || 'adult',
+          level: user.level || 'beginner',
+          count: 15,
+        })
+      } catch {
+        lessonsList = getLessonsForLanguage(user.learningLanguage, preferredLang)
+      }
+      if (!lessonsList || lessonsList.length === 0) {
+        lessonsList = getLessonsForLanguage(user.learningLanguage, preferredLang)
+      }
+
+      setAllLessons(lessonsList)
+
+      const currentIndex = lessonsList.findIndex((l) => l.id === lessonId)
+      if (currentIndex !== -1 && currentIndex < lessonsList.length - 1) {
+        setNextLesson(lessonsList[currentIndex + 1])
+      } else {
+        setNextLesson(null)
+      }
+
+      setLesson(loadedLesson)
+      setCurrentExercise(0)
+      setAnswers([])
+      setShowResult(false)
+      setSelectedAnswer('')
+      setLessonComplete(false)
+      setPerfectLesson(true)
+      ttsService.stop()
     }
 
-    const lessonsList = getLessonsForLanguage(user.learningLanguage, preferredLang)
-    setAllLessons(lessonsList)
-
-    const currentIndex = lessonsList.findIndex((l) => l.id === lessonId)
-    if (currentIndex !== -1 && currentIndex < lessonsList.length - 1) {
-      setNextLesson(lessonsList[currentIndex + 1])
-    } else {
-      setNextLesson(null)
-    }
-
-    setLesson(loadedLesson)
-    setCurrentExercise(0)
-    setAnswers([])
-    setShowResult(false)
-    setSelectedAnswer('')
-    setLessonComplete(false)
-    setPerfectLesson(true)
-
-    // Stop audio when exercise changes
-    ttsService.stop()
-  }, [lessonId, user?.learningLanguage, user?.preferredLanguage, navigate])
+    loadLesson()
+    return () => { cancelled = true }
+  }, [lessonId, user?.learningLanguage, user?.preferredLanguage, user?.goal, user?.ageRange, navigate])
 
   const handleAnswer = (answer) => {
     if (showResult || hearts === 0 || !lesson) return

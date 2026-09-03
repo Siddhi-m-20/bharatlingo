@@ -7,38 +7,50 @@ import LanguageCard from '../../components/LanguageCard'
 import Button from '../../components/Button'
 
 const STEPS = {
-  PREFERRED_LANGUAGE: 0,
-  TARGET_LANGUAGE: 1,
-  GOAL: 2,
-  DAILY_GOAL: 3,
+  AGE:                0,
+  PREFERRED_LANGUAGE: 1,
+  TARGET_LANGUAGE:    2,
+  GOAL:               3,
+  DAILY_GOAL:         4,
 }
 
+const AGE_RANGES = [
+  { id: 'child',       label: 'Under 13',  icon: '🌱', desc: 'Simple words, playful lessons' },
+  { id: 'teen',        label: '13–17',      icon: '🎮', desc: 'Casual, engaging exercises' },
+  { id: 'young-adult', label: '18–25',      icon: '💬', desc: 'Conversational & practical' },
+  { id: 'adult',       label: '26–49',      icon: '💼', desc: 'Goal-focused, efficient' },
+  { id: 'senior',      label: '50+',        icon: '🌸', desc: 'Clear pace, larger text' },
+]
+
 const GOALS = [
-  { id: 'travel', name: 'Travel', icon: '✈️' },
+  { id: 'travel',       name: 'Travel',       icon: '✈️' },
   { id: 'conversation', name: 'Conversation', icon: '💬' },
-  { id: 'work', name: 'Work', icon: '💼' },
-  { id: 'study', name: 'Study', icon: '📚' },
-  { id: 'family', name: 'Family', icon: '👨‍👩‍👧‍👦' },
-  { id: 'culture', name: 'Culture', icon: '🎭' },
-  { id: 'fun', name: 'Just for fun', icon: '🎮' },
+  { id: 'work',         name: 'Work',         icon: '💼' },
+  { id: 'study',        name: 'Study',        icon: '📚' },
+  { id: 'family',       name: 'Family',       icon: '👨‍👩‍👧‍👦' },
+  { id: 'culture',      name: 'Culture',      icon: '🎭' },
+  { id: 'fun',          name: 'Just for fun', icon: '🎮' },
 ]
 
 const DAILY_GOALS = [
-  { id: 5, name: '5 minutes', description: 'Casual' },
+  { id: 5,  name: '5 minutes',  description: 'Casual' },
   { id: 10, name: '10 minutes', description: 'Regular' },
   { id: 15, name: '15 minutes', description: 'Serious' },
   { id: 20, name: '20 minutes', description: 'Intense' },
   { id: 30, name: '30 minutes', description: 'Hardcore' },
 ]
 
+const TOTAL_STEPS = Object.keys(STEPS).length
+
 export default function Onboarding() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
-  const [currentStep, setCurrentStep] = useState(STEPS.PREFERRED_LANGUAGE)
+  const [currentStep, setCurrentStep] = useState(STEPS.AGE)
+  const [selectedAge, setSelectedAge]               = useState('')
   const [selectedPreferredLang, setSelectedPreferredLang] = useState('en')
   const [selectedTargetLang, setSelectedTargetLang] = useState('')
-  const [selectedGoal, setSelectedGoal] = useState('')
-  const [selectedDailyGoal, setSelectedDailyGoal] = useState(10)
+  const [selectedGoal, setSelectedGoal]             = useState('')
+  const [selectedDailyGoal, setSelectedDailyGoal]   = useState(10)
 
   const handleNext = () => {
     if (currentStep < STEPS.DAILY_GOAL) {
@@ -49,13 +61,14 @@ export default function Onboarding() {
   }
 
   const handleBack = () => {
-    if (currentStep > STEPS.PREFERRED_LANGUAGE) {
+    if (currentStep > STEPS.AGE) {
       setCurrentStep(currentStep - 1)
     }
   }
 
   const completeOnboarding = async () => {
     await updateUser({
+      ageRange: selectedAge,
       preferredLanguage: selectedPreferredLang,
       learningLanguage: selectedTargetLang,
       goal: selectedGoal,
@@ -66,21 +79,72 @@ export default function Onboarding() {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case STEPS.PREFERRED_LANGUAGE:
-        return !!selectedPreferredLang
-      case STEPS.TARGET_LANGUAGE:
-        return !!selectedTargetLang && selectedTargetLang !== selectedPreferredLang
-      case STEPS.GOAL:
-        return !!selectedGoal
-      case STEPS.DAILY_GOAL:
-        return !!selectedDailyGoal
-      default:
-        return false
+      case STEPS.AGE:               return !!selectedAge
+      case STEPS.PREFERRED_LANGUAGE: return !!selectedPreferredLang
+      case STEPS.TARGET_LANGUAGE:   return !!selectedTargetLang && selectedTargetLang !== selectedPreferredLang
+      case STEPS.GOAL:              return !!selectedGoal
+      case STEPS.DAILY_GOAL:        return !!selectedDailyGoal
+      default:                      return false
     }
   }
 
+  const stepTitles = [
+    'How old are you?',
+    'What\'s your preferred language?',
+    'What do you want to learn?',
+    'What\'s your goal?',
+    'How much time can you practice?',
+  ]
+
   const renderStep = () => {
     switch (currentStep) {
+      case STEPS.AGE:
+        return (
+          <motion.div
+            key="age"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+          >
+            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
+              How old are you?
+            </h2>
+            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+              This helps us tailor vocabulary, pacing, and lesson complexity just for you.
+              We use your age only to personalize learning — never to restrict features.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {AGE_RANGES.map((range) => (
+                <motion.button
+                  key={range.id}
+                  type="button"
+                  className={`
+                    p-4 rounded-2xl border-2 text-left transition-all
+                    ${selectedAge === range.id
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
+                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
+                    }
+                  `}
+                  onClick={() => setSelectedAge(range.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="text-2xl mb-1">{range.icon}</div>
+                  <p className="font-bold text-[#25231F] dark:text-white text-sm">{range.label}</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400 mt-0.5">{range.desc}</p>
+                  {selectedAge === range.id && (
+                    <div className="mt-2 w-5 h-5 bg-[#0B8F62] rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )
+
       case STEPS.PREFERRED_LANGUAGE:
         return (
           <motion.div
@@ -89,8 +153,12 @@ export default function Onboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
           >
-            <h2 className="text-2xl font-bold text-[#25231F] mb-2">What's your preferred language?</h2>
-            <p className="text-[#77736B] mb-6">We'll use this to personalize your learning journey.</p>
+            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
+              What's your preferred language?
+            </h2>
+            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+              We'll show instructions, buttons, and explanations in this language.
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {languages.map((lang) => (
                 <LanguageCard
@@ -112,8 +180,12 @@ export default function Onboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
           >
-            <h2 className="text-2xl font-bold text-[#25231F] mb-2">What do you want to learn?</h2>
-            <p className="text-[#77736B] mb-6">Pick one language to start. You can add more later.</p>
+            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
+              What do you want to learn?
+            </h2>
+            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+              Pick one language to start. You can add more later.
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {languages
                 .filter((lang) => lang.id !== selectedPreferredLang)
@@ -137,8 +209,12 @@ export default function Onboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
           >
-            <h2 className="text-2xl font-bold text-[#25231F] mb-2">What's your goal?</h2>
-            <p className="text-[#77736B] mb-6">This helps us customize your learning path.</p>
+            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
+              What's your goal?
+            </h2>
+            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+              This customizes your learning path, vocabulary, and example sentences.
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {GOALS.map((goal) => (
                 <motion.button
@@ -147,8 +223,8 @@ export default function Onboarding() {
                   className={`
                     p-6 rounded-2xl border-2 text-left transition-all
                     ${selectedGoal === goal.id
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10'
-                      : 'border-[#E8E6E0] bg-white hover:border-[#0B8F62]/50'
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
+                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
                     }
                   `}
                   onClick={() => setSelectedGoal(goal.id)}
@@ -156,7 +232,7 @@ export default function Onboarding() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className="text-3xl mb-2">{goal.icon}</div>
-                  <p className="font-semibold text-[#25231F]">{goal.name}</p>
+                  <p className="font-semibold text-[#25231F] dark:text-white">{goal.name}</p>
                 </motion.button>
               ))}
             </div>
@@ -171,8 +247,12 @@ export default function Onboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
           >
-            <h2 className="text-2xl font-bold text-[#25231F] mb-2">How much time do you want to practice?</h2>
-            <p className="text-[#77736B] mb-6">Set a daily goal that works for you.</p>
+            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
+              How much time do you want to practice?
+            </h2>
+            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+              Set a daily goal that works for you.
+            </p>
             <div className="space-y-3">
               {DAILY_GOALS.map((goal) => (
                 <motion.button
@@ -181,8 +261,8 @@ export default function Onboarding() {
                   className={`
                     w-full p-4 rounded-xl border-2 text-left transition-all flex items-center justify-between
                     ${selectedDailyGoal === goal.id
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10'
-                      : 'border-[#E8E6E0] bg-white hover:border-[#0B8F62]/50'
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
+                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
                     }
                   `}
                   onClick={() => setSelectedDailyGoal(goal.id)}
@@ -190,8 +270,8 @@ export default function Onboarding() {
                   whileTap={{ scale: 0.99 }}
                 >
                   <div>
-                    <p className="font-semibold text-[#25231F]">{goal.name}</p>
-                    <p className="text-sm text-[#77736B]">{goal.description}</p>
+                    <p className="font-semibold text-[#25231F] dark:text-white">{goal.name}</p>
+                    <p className="text-sm text-[#77736B] dark:text-slate-400">{goal.description}</p>
                   </div>
                   {selectedDailyGoal === goal.id && (
                     <div className="w-6 h-6 bg-[#0B8F62] rounded-full flex items-center justify-center">
@@ -212,42 +292,58 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
-        <div className="mb-8">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        {/* Header */}
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#0B8F62] flex items-center justify-center text-white font-bold text-xl">
+            <div className="w-10 h-10 rounded-full bg-[#0B8F62] flex items-center justify-center text-white font-bold text-lg">
               भा
             </div>
-            <div className="text-sm text-[#77736B]">
-              Step {currentStep + 1} of {Object.keys(STEPS).length}
+            <div className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
+              Step {currentStep + 1} of {TOTAL_STEPS}
             </div>
           </div>
-          <div className="w-full bg-[#E8E6E0] rounded-full h-2">
+          {/* Progress bar */}
+          <div className="w-full bg-[#E8E6E0] dark:bg-slate-800 rounded-full h-2">
             <motion.div
               className="bg-[#0B8F62] h-2 rounded-full"
               initial={{ width: 0 }}
-              animate={{ width: `${((currentStep + 1) / Object.keys(STEPS).length) * 100}%` }}
+              animate={{ width: `${((currentStep + 1) / TOTAL_STEPS) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
+          {/* Step dots */}
+          <div className="flex gap-1.5 mt-3 justify-center">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div
+                key={i}
+                className={`rounded-full transition-all duration-300 ${
+                  i < currentStep ? 'w-5 h-2 bg-[#0B8F62]' :
+                  i === currentStep ? 'w-6 h-2 bg-[#0B8F62]' :
+                  'w-2 h-2 bg-[#E8E6E0] dark:bg-slate-700'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        {/* Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-[#E8E6E0] dark:border-slate-800 p-6 md:p-8">
           <AnimatePresence mode="wait">
             {renderStep()}
           </AnimatePresence>
 
           <div className="flex justify-between mt-8">
-            {currentStep > STEPS.PREFERRED_LANGUAGE ? (
+            {currentStep > STEPS.AGE ? (
               <Button variant="ghost" onClick={handleBack}>
-                Back
+                ← Back
               </Button>
             ) : (
               <div />
             )}
             <Button onClick={handleNext} disabled={!isStepValid()}>
-              {currentStep === STEPS.DAILY_GOAL ? 'Start assessment' : 'Continue'}
+              {currentStep === STEPS.DAILY_GOAL ? 'Start Assessment →' : 'Continue →'}
             </Button>
           </div>
         </div>

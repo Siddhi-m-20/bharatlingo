@@ -49,8 +49,8 @@ function MicWaveform({ active }) {
   )
 }
 
-// ── Score display ─────────────────────────────────────────────────────────────
-function ScoreDisplay({ score, grade, transcript, targetText }) {
+// ── Score display with Word-Level Phonetic Analysis ───────────────────────────
+function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], wordsToImprove = [], feedbackMessage }) {
   const gradeColor = {
     'Excellent':       'text-[#2F9E69]',
     'Great':           'text-[#0B8F62]',
@@ -69,21 +69,64 @@ function ScoreDisplay({ score, grade, transcript, targetText }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`p-4 rounded-2xl border-2 max-w-md mx-auto space-y-2 ${bgColor}`}
+      className={`p-5 rounded-2xl border-2 max-w-md mx-auto space-y-3 ${bgColor}`}
     >
       <div className="text-center">
-        <div className={`text-3xl font-black ${gradeColor}`}>{score}% match</div>
-        <div className={`text-lg font-bold mt-0.5 ${gradeColor}`}>{grade}!</div>
+        <div className={`text-4xl font-black ${gradeColor}`}>{score}%</div>
+        <div className={`text-sm font-black tracking-wide uppercase mt-0.5 ${gradeColor}`}>
+          {grade} — {feedbackMessage || 'Pronunciation Assessment'}
+        </div>
       </div>
 
-      <div className="space-y-1 pt-2 border-t border-current/20 text-sm">
-        <p className="text-[#77736B]">
-          <span className="font-semibold">You said:</span>{' '}
-          <span className="text-[#25231F]">{transcript || '—'}</span>
+      {/* Word-by-Word Granular Evaluation */}
+      {wordResults && wordResults.length > 0 && (
+        <div className="pt-2 border-t border-current/20">
+          <p className="text-[11px] font-bold text-[#77736B] uppercase mb-1.5 text-left">
+            Word-by-Word Analysis:
+          </p>
+          <div className="flex flex-wrap gap-1.5 justify-center">
+            {wordResults.map((item, idx) => {
+              const badgeClass =
+                item.matchStatus === 'exact'
+                  ? 'bg-[#2F9E69] text-white'
+                  : item.matchStatus === 'close'
+                  ? 'bg-[#F39A45] text-white'
+                  : 'bg-[#D84B42] text-white'
+              return (
+                <span
+                  key={idx}
+                  className={`text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm ${badgeClass}`}
+                  title={`Spoken: "${item.spokenWord}" (${Math.round(item.similarity * 100)}%)`}
+                >
+                  {item.targetWord}
+                  <span className="text-[10px] opacity-80">
+                    {item.matchStatus === 'exact' ? '✓' : item.matchStatus === 'close' ? '≈' : '✗'}
+                  </span>
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Words to improve alert */}
+      {wordsToImprove && wordsToImprove.length > 0 && (
+        <div className="p-2.5 bg-white/70 dark:bg-slate-900/70 rounded-xl border border-current/20 text-xs text-left">
+          <span className="font-bold text-[#D84B42]">Focus on these words: </span>
+          <span className="font-semibold text-[#25231F] dark:text-white">
+            {wordsToImprove.map((w) => `"${w}"`).join(', ')}
+          </span>
+        </div>
+      )}
+
+      <div className="space-y-1 pt-1 text-xs text-left text-[#77736B]">
+        <p>
+          <span className="font-semibold">Heard:</span>{' '}
+          <span className="text-[#25231F] dark:text-white font-medium">{transcript || '—'}</span>
         </p>
-        <p className="text-[#77736B]">
-          <span className="font-semibold">Expected:</span>{' '}
-          <span className="text-[#25231F]">{targetText}</span>
+        <p>
+          <span className="font-semibold">Target:</span>{' '}
+          <span className="text-[#25231F] dark:text-white font-medium">{targetText}</span>
         </p>
       </div>
     </motion.div>
@@ -384,6 +427,9 @@ export default function SpeakingExercise({
             grade={result.grade}
             transcript={result.transcript}
             targetText={targetWord}
+            wordResults={result.wordResults}
+            wordsToImprove={result.wordsToImprove}
+            feedbackMessage={result.feedbackMessage}
           />
         )}
       </AnimatePresence>

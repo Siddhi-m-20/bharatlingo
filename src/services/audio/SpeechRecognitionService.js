@@ -75,16 +75,20 @@ function charSimilarity(s1, s2) {
   return Math.max(0, Math.round(((maxLen - dist) / maxLen) * 100))
 }
 
-// ── Combined similarity score ─────────────────────────────────────────────────
+import { evaluatePronunciation } from './PronunciationScorer'
+
+// ── Combined similarity score & Detailed Pronunciation Scorer ────────────────
 export function calculateSpeakingScore(recognized, expected) {
   const normR = normalizeText(recognized)
   const normE = normalizeText(expected)
 
+  const detailedEval = evaluatePronunciation(expected, recognized)
+
   const tokenScore = tokenSimilarity(normR, normE)
   const charScore  = charSimilarity(normR, normE)
 
-  // Weight: 50% token, 50% char
-  const score = Math.round((tokenScore + charScore) / 2)
+  // Use the higher-accuracy composite score
+  const score = Math.max(detailedEval.score, Math.round((tokenScore + charScore) / 2))
 
   let grade
   if (score >= 90)      grade = 'Excellent'
@@ -92,7 +96,16 @@ export function calculateSpeakingScore(recognized, expected) {
   else if (score >= 50) grade = 'Keep practicing'
   else                  grade = 'Try again'
 
-  return { score, grade, isMatch: score >= 65, normR, normE }
+  return {
+    score,
+    grade,
+    isMatch: score >= 65,
+    normR,
+    normE,
+    wordResults: detailedEval.wordResults || [],
+    wordsToImprove: detailedEval.wordsToImprove || [],
+    feedbackMessage: detailedEval.feedbackMessage || grade,
+  }
 }
 
 // ── SpeechRecognitionService ──────────────────────────────────────────────────

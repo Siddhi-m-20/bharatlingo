@@ -15,6 +15,9 @@ function mapProfileToUser(profile, authUser) {
     goal: profile?.goal || null,
     level: profile?.level || 'beginner',
     dailyGoal: profile?.daily_goal || 10,
+    ageRange: profile?.age_range || null,
+    assessmentScore: profile?.assessment_score ?? null,
+    learningPlan: profile?.learning_plan || null,
     xp: profile?.xp || 0,
     streak: profile?.streak || 0,
     lastActiveDate: profile?.last_active_date || null,
@@ -34,6 +37,9 @@ function mapUserUpdatesToProfile(updates) {
   if (updates.goal !== undefined) mapped.goal = updates.goal
   if (updates.level !== undefined) mapped.level = updates.level
   if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
+  if (updates.ageRange !== undefined) mapped.age_range = updates.ageRange
+  if (updates.assessmentScore !== undefined) mapped.assessment_score = updates.assessmentScore
+  if (updates.learningPlan !== undefined) mapped.learning_plan = updates.learningPlan
   if (updates.xp !== undefined) mapped.xp = updates.xp
   if (updates.streak !== undefined) mapped.streak = updates.streak
   if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate

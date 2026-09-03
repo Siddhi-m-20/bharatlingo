@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { getLessonsForLanguage } from '../../data/lessons'
+import { fetchDynamicLessons } from '../../services/dynamicLessonService'
 import { getLanguageById } from '../../data/languages'
 import LessonNode from '../../components/LessonNode'
 import Button from '../../components/Button'
@@ -13,7 +14,7 @@ import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import AlphabetModal from '../../components/AlphabetModal/AlphabetModal'
 import { audioFX } from '../../utils/audioFX'
 import { triggerConfetti } from '../../utils/confetti'
-import { BookA, Gift, Lock, CheckCircle2, Sparkles, Flame } from 'lucide-react'
+import { BookA, Gift, Lock, CheckCircle2, Sparkles, Flame, Target } from 'lucide-react'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
   const [showAlphabetModal, setShowAlphabetModal] = useState(false)
+  const [showPlanBanner, setShowPlanBanner] = useState(false)
   const [openedChests, setOpenedChests] = useState(() => {
     try {
       const stored = localStorage.getItem('bharatlingo_opened_chests')
@@ -37,14 +39,44 @@ export default function Dashboard() {
       return
     }
 
-    const preferredLang = user.preferredLanguage || 'en'
-    const languageLessons = getLessonsForLanguage(user.learningLanguage, preferredLang)
-    setLessons(languageLessons)
+    // Show plan banner if user just completed assessment
+    const justAssessed = sessionStorage.getItem('bharatlingo_just_assessed')
+    if (justAssessed && user.learningPlan) {
+      setShowPlanBanner(true)
+      sessionStorage.removeItem('bharatlingo_just_assessed')
+    }
 
-    // Find current lesson (first incomplete lesson in sequence)
-    const completedIds = Array.isArray(user.completedLessons) ? user.completedLessons : []
-    const nextIncomplete = languageLessons.find((lesson) => !completedIds.includes(lesson.id))
-    setCurrentLesson(nextIncomplete || languageLessons[languageLessons.length - 1])
+    async function loadLessons() {
+      const preferredLang = user.preferredLanguage || 'en'
+
+      // Try dynamic lessons first (server-side generated based on user profile)
+      let languageLessons = []
+      try {
+        languageLessons = await fetchDynamicLessons({
+          languageId: user.learningLanguage,
+          goal: user.goal,
+          ageRange: user.ageRange || 'adult',
+          level: user.level || 'beginner',
+          count: 15,
+        })
+      } catch {
+        // Fallback to static lessons
+        languageLessons = getLessonsForLanguage(user.learningLanguage, preferredLang)
+      }
+
+      if (!languageLessons || languageLessons.length === 0) {
+        languageLessons = getLessonsForLanguage(user.learningLanguage, preferredLang)
+      }
+
+      setLessons(languageLessons)
+
+      // Find current lesson (first incomplete lesson in sequence)
+      const completedIds = Array.isArray(user.completedLessons) ? user.completedLessons : []
+      const nextIncomplete = languageLessons.find((lesson) => !completedIds.includes(lesson.id))
+      setCurrentLesson(nextIncomplete || languageLessons[languageLessons.length - 1])
+    }
+
+    loadLessons()
   }, [user, navigate])
 
   const getLessonStatus = (lesson) => {
@@ -117,6 +149,42 @@ export default function Dashboard() {
 
       {/* 2. CENTER CONTENT & LEARNING PATH (Width max-w-[620px]) */}
       <main className="flex-1 max-w-[620px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+        {/* Personalized Learning Plan Banner (shown after first assessment) */}
+        <AnimatePresence>
+          {showPlanBanner && user.learningPlan && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-gradient-to-r from-[#0B8F62] to-[#3B82F6] rounded-3xl p-5 text-white relative overflow-hidden"
+            >
+              <button
+                onClick={() => setShowPlanBanner(false)}
+                className="absolute top-3 right-3 text-white/70 hover:text-white text-xl font-bold leading-none"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">🎯</div>
+                <div className="flex-1">
+                  <p className="font-black text-sm uppercase tracking-wider text-white/80 mb-1">Your Personalized Plan</p>
+                  <p className="font-bold text-base">
+                    {user.learningPlan.startingLevel} Level • {user.learningPlan.goal}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {(user.learningPlan.focusAreas || []).slice(0, 3).map((area, i) => (
+                      <span key={i} className="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Course Progress Banner Header */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
           <div className="flex items-center justify-between mb-4">
