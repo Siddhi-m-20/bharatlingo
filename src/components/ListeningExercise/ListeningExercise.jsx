@@ -8,18 +8,17 @@
  * - Level 4: Mini Dialogue / Contextual Comprehension
  *
  * Features:
- * - Real TTS audio via AudioButton (state machine)
+ * - Real TTS audio via central AudioButton & AudioService
  * - Normal vs Slow-speed replay
- * - Replay count metrics tracking
+ * - Safe fallback if audio unavailable (never consumes hearts on audio failure)
  * - Dialogue / Audio Comprehension question format
- * - No penalty for replays
  */
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import AudioButton from '../AudioButton/AudioButton'
-import { ttsService } from '../../services/audio/AudioService'
-import { Headphones, Sparkles, Volume2 } from 'lucide-react'
+import { ttsService, AUDIO_STATE } from '../../services/audio/AudioService'
+import { Headphones, Sparkles, AlertCircle, Eye } from 'lucide-react'
 
 export default function ListeningExercise({
   prompt,
@@ -40,6 +39,8 @@ export default function ListeningExercise({
   const [hasPlayed, setHasPlayed] = useState(false)
   const [replayCount, setReplayCount] = useState(0)
   const [showHint, setShowHint] = useState(false)
+  const [audioError, setAudioError] = useState(false)
+  const [revealedDueToAudio, setRevealedDueToAudio] = useState(false)
 
   // Determine listening tier if not explicitly provided
   const inferredLevel = level || (
@@ -77,12 +78,17 @@ export default function ListeningExercise({
     setHasPlayed(false)
     setReplayCount(0)
     setShowHint(false)
+    setAudioError(false)
+    setRevealedDueToAudio(false)
   }, [textToSpeak])
 
-  const handleAudioPlay = (state) => {
-    if (state === 'playing') {
+  const handleAudioStateChange = (state) => {
+    if (state === AUDIO_STATE.PLAYING) {
       setHasPlayed(true)
+      setAudioError(false)
       setReplayCount((prev) => prev + 1)
+    } else if (state === AUDIO_STATE.ERROR) {
+      setAudioError(true)
     }
   }
 
@@ -128,7 +134,7 @@ export default function ListeningExercise({
               variant="icon"
               size="large"
               label="Play audio"
-              onStateChange={handleAudioPlay}
+              onStateChange={handleAudioStateChange}
               className="w-20 h-20 !rounded-3xl shadow-xl hover:scale-105 transition-transform"
             />
             <span className="text-xs font-semibold text-[#77736B] dark:text-slate-400">
@@ -145,15 +151,52 @@ export default function ListeningExercise({
               variant="icon"
               size="medium"
               label="Play slowly"
-              onStateChange={handleAudioPlay}
+              onStateChange={handleAudioStateChange}
               className="w-14 h-14 !rounded-2xl shadow-md bg-[#3B82F6] hover:bg-[#2563EB] hover:scale-105 transition-transform"
             />
             <span className="text-xs font-semibold text-[#77736B] dark:text-slate-400">🐢 Slow (0.5x)</span>
           </div>
         </div>
 
+        {/* Audio Failure Fallback Notice */}
+        <AnimatePresence>
+          {audioError && !revealedDueToAudio && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center max-w-md mx-auto space-y-2"
+            >
+              <p className="text-xs font-medium text-amber-700 dark:text-amber-300 flex items-center justify-center gap-1.5">
+                <AlertCircle size={14} />
+                <span>Audio generation unavailable for this phrase.</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setRevealedDueToAudio(true)}
+                className="text-xs font-bold text-[#0B8F62] hover:underline flex items-center justify-center gap-1 mx-auto"
+              >
+                <Eye size={13} />
+                <span>Reveal text to practice without penalty</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Revealed text fallback */}
+        {revealedDueToAudio && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center max-w-md mx-auto"
+          >
+            <p className="text-xs text-[#77736B] uppercase font-bold tracking-wider mb-1">Spoken phrase:</p>
+            <p className="text-lg font-bold text-[#0B8F62]">{textToSpeak}</p>
+          </motion.div>
+        )}
+
         {/* Hint text */}
-        {showHint && !hasPlayed && (
+        {showHint && !hasPlayed && !audioError && (
           <motion.p
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,4 +261,3 @@ export default function ListeningExercise({
     </div>
   )
 }
-

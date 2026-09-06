@@ -55,13 +55,8 @@ export const languages = [
     flag: '🇮🇳',
     voiceCode: 'gu-IN',
   },
-  {
-    id: 'raj',
-    name: 'Rajasthani',
-    nativeName: 'राजस्थानी',
-    flag: '🇮🇳',
-    voiceCode: 'hi-IN',
-  },
 ]
 
 export const getLanguageById = (id) => languages.find(lang => lang.id === id)
+export const supportedLanguages = languages
+export default languages

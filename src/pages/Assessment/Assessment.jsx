@@ -142,6 +142,18 @@ export default function Assessment() {
 
   // Load assessment questions from dynamic API
   useEffect(() => {
+    if (!user) return
+
+    // If user already completed assessment or has existing progress, skip straight to dashboard!
+    if (
+      user.hasCompletedAssessment ||
+      (user.assessmentScore !== null && user.assessmentScore !== undefined) ||
+      (user.completedLessons && user.completedLessons.length > 0)
+    ) {
+      navigate('/dashboard')
+      return
+    }
+
     if (!user?.learningLanguage) {
       navigate('/onboarding')
       return
@@ -172,7 +184,7 @@ export default function Assessment() {
 
     loadQuestions()
     return () => { cancelled = true }
-  }, [user?.learningLanguage, user?.ageRange, user?.goal, navigate])
+  }, [user?.learningLanguage, user?.ageRange, user?.goal, user?.hasCompletedAssessment, user?.assessmentScore, user?.completedLessons, navigate])
 
   const handleAnswer = useCallback((answer) => {
     if (showResult || !questions[currentQuestion]) return
@@ -205,8 +217,8 @@ export default function Assessment() {
     else if (percentage <= 80) level = 'intermediate'
     else                       level = 'advanced'
 
-    // Save assessment score
-    await updateUser({ level, assessmentScore: percentage })
+    // Save assessment score and mark assessment as completed permanently
+    await updateUser({ level, assessmentScore: percentage, hasCompletedAssessment: true })
 
     // Generate personalized learning plan (server-side — no provider details exposed)
     setGeneratingPlan(true)

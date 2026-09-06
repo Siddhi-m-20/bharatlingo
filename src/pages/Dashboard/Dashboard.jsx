@@ -1,37 +1,60 @@
+/**
+ * Dashboard — BharatLingo
+ *
+ * Truly Adaptive Learning Hub (Duolingo / Bhasha-inspired)
+ *
+ * Core Features:
+ * 1. "Your Next Lesson" / "Personalized Practice" Hero Card (with dynamic pedagogical rationale)
+ * 2. Real-time Skill Proficiency Radar / Breakdown (Vocabulary, Listening, Speaking, Grammar)
+ * 3. Spaced Review & Weak Area Quick Drills
+ * 4. Topic Discovery Grid (Explore topics with real-time adaptive exercise selection)
+ * 5. Clean, modern, responsive aesthetics without fixed sequential lesson numbers.
+ */
+
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
-import { getLessonsForLanguage } from '../../data/lessons'
-import { fetchDynamicLessons } from '../../services/dynamicLessonService'
+import { fetchNextAdaptiveLesson } from '../../services/dynamicLessonService'
 import { getLanguageById } from '../../data/languages'
-import LessonNode from '../../components/LessonNode'
-import Button from '../../components/Button'
-import ProgressBar from '../../components/ProgressBar'
+import { getSkillProficiencies, getWeakAreas, getReviewCandidates, TOPIC_CATEGORIES } from '../../services/learnerModel'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
+import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import AlphabetModal from '../../components/AlphabetModal/AlphabetModal'
-import { audioFX } from '../../utils/audioFX'
-import { triggerConfetti } from '../../utils/confetti'
-import { BookA, Gift, Lock, CheckCircle2, Sparkles, Flame, Target } from 'lucide-react'
+import {
+  Play,
+  Sparkles,
+  Flame,
+  ArrowRight,
+  RefreshCw,
+  Zap,
+  Target,
+  Mic,
+  Headphones,
+  BookOpen,
+  Compass,
+  AlertTriangle,
+  Brain,
+  ShieldCheck,
+} from 'lucide-react'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { addXP } = useProgress()
-  const [lessons, setLessons] = useState([])
-  const [currentLesson, setCurrentLesson] = useState(null)
+  const { streak, hearts, gems } = useProgress()
+
+  const [nextLesson, setNextLesson] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [skillStats, setSkillStats] = useState({ vocabulary: 75, listening: 75, speaking: 75, grammar: 75, overall: 80, difficulty: 1 })
+  const [weakAreas, setWeakAreas] = useState({ topics: [], skills: [], hasWeaknesses: false })
+  const [dueReviews, setDueReviews] = useState([])
   const [showAlphabetModal, setShowAlphabetModal] = useState(false)
   const [showPlanBanner, setShowPlanBanner] = useState(false)
-  const [openedChests, setOpenedChests] = useState(() => {
-    try {
-      const stored = localStorage.getItem('bharatlingo_opened_chests')
-      return stored ? JSON.parse(stored) : []
-    } catch (e) {
-      return []
-    }
-  })
+
+  const learningLang = getLanguageById(user?.learningLanguage) || { name: 'Hindi', nativeName: 'हिन्दी', id: 'hi' }
+  const preferredLang = getLanguageById(user?.preferredLanguage || 'en') || { name: 'English', id: 'en' }
 
   useEffect(() => {
     if (!user?.learningLanguage || !user?.goal) {
@@ -39,142 +62,102 @@ export default function Dashboard() {
       return
     }
 
-    // Show plan banner if user just completed assessment
+    // Check if user just completed placement assessment
     const justAssessed = sessionStorage.getItem('bharatlingo_just_assessed')
     if (justAssessed && user.learningPlan) {
       setShowPlanBanner(true)
       sessionStorage.removeItem('bharatlingo_just_assessed')
     }
 
-    async function loadLessons() {
-      const preferredLang = user.preferredLanguage || 'en'
+    async function loadAdaptiveDashboard() {
+      setLoading(true)
+      const langId = user.learningLanguage || 'hi'
+      const preferredId = user.preferredLanguage || 'en'
 
-      // Try dynamic lessons first (server-side generated based on user profile)
-      let languageLessons = []
+      // 1. Fetch learner proficiencies & weak areas
+      const skills = getSkillProficiencies(langId)
+      const weak = getWeakAreas(langId)
+      const reviews = getReviewCandidates(langId, 4)
+
+      setSkillStats(skills)
+      setWeakAreas(weak)
+      setDueReviews(reviews)
+
+      // 2. Fetch the dynamically selected next lesson
       try {
-        languageLessons = await fetchDynamicLessons({
-          languageId: user.learningLanguage,
-          goal: user.goal,
-          ageRange: user.ageRange || 'adult',
+        const adaptiveLesson = await fetchNextAdaptiveLesson({
+          languageId: langId,
+          preferredLang: preferredId,
           level: user.level || 'beginner',
-          count: 15,
+          goal: user.goal || 'conversation',
         })
-      } catch {
-        // Fallback to static lessons
-        languageLessons = getLessonsForLanguage(user.learningLanguage, preferredLang)
+        setNextLesson(adaptiveLesson)
+      } catch (err) {
+        console.warn('[Dashboard] Failed to load adaptive lesson:', err)
+      } finally {
+        setLoading(false)
       }
-
-      if (!languageLessons || languageLessons.length === 0) {
-        languageLessons = getLessonsForLanguage(user.learningLanguage, preferredLang)
-      }
-
-      setLessons(languageLessons)
-
-      // Find current lesson (first incomplete lesson in sequence)
-      const completedIds = Array.isArray(user.completedLessons) ? user.completedLessons : []
-      const nextIncomplete = languageLessons.find((lesson) => !completedIds.includes(lesson.id))
-      setCurrentLesson(nextIncomplete || languageLessons[languageLessons.length - 1])
     }
 
-    loadLessons()
+    loadAdaptiveDashboard()
   }, [user, navigate])
 
-  const getLessonStatus = (lesson) => {
-    const completedIds = Array.isArray(user?.completedLessons) ? user.completedLessons : []
-    if (completedIds.includes(lesson.id)) return 'completed'
-    if (currentLesson?.id === lesson.id) return 'current'
-
-    // Determine if previous lesson in sequence was completed
-    const lessonIndex = lessons.findIndex((l) => l.id === lesson.id)
-    if (lessonIndex === 0) return 'current' // First lesson always unlocked
-    const previousLesson = lessons[lessonIndex - 1]
-    if (previousLesson && completedIds.includes(previousLesson.id)) {
-      return 'current'
-    }
-
-    return 'locked'
-  }
-
-  const handleLessonClick = (lesson) => {
-    const status = getLessonStatus(lesson)
-    if (status !== 'locked') {
-      navigate(`/lesson/${lesson.id}`)
+  const handleStartLesson = (topicId = null) => {
+    if (topicId) {
+      navigate(`/lesson/${learningLang.id}-adaptive-${topicId}-${Date.now()}`)
+    } else if (nextLesson) {
+      navigate(`/lesson/${nextLesson.id}`)
+    } else {
+      navigate(`/lesson/${learningLang.id}-adaptive-greetings-${Date.now()}`)
     }
   }
 
-  const handleOpenChest = (unitId, xpReward = 50) => {
-    if (openedChests.includes(unitId)) return
-    audioFX.playChestOpen()
-    triggerConfetti()
-    addXP(xpReward)
-
-    const updated = [...openedChests, unitId]
-    setOpenedChests(updated)
-    localStorage.setItem('bharatlingo_opened_chests', JSON.stringify(updated))
+  const getDifficultyBadge = (level = 1) => {
+    switch (level) {
+      case 5: return { label: 'Mastery', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' }
+      case 4: return { label: 'Advanced', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' }
+      case 3: return { label: 'Intermediate', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' }
+      case 2: return { label: 'Elementary', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }
+      default: return { label: 'Beginner', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }
+    }
   }
 
-  const learningLang = getLanguageById(user?.learningLanguage)
-  const preferredLang = getLanguageById(user?.preferredLanguage || 'en')
-
-  if (!user || !learningLang) {
-    return (
-      <div className="min-h-screen bg-[#F7F5EF] flex items-center justify-center">
-        <p className="text-[#77736B]">Loading learning path...</p>
-      </div>
-    )
-  }
-
-  const completedCount = (user.completedLessons || []).length
-  const totalLessons = Math.max(1, lessons.length)
-  const progressPercent = Math.min(Math.round((completedCount / totalLessons) * 100), 100)
-
-  // Group by the unit field so adding lessons to the data automatically expands the path.
-  const unitColors = ['#0B8F62', '#F39A45', '#3B82F6', '#8B5CF6', '#D84B42']
-  const units = [...new Map(
-    lessons.map((lesson) => [lesson.unit || 'Unit 1: Fundamentals', lesson.unit || 'Unit 1: Fundamentals'])
-  )].map(([unit, title], index) => ({
-    id: `unit-${index + 1}`,
-    number: index + 1,
-    title,
-    titleNative: title,
-    description: `Build confidence with ${title.replace(/^Unit \d+:\s*/, '').toLowerCase()}`,
-    color: unitColors[index % unitColors.length],
-    lessons: lessons.filter((lesson) => (lesson.unit || 'Unit 1: Fundamentals') === unit),
-  }))
+  const diffBadge = getDifficultyBadge(skillStats.difficulty)
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
-      {/* 1. LEFT SIDEBAR (Width 256px) */}
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-6">
+      {/* 1. LEFT SIDEBAR NAVIGATION */}
       <AppSidebar />
 
-      {/* 2. CENTER CONTENT & LEARNING PATH (Width max-w-[620px]) */}
-      <main className="flex-1 max-w-[620px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
-        {/* Personalized Learning Plan Banner (shown after first assessment) */}
+      {/* 2. CENTER CONTENT */}
+      <main className="flex-1 max-w-[640px] md:ml-64 px-4 py-5 space-y-4">
+
+        {/* ── Placement Plan Welcome Banner (Dismissible) ───────────────── */}
         <AnimatePresence>
           {showPlanBanner && user.learningPlan && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-gradient-to-r from-[#0B8F62] to-[#3B82F6] rounded-3xl p-5 text-white relative overflow-hidden"
+              exit={{ opacity: 0, y: -15 }}
+              className="bg-gradient-to-r from-[#0B8F62] via-[#0ea5e9] to-[#3B82F6] rounded-2xl p-4 text-white relative overflow-hidden shadow-sm"
             >
               <button
                 onClick={() => setShowPlanBanner(false)}
-                className="absolute top-3 right-3 text-white/70 hover:text-white text-xl font-bold leading-none"
+                className="absolute top-2.5 right-3 text-white/70 hover:text-white text-lg font-bold"
                 aria-label="Dismiss"
               >
                 ×
               </button>
               <div className="flex items-start gap-3">
-                <div className="text-3xl">🎯</div>
+                <div className="text-2xl">🎯</div>
                 <div className="flex-1">
-                  <p className="font-black text-sm uppercase tracking-wider text-white/80 mb-1">Your Personalized Plan</p>
-                  <p className="font-bold text-base">
-                    {user.learningPlan.startingLevel} Level • {user.learningPlan.goal}
+                  <p className="font-extrabold text-xs uppercase tracking-wider text-white/80 mb-0.5">Your Personalized Path</p>
+                  <p className="font-bold text-sm">
+                    {user.learningPlan.startingLevel} Level · {user.learningPlan.goal}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {(user.learningPlan.focusAreas || []).slice(0, 3).map((area, i) => (
-                      <span key={i} className="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">
+                      <span key={i} className="text-[11px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">
                         {area}
                       </span>
                     ))}
@@ -185,139 +168,307 @@ export default function Dashboard() {
           )}
         </AnimatePresence>
 
-        {/* Course Progress Banner Header */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{learningLang.flag}</span>
+        {/* ── 1. COURSE HEADER & "YOUR NEXT LESSON" HERO CARD ──────────── */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-4">
+          
+          {/* Header Bar: Flag, Course Name & Overall Mastery */}
+          <div className="flex items-center justify-between pb-3.5 border-b border-[#E8E6E0]/70 dark:border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <LanguageFlag languageId={learningLang.id} size={36} className="shadow-sm" />
               <div>
-                <h1 className="text-2xl font-black text-[#25231F] dark:text-white leading-tight">
+                <h1 className="text-lg font-black text-[#25231F] dark:text-white leading-tight">
                   {learningLang.name} Course
                 </h1>
-                <p className="text-xs text-[#77736B] dark:text-slate-400">
-                  {learningLang.nativeName} • Learning from <span className="font-bold text-[#0B8F62]">{preferredLang?.name || 'English'}</span>
+                <p className="text-[11px] text-[#77736B] dark:text-slate-400">
+                  {learningLang.nativeName} · Teaching in{' '}
+                  <span className="font-bold text-[#0B8F62] dark:text-[#34D399]">{preferredLang?.name || 'English'}</span>
                 </p>
               </div>
             </div>
-            <span className="px-3 py-1 bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] text-xs font-black rounded-full">
-              {progressPercent}%
+
+            <div className="flex items-center gap-2">
+              <span className={`px-2.5 py-1 text-xs font-black rounded-xl uppercase tracking-wider ${diffBadge.color}`}>
+                {diffBadge.label}
+              </span>
+              <span className="px-2.5 py-1 bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] text-xs font-black rounded-xl">
+                {skillStats.overall}% Accuracy
+              </span>
+            </div>
+          </div>
+
+          {/* "Your Next Lesson" Dynamic Hero Showcase */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#0B8F62] dark:text-[#34D399] uppercase tracking-wider">
+                <Sparkles size={15} />
+                <span>Your Next Lesson</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
+                ~5 mins · 10–12 exercises
+              </span>
+            </div>
+
+            {loading ? (
+              <div className="bg-[#F7F5EF]/80 dark:bg-slate-800/60 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 border border-[#E8E6E0] dark:border-slate-700">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                  className="w-6 h-6 border-2 border-[#0B8F62] border-t-transparent rounded-full"
+                />
+                <p className="text-xs text-[#77736B] dark:text-slate-400 font-bold">
+                  Selecting optimal exercises from your performance history...
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-[#F7F5EF] to-[#EDE8DE] dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl p-4 border border-[#E8E6E0] dark:border-slate-700/80 space-y-3 shadow-xs">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-[#E8E6E0] dark:border-slate-700 flex items-center justify-center text-3xl shrink-0">
+                      {nextLesson?.topicIcon || '📚'}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-base text-[#25231F] dark:text-white">
+                        {nextLesson?.name || 'Everyday Essentials'}
+                      </h3>
+                      <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
+                        {nextLesson?.nameNative || learningLang.nativeName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pedagogical Rationale Banner ("Why this was selected") */}
+                <div className="bg-white/80 dark:bg-slate-900/80 rounded-xl p-2.5 border border-[#E8E6E0] dark:border-slate-700 flex items-start gap-2 text-xs">
+                  <Brain size={16} className="text-[#0B8F62] shrink-0 mt-0.5" />
+                  <p className="text-[#25231F] dark:text-slate-200 font-semibold leading-relaxed">
+                    <span className="font-black text-[#0B8F62]">Adaptive Focus: </span>
+                    {nextLesson?.rationale || nextLesson?.description || 'Active recall & listening reinforcement.'}
+                  </p>
+                </div>
+
+                {/* Primary Action King Button */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => handleStartLesson()}
+                  className="w-full py-3.5 px-4 bg-gradient-to-r from-[#0B8F62] to-[#10B981] hover:from-[#097b54] hover:to-[#059669] text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-[#0B8F62]/20 hover:shadow-lg transition-all cursor-pointer"
+                >
+                  <Play size={16} className="fill-white" />
+                  <span>Start Personalized Lesson</span>
+                </motion.button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── 2. REAL-TIME SKILL PROFICIENCY METERS ────────────────────── */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0]/70 dark:border-slate-800">
+            <h2 className="font-black text-xs text-[#25231F] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Target size={15} className="text-[#0B8F62]" />
+              Skill Proficiency Radar
+            </h2>
+            <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
+              Adapts dynamically
             </span>
           </div>
 
-          <ProgressBar progress={progressPercent} showLabel={false} />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+            {/* Vocabulary */}
+            <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/60 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black">
+                <span className="text-[#77736B] dark:text-slate-400 flex items-center gap-1">
+                  <BookOpen size={13} className="text-amber-500" />
+                  Vocab
+                </span>
+                <span className="text-[#25231F] dark:text-white">{skillStats.vocabulary}%</span>
+              </div>
+              <div className="w-full bg-[#E8E6E0] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${skillStats.vocabulary}%` }}
+                />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <Button
-              size="large"
-              className="w-full justify-center font-black"
-              onClick={() => currentLesson && handleLessonClick(currentLesson)}
-            >
-              {completedCount === 0 ? 'Start Lesson 1 →' : 'Continue Lesson →'}
-            </Button>
-            <button
-              onClick={() => setShowAlphabetModal(true)}
-              className="w-full py-3 px-4 bg-[#F7F5EF] dark:bg-slate-800 hover:bg-[#E8E6E0] dark:hover:bg-slate-700 border-2 border-[#E8E6E0] dark:border-slate-700 rounded-2xl font-black text-sm text-[#25231F] dark:text-white flex items-center justify-center gap-2 transition-colors"
-            >
-              <BookA size={18} className="text-[#0B8F62]" />
-              <span>Alphabet</span>
-            </button>
+            {/* Listening */}
+            <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/60 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black">
+                <span className="text-[#77736B] dark:text-slate-400 flex items-center gap-1">
+                  <Headphones size={13} className="text-blue-500" />
+                  Listen
+                </span>
+                <span className="text-[#25231F] dark:text-white">{skillStats.listening}%</span>
+              </div>
+              <div className="w-full bg-[#E8E6E0] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-blue-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${skillStats.listening}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Speaking */}
+            <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/60 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black">
+                <span className="text-[#77736B] dark:text-slate-400 flex items-center gap-1">
+                  <Mic size={13} className="text-emerald-500" />
+                  Speech
+                </span>
+                <span className="text-[#25231F] dark:text-white">{skillStats.speaking}%</span>
+              </div>
+              <div className="w-full bg-[#E8E6E0] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${skillStats.speaking}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Grammar */}
+            <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/60 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black">
+                <span className="text-[#77736B] dark:text-slate-400 flex items-center gap-1">
+                  <Zap size={13} className="text-purple-500" />
+                  Grammar
+                </span>
+                <span className="text-[#25231F] dark:text-white">{skillStats.grammar}%</span>
+              </div>
+              <div className="w-full bg-[#E8E6E0] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-purple-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${skillStats.grammar}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Units & Duolingo Learning Roadmap */}
-        <div className="space-y-8">
-          {units.map((unit) => {
-            const completedInUnit = unit.lessons.filter((l) => (user.completedLessons || []).includes(l.id)).length
-            const isUnitComplete = completedInUnit === unit.lessons.length
-            const isChestClaimed = openedChests.includes(unit.id)
+        {/* ── 3. SUBORDINATED QUICK TOOLS ──────────────────────────────── */}
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={() => navigate('/stories')}
+            className="flex flex-col items-center justify-center p-2.5 bg-white dark:bg-slate-900 hover:bg-amber-50/50 dark:hover:bg-slate-800/80 border border-[#E8E6E0] dark:border-slate-800 rounded-2xl transition-all group cursor-pointer"
+          >
+            <span className="text-xl mb-1 group-hover:scale-110 transition-transform">📖</span>
+            <span className="text-[11px] font-bold text-[#25231F] dark:text-slate-200">Stories</span>
+          </button>
 
-            return (
-              <motion.div
-                key={unit.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 overflow-hidden"
-              >
-                {/* Unit Header Banner */}
-                <div
-                  className="p-6 text-white flex items-center justify-between"
-                  style={{ backgroundColor: unit.color }}
-                >
-                  <div>
-                    <span className="text-[11px] font-black uppercase tracking-widest bg-black/25 px-2.5 py-1 rounded-md">
-                      Unit {unit.number}
-                    </span>
-                    <h3 className="text-xl font-black mt-1.5">{unit.title}</h3>
-                    <p className="text-xs text-white/90">{unit.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold bg-white/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                      {completedInUnit}/{unit.lessons.length}
-                    </span>
-                  </div>
-                </div>
+          <button
+            onClick={() => navigate('/tutor')}
+            className="flex flex-col items-center justify-center p-2.5 bg-white dark:bg-slate-900 hover:bg-indigo-50/50 dark:hover:bg-slate-800/80 border border-[#E8E6E0] dark:border-slate-800 rounded-2xl transition-all group cursor-pointer"
+          >
+            <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🤖</span>
+            <span className="text-[11px] font-bold text-[#25231F] dark:text-slate-200">AI Tutor</span>
+          </button>
 
-                {/* Vertical Winding Node Roadmap */}
-                <div className="p-8 md:p-10 flex flex-col items-center space-y-6 max-w-sm mx-auto relative">
-                  {unit.lessons.map((lesson, idx) => {
-                    const status = getLessonStatus(lesson)
-                    const offsetClass = idx % 2 === 0 ? '-translate-x-6' : 'translate-x-6'
+          <button
+            onClick={() => navigate('/writing')}
+            className="flex flex-col items-center justify-center p-2.5 bg-white dark:bg-slate-900 hover:bg-emerald-50/50 dark:hover:bg-slate-800/80 border border-[#E8E6E0] dark:border-slate-800 rounded-2xl transition-all group cursor-pointer"
+          >
+            <span className="text-xl mb-1 group-hover:scale-110 transition-transform">✍️</span>
+            <span className="text-[11px] font-bold text-[#25231F] dark:text-slate-200">Writing</span>
+          </button>
 
-                    return (
-                      <div key={lesson.id} className={`flex flex-col items-center relative ${offsetClass}`}>
-                        <LessonNode
-                          lesson={lesson}
-                          status={status}
-                          current={currentLesson?.id === lesson.id}
-                          onClick={() => handleLessonClick(lesson)}
-                        />
-
-                        {/* Connecting Line */}
-                        {idx < unit.lessons.length - 1 && (
-                          <div className="w-1.5 h-8 bg-[#E8E6E0] dark:bg-slate-800 my-2 rounded-full overflow-hidden">
-                            <div
-                              className={`w-full h-full transition-all duration-500 ${
-                                status === 'completed' ? 'bg-[#2F9E69]' : 'bg-[#E8E6E0] dark:bg-slate-800'
-                              }`}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-
-                  {/* Milestone Reward Chest */}
-                  <div className="pt-4 flex flex-col items-center">
-                    <div className="w-1.5 h-6 bg-[#E8E6E0] dark:bg-slate-800 mb-2 rounded-full" />
-                    <motion.button
-                      onClick={() => isUnitComplete && handleOpenChest(unit.id)}
-                      disabled={!isUnitComplete || isChestClaimed}
-                      whileHover={isUnitComplete && !isChestClaimed ? { scale: 1.1 } : {}}
-                      whileTap={isUnitComplete && !isChestClaimed ? { scale: 0.95 } : {}}
-                      className={`
-                        w-16 h-16 rounded-3xl flex items-center justify-center border-4 shadow-lg transition-all
-                        ${isChestClaimed
-                          ? 'bg-[#2F9E69] text-white border-[#2F9E69]'
-                          : isUnitComplete
-                          ? 'bg-[#F39A45] text-white border-[#F39A45] animate-bounce shadow-[#F39A45]/40 cursor-pointer'
-                          : 'bg-[#E8E6E0] dark:bg-slate-800 text-[#77736B] border-[#E8E6E0] dark:border-slate-700 cursor-not-allowed opacity-70'
-                        }
-                      `}
-                    >
-                      {isChestClaimed ? <CheckCircle2 size={24} /> : isUnitComplete ? <Gift size={26} /> : <Lock size={20} />}
-                    </motion.button>
-                    <p className="text-xs font-bold text-[#25231F] dark:text-slate-300 mt-2">
-                      {isChestClaimed ? 'Reward Claimed ✓' : isUnitComplete ? 'Open Reward (+50 XP)!' : 'Unit Milestone'}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )
-          })}
+          <button
+            onClick={() => navigate('/letters')}
+            className="flex flex-col items-center justify-center p-2.5 bg-white dark:bg-slate-900 hover:bg-purple-50/50 dark:hover:bg-slate-800/80 border border-[#E8E6E0] dark:border-slate-800 rounded-2xl transition-all group cursor-pointer"
+          >
+            <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🔤</span>
+            <span className="text-[11px] font-bold text-[#25231F] dark:text-slate-200">Script</span>
+          </button>
         </div>
+
+        {/* ── 4. SPACED REVIEW & WEAK TOPIC QUICK DRILLS ──────────────── */}
+        {dueReviews.length > 0 && (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#D84B42] dark:text-[#F87171] uppercase tracking-wider">
+                <RefreshCw size={14} className="animate-spin" style={{ animationDuration: '8s' }} />
+                <span>Spaced Review Ready</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
+                {dueReviews.length} words due for retention
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {dueReviews.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="px-3 py-1.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl border border-[#E8E6E0] dark:border-slate-700 text-xs font-bold text-[#25231F] dark:text-slate-200 flex items-center gap-1.5"
+                >
+                  <span>{item.word}</span>
+                  <span className="text-[10px] text-[#77736B] dark:text-slate-400 font-normal">({item.translation})</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/practice')}
+              className="w-full py-2 bg-[#D84B42]/10 hover:bg-[#D84B42]/20 text-[#D84B42] dark:text-[#F87171] rounded-xl text-xs font-black transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span>Practice Due Reviews</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
+        )}
+
+        {/* ── 5. TOPIC DISCOVERY HUB (Explore Topics Adaptively) ──────── */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0]/70 dark:border-slate-800">
+            <div>
+              <h2 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
+                <Compass size={16} className="text-[#0B8F62]" />
+                Explore Topics
+              </h2>
+              <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
+                Tap any topic — the engine will construct a personalized exercise set
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+            {TOPIC_CATEGORIES.slice(0, 6).map((topic) => {
+              const isWeak = weakAreas.topics.some((w) => w.id === topic.id)
+              return (
+                <motion.button
+                  key={topic.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleStartLesson(topic.id)}
+                  className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between h-24 ${
+                    isWeak
+                      ? 'bg-rose-50/60 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60'
+                      : 'bg-[#F7F5EF]/60 dark:bg-slate-800/60 border-[#E8E6E0] dark:border-slate-700/60 hover:border-[#0B8F62]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{topic.icon}</span>
+                    {isWeak && (
+                      <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded-md">
+                        Needs Focus
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-black text-xs text-[#25231F] dark:text-white leading-tight">
+                      {topic.name}
+                    </p>
+                    <span className="text-[10px] text-[#0B8F62] font-bold flex items-center gap-0.5 mt-0.5">
+                      <span>Practice</span>
+                      <ArrowRight size={10} />
+                    </span>
+                  </div>
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+
       </main>
 
-      {/* 3. RIGHT SIDEBAR (Width 320px on Desktop) */}
+      {/* 3. RIGHT SIDEBAR (Stats, Streaks, Leaderboard) */}
       <RightSidebar />
 
       {/* Alphabet Modal */}

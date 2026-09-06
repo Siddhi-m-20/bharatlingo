@@ -113,7 +113,7 @@ export function calculateSM2(item, quality) {
     nextReviewAt: nextDate.toISOString(),
     retentionScore,
     history: [
-      ...(item.history || []),
+      ...(item.history || []).slice(-14),
       {
         reviewedAt: now.toISOString(),
         quality: q,

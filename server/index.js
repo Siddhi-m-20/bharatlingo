@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import translationRoutes from './routes/translation.js'
 import speechRoutes from './routes/speech.js'
 import lessonsRoutes from './routes/lessons.js'
+import ttsRoutes from './routes/tts.js'
 
 dotenv.config()
 
@@ -20,6 +21,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', translationRoutes)
 app.use('/api', speechRoutes)
 app.use('/api', lessonsRoutes)
+app.use('/api', ttsRoutes)
 
 app.use((err, req, res, next) => {
   console.error(err.stack)

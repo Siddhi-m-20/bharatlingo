@@ -88,16 +88,18 @@ export default function CelebrationModal({
           className="p-4 bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 border-2 border-[#0B8F62]/30 rounded-2xl text-left flex items-center justify-between max-w-md mx-auto"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0B8F62] text-white flex items-center justify-center shadow-md shadow-[#0B8F62]/30">
-              <CheckCircle2 size={22} />
+            <div className="w-10 h-10 rounded-xl bg-[#0B8F62] text-white flex items-center justify-center shadow-md shadow-[#0B8F62]/30 text-xl">
+              {nextLesson.topicIcon || '🎯'}
             </div>
             <div>
-              <p className="text-xs font-black text-[#0B8F62] dark:text-[#34D399] uppercase tracking-wider">Next Lesson Unlocked</p>
-              <p className="text-base font-black text-[#25231F] dark:text-white">{nextLesson.name}</p>
-              <p className="text-xs text-[#77736B] dark:text-slate-400">{nextLesson.nameNative}</p>
+              <p className="text-[10px] font-black text-[#0B8F62] dark:text-[#34D399] uppercase tracking-wider">Next Adaptive Session</p>
+              <p className="text-sm font-black text-[#25231F] dark:text-white">{nextLesson.name}</p>
+              <p className="text-[11px] text-[#77736B] dark:text-slate-400 truncate max-w-[220px]">
+                {nextLesson.rationale || nextLesson.nameNative}
+              </p>
             </div>
           </div>
-          <ArrowRight size={20} className="text-[#0B8F62] dark:text-[#34D399]" />
+          <ArrowRight size={18} className="text-[#0B8F62] dark:text-[#34D399] shrink-0" />
         </motion.div>
       )}
 

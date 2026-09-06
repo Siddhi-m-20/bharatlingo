@@ -15,6 +15,11 @@ import Practice from './pages/Practice'
 import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import Stories from './pages/Stories/Stories'
+import StoryReader from './pages/Stories/StoryReader'
+import ConversationTutor from './pages/Tutor/ConversationTutor'
+import Alphabet from './pages/Alphabet/Alphabet'
+import WritingPractice from './pages/Writing/WritingPractice'
 
 function App() {
   return (
@@ -59,6 +64,46 @@ function App() {
                 }
               />
               <Route
+                path="/stories"
+                element={
+                  <ProtectedRoute>
+                    <Stories />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/story/:storyId"
+                element={
+                  <ProtectedRoute>
+                    <StoryReader />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tutor"
+                element={
+                  <ProtectedRoute>
+                    <ConversationTutor />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/letters"
+                element={
+                  <ProtectedRoute>
+                    <Alphabet />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/writing"
+                element={
+                  <ProtectedRoute>
+                    <WritingPractice />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/practice"
                 element={
                   <ProtectedRoute>
@@ -74,6 +119,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* /curriculum redirects to dashboard — curriculum concept removed */}
+              <Route path="/curriculum" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/profile"
                 element={

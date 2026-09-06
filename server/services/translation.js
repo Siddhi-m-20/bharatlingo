@@ -78,17 +78,6 @@ const fallbackTranslations = {
     'how are you': 'તમે કેમ છો',
     'i love you': 'હું તમને પ્રેમ કરું છું',
   },
-  'raj': {
-    'hello': 'राम राम सा',
-    'water': 'पानी',
-    'food': 'खाना',
-    'home': 'घर',
-    'book': 'किताब',
-    'good morning': 'सुप्रभात',
-    'thank you': 'धन्यवाद',
-    'how are you': 'तुसो कैसा है',
-    'i love you': 'मैं तुन्हे प्यार करुं दसुं',
-  },
 }
 
 export async function translateText(text, source, target) {

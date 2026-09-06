@@ -1,6 +1,6 @@
 // Cross-lingual translation dictionary and prompt templates for BharatLingo
 // Supports: Hindi (hi), Marathi (mr), Tamil (ta), Telugu (te), Bengali (bn),
-// Punjabi (pa), Gujarati (gu), Rajasthani (raj), English (en)
+// Punjabi (pa), Gujarati (gu), English (en)
 
 export const promptTemplates = {
   // Meaning / Multiple Choice
@@ -13,7 +13,6 @@ export const promptTemplates = {
     pa: (w) => `"${w}" ਦਾ ਕੀ ਮਤਲਬ ਹੈ?`,
     ta: (w) => `"${w}" என்பதன் பொருள் என்ன?`,
     te: (w) => `"${w}" అంటే ఏమిటి?`,
-    raj: (w) => `"${w}" रो कांई मतलब है?`,
   },
   // Translate to Target
   translate_to_target: {
@@ -25,7 +24,6 @@ export const promptTemplates = {
     pa: (w, targetName) => `"${w}" ਦਾ ${targetName} ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ`,
     ta: (w, targetName) => `"${w}" ஐ ${targetName} மொழியில் மொழிபெயர்க்கவும்`,
     te: (w, targetName) => `"${w}" ను ${targetName} లో అనువదించండి`,
-    raj: (w, targetName) => `"${w}" ने ${targetName} में बदलो`,
   },
   // Listening
   listening: {
@@ -37,7 +35,6 @@ export const promptTemplates = {
     pa: () => 'ਸੁਣਿਆ ਗਿਆ ਸ਼ਬਦ ਚੁਣੋ',
     ta: () => 'நீங்கள் கேட்கும் சொல்லைத் தேர்ந்தெடுக்கவும்',
     te: () => 'మీరు విన్న పదాన్ని ఎంచుకోండి',
-    raj: () => 'सुण्यो गयो शब्द चुणो',
   },
   // Speaking
   speaking: {
@@ -49,7 +46,6 @@ export const promptTemplates = {
     pa: (w) => `ਮਾਈਕ ਦਬਾਓ ਅਤੇ ਬੋਲੋ: "${w}"`,
     ta: (w) => `மைக்கை அழுத்தி பேசவும்: "${w}"`,
     te: (w) => `మైక్ నొక్కి మాట్లాడండి: "${w}"`,
-    raj: (w) => `माइक दाबो और बोलो: "${w}"`,
   },
   // Word Bank / Sentence builder
   word_bank: {
@@ -61,7 +57,6 @@ export const promptTemplates = {
     pa: (w) => `"${w}" ਦਾ ਸਹੀ ਅਨੁਵਾਦ ਬਣਾਓ:`,
     ta: (w) => `"${w}" என்பதற்கான சரியான மொழிபெயர்ப்பை உருவாக்குங்கள்:`,
     te: (w) => `"${w}" కొరకు సరైన అనువాదాన్ని రూపొందించండి:`,
-    raj: (w) => `"${w}" रो सही अनुवाद बणाओ:`,
   },
   // Matching pairs
   matching: {
@@ -73,7 +68,50 @@ export const promptTemplates = {
     pa: () => 'ਸ਼ਬਦਾਂ ਨੂੰ ਉਹਨਾਂ ਦੇ ਸਹੀ ਅਰਥਾਂ ਨਾਲ ਮਿਲਾਓ',
     ta: () => 'சொற்களை அவற்றின் அர்த்தங்களுடன் பொருத்தவும்',
     te: () => 'పదాలను వాటి అర్థాలతో సరిపోల్చండి',
-    raj: () => 'शब्दां रा सही अर्थ सूं मिलान करो',
+  },
+  // Sentence Ordering / Reorder
+  sentence_order: {
+    en: (w) => `Arrange the words in correct order: "${w}"`,
+    hi: (w) => `शब्दों को सही क्रम में व्यवस्थित करें: "${w}"`,
+    mr: (w) => `शब्द योग्य क्रमाने लावा: "${w}"`,
+    gu: (w) => `શબ્દોને યોગ્ય ક્રમમાં ગોઠવો: "${w}"`,
+    bn: (w) => `শব্দগুলি সঠিক ক্রমে সাজান: "${w}"`,
+    pa: (w) => `ਸ਼ਬਦਾਂ ਨੂੰ ਸਹੀ ਕ੍ਰਮ ਵਿੱਚ ਵਿਵਸਥਿਤ ਕਰੋ: "${w}"`,
+    ta: (w) => `சொற்களை சரியான வரிசையில் அடுக்கவும்: "${w}"`,
+    te: (w) => `పదాలను సరైన క్రమంలో అమర్చండి: "${w}"`,
+  },
+  // Fill in the blank
+  fill_blank: {
+    en: () => 'Fill in the blank with the correct word',
+    hi: () => 'रिक्त स्थान में सही शब्द भरें',
+    mr: () => 'रिकाम्या जागी योग्य शब्द भरा',
+    gu: () => 'ખાલી જગ્યામાં સાચો શબ્દ ભરો',
+    bn: () => 'শূন্যস্থানে সঠিক শব্দ বসান',
+    pa: () => 'ਖਾਲੀ ਥਾਂ ਵਿੱਚ ਸਹੀ ਸ਼ਬਦ ਭਰੋ',
+    ta: () => 'கோடிட்ட இடத்தை சரியான சொல்லால் நிரப்புக',
+    te: () => 'ఖాళీని సరైన పదంతో పూరించండి',
+  },
+  // Reading Comprehension
+  reading: {
+    en: () => 'Read the passage and answer the question',
+    hi: () => 'अनुच्छेद पढ़ें और प्रश्न का उत्तर दें',
+    mr: () => 'उतारा वाचा आणि प्रश्नाचे उत्तर द्या',
+    gu: () => 'ફકરો વાંચો અને પ્રશ્નનો જવાબ આપો',
+    bn: () => 'অনুচ্ছেদটি পড়ুন এবং প্রশ্নের উত্তর দিন',
+    pa: () => 'ਪੈਰਾ ਪੜ੍ਹੋ ਅਤੇ ਸਵਾਲ ਦਾ ਜਵਾਬ ਦਿਓ',
+    ta: () => 'பத்தியைப் படித்து கேள்விக்கு பதிலளிக்கவும்',
+    te: () => 'పేరా చదివి ప్రశ్నకు సమాధానం ఇవ్వండి',
+  },
+  // Writing / Script practice
+  writing: {
+    en: (w) => `Type the correct word for: "${w}"`,
+    hi: (w) => `"${w}" के लिए सही शब्द टाइप करें:`,
+    mr: (w) => `"${w}" साठी योग्य शब्द टाइप करा:`,
+    gu: (w) => `"${w}" માટે સાચો શબ્દ લખો:`,
+    bn: (w) => `"${w}" এর জন্য সঠিক শব্দ লিখুন:`,
+    pa: (w) => `"${w}" ਲਈ ਸਹੀ ਸ਼ਬਦ ਲਿਖੋ:`,
+    ta: (w) => `"${w}" என்பதற்கான சரியான சொல்லை தட்டச்சு செய்க:`,
+    te: (w) => `"${w}" కొరకు సరైన పదాన్ని టైప్ చేయండి:`,
   },
 }
 
@@ -91,7 +129,6 @@ export const dictionary = [
       bn: 'নমস্কার',
       pa: 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ',
       gu: 'નમસ્તે',
-      raj: 'खम्मा घणी',
     },
     pronunciations: {
       hi: 'namaskar',
@@ -101,7 +138,6 @@ export const dictionary = [
       bn: 'nomoshkar',
       pa: 'sat sri akaal',
       gu: 'namaste',
-      raj: 'khamma ghani',
       en: 'hello',
     },
   },
@@ -116,7 +152,6 @@ export const dictionary = [
       bn: 'ধন্যবাদ',
       pa: 'ਧੰਨਵਾਦ',
       gu: 'આભાર',
-      raj: 'घणो आभार',
     },
     pronunciations: {
       hi: 'dhanyavaad',
@@ -126,7 +161,6 @@ export const dictionary = [
       bn: 'dhonnobad',
       pa: 'dhannvaad',
       gu: 'aabhar',
-      raj: 'ghano aabhar',
       en: 'thank you',
     },
   },
@@ -141,7 +175,6 @@ export const dictionary = [
       bn: 'দয়া করে',
       pa: 'ਕਿਰਪਾ ਕਰਕੇ',
       gu: 'કૃપા કરીને',
-      raj: 'कृपा कर',
     },
     pronunciations: {
       hi: 'kripya',
@@ -151,7 +184,6 @@ export const dictionary = [
       bn: 'doya kore',
       pa: 'kripa karke',
       gu: 'krupa kareene',
-      raj: 'kripa kar',
       en: 'please',
     },
   },
@@ -166,7 +198,6 @@ export const dictionary = [
       bn: 'সুপ্রভাত',
       pa: 'ਸ਼ੁਭ ਸਵੇਰ',
       gu: 'શુભ સવાર',
-      raj: 'शुभ प्रभात',
     },
     pronunciations: {
       hi: 'shubh prabhat',
@@ -176,7 +207,6 @@ export const dictionary = [
       bn: 'suprobhat',
       pa: 'shubh saver',
       gu: 'shubh savaar',
-      raj: 'shubh prabhat',
       en: 'good morning',
     },
   },
@@ -191,7 +221,6 @@ export const dictionary = [
       bn: 'শুভ রাত্রি',
       pa: 'ਸ਼ੁਭ ਰਾਤ',
       gu: 'શુભ રાત્રિ',
-      raj: 'शुभ रात',
     },
     pronunciations: {
       hi: 'shubh raatri',
@@ -201,7 +230,6 @@ export const dictionary = [
       bn: 'shubho raatri',
       pa: 'shubh raat',
       gu: 'shubh raatri',
-      raj: 'shubh raat',
       en: 'good night',
     },
   },
@@ -218,7 +246,6 @@ export const dictionary = [
       bn: 'জল / পানি',
       pa: 'ਪਾਣੀ',
       gu: 'પાણી',
-      raj: 'पाणी',
     },
     pronunciations: {
       hi: 'paani',
@@ -228,7 +255,6 @@ export const dictionary = [
       bn: 'jol',
       pa: 'paani',
       gu: 'paani',
-      raj: 'paani',
       en: 'water',
     },
   },
@@ -243,7 +269,6 @@ export const dictionary = [
       bn: 'খাবার',
       pa: 'ਖਾਣਾ',
       gu: 'ખોરાક / જમવાનું',
-      raj: 'खाणो',
     },
     pronunciations: {
       hi: 'khaana',
@@ -253,7 +278,6 @@ export const dictionary = [
       bn: 'khabar',
       pa: 'khaana',
       gu: 'khorak',
-      raj: 'khaano',
       en: 'food',
     },
   },
@@ -268,7 +292,6 @@ export const dictionary = [
       bn: 'বাড়ি / ঘর',
       pa: 'ਘਰ',
       gu: 'ઘર',
-      raj: 'घर',
     },
     pronunciations: {
       hi: 'ghar',
@@ -278,7 +301,6 @@ export const dictionary = [
       bn: 'bari',
       pa: 'ghar',
       gu: 'ghar',
-      raj: 'ghar',
       en: 'home',
     },
   },
@@ -293,7 +315,6 @@ export const dictionary = [
       bn: 'বন্ধু',
       pa: 'ਦੋਸਤ / ਮਿੱਤਰ',
       gu: 'મિત્ર / દોસ્ત',
-      raj: 'भाईबंद / दोस्त',
     },
     pronunciations: {
       hi: 'dost',
@@ -303,7 +324,6 @@ export const dictionary = [
       bn: 'bondhu',
       pa: 'dost',
       gu: 'mitra',
-      raj: 'bhaiband',
       en: 'friend',
     },
   },
@@ -318,7 +338,6 @@ export const dictionary = [
       bn: 'চা',
       pa: 'ਚਾਹ',
       gu: 'ચા',
-      raj: 'चाय',
     },
     pronunciations: {
       hi: 'chaay',
@@ -328,7 +347,6 @@ export const dictionary = [
       bn: 'chaa',
       pa: 'chaah',
       gu: 'chaa',
-      raj: 'chaay',
       en: 'tea',
     },
   },
@@ -343,7 +361,6 @@ export const dictionary = [
       bn: 'বই',
       pa: 'ਕਿਤਾਬ',
       gu: 'પુસ્તક / ચોપડી',
-      raj: 'पोथी / किताब',
     },
     pronunciations: {
       hi: 'kitaab',
@@ -353,7 +370,6 @@ export const dictionary = [
       bn: 'boi',
       pa: 'kitaab',
       gu: 'pustak',
-      raj: 'pothi',
       en: 'book',
     },
   },
@@ -368,7 +384,6 @@ export const dictionary = [
       bn: 'হ্যাঁ',
       pa: 'ਹਾਂ',
       gu: 'હા',
-      raj: 'हाँ',
     },
     pronunciations: {
       hi: 'haan',
@@ -378,7 +393,6 @@ export const dictionary = [
       bn: 'hyaan',
       pa: 'haan',
       gu: 'haa',
-      raj: 'haan',
       en: 'yes',
     },
   },
@@ -393,7 +407,6 @@ export const dictionary = [
       bn: 'না',
       pa: 'ਨਹੀਂ',
       gu: 'ના',
-      raj: 'ना',
     },
     pronunciations: {
       hi: 'nahin',
@@ -403,7 +416,6 @@ export const dictionary = [
       bn: 'naa',
       pa: 'nahin',
       gu: 'naa',
-      raj: 'naa',
       en: 'no',
     },
   },
@@ -418,7 +430,6 @@ export const dictionary = [
       bn: 'কোথায়?',
       pa: 'ਕਿੱਥੇ?',
       gu: 'ક્યાં?',
-      raj: 'कठै?',
     },
     pronunciations: {
       hi: 'kahaan',
@@ -428,7 +439,6 @@ export const dictionary = [
       bn: 'kothay',
       pa: 'kitthe',
       gu: 'kyaan',
-      raj: 'kathai',
       en: 'where',
     },
   },
@@ -443,7 +453,6 @@ export const dictionary = [
       bn: 'আপনি কেমন আছেন?',
       pa: 'ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?',
       gu: 'તમે કેમ છો?',
-      raj: 'थे क्यां हो?',
     },
     pronunciations: {
       hi: 'aap kaise hain',
@@ -453,7 +462,6 @@ export const dictionary = [
       bn: 'aapni kemon aachen',
       pa: 'tusi kiven ho',
       gu: 'tame kem cho',
-      raj: 'the kyan ho',
       en: 'how are you',
     },
   },
@@ -493,6 +501,5 @@ export const targetNameMap = {
   bn: 'বাংলা (Bengali)',
   pa: 'ਪੰਜਾਬੀ (Punjabi)',
   gu: 'ગુજરાતી (Gujarati)',
-  raj: 'राजस्थानी (Rajasthani)',
   en: 'English',
 }

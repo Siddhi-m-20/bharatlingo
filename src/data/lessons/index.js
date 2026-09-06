@@ -6,7 +6,6 @@ import { bengaliLessons } from './bengali.js'
 import { punjabiLessons } from './punjabi.js'
 import { gujaratiLessons } from './gujarati.js'
 import { englishLessons } from './english.js'
-import { rajasthaniLessons } from './rajasthani.js'
 import { getPromptText, getTranslation, dictionary, targetNameMap } from '../translations.js'
 import { getLanguageById } from '../languages.js'
 
@@ -19,7 +18,6 @@ export const rawLessonsByLanguage = {
   pa: punjabiLessons,
   gu: gujaratiLessons,
   en: englishLessons,
-  raj: rajasthaniLessons,
 }
 
 // Find translation of an English meaning into preferred language
@@ -110,6 +108,12 @@ export function localizeLesson(lesson, targetLangId, preferredLangId = 'en') {
           meaning: translateMeaning(p.meaning, preferredLangId),
         }))
       }
+    } else if (ex.type === 'sentence-order') {
+      localized.prompt = getPromptText('sentence_order', preferredLangId, targetLangName, ex.sentence || ex.correctAnswer)
+    } else if (ex.type === 'fill-blank') {
+      localized.prompt = getPromptText('fill_blank', preferredLangId, targetLangName)
+    } else if (ex.type === 'reading') {
+      localized.prompt = getPromptText('reading', preferredLangId, targetLangName)
     }
 
     return localized

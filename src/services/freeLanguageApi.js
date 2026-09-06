@@ -21,7 +21,6 @@ const myMemoryLangMap = {
   bn: 'bn',
   pa: 'pa',
   gu: 'gu',
-  raj: 'hi', // Fallback to Hindi locale for Rajasthani
   en: 'en',
 }
 
@@ -104,10 +103,17 @@ export const API_CATALOGUE = [
     isFree: true,
   },
   {
-    name: 'Web Speech Synthesis API',
+    name: 'Open Indic-TTS Engine',
+    url: 'Self-Hosted / Open-Source Indic-TTS API (/api/tts)',
+    description: 'Server & local neural text-to-speech engine optimized for 9 Indian languages with audio caching.',
+    usageLocation: 'Lesson Audio Player, Listening exercises, Vocabulary charts, and Alphabet sounds',
+    isFree: true,
+  },
+  {
+    name: 'Web Speech Synthesis API (Fallback)',
     url: 'Native W3C Browser API',
-    description: 'Text-to-speech audio pronunciation with Indian voice locales (hi-IN, mr-IN, ta-IN, etc.).',
-    usageLocation: 'Lesson Audio Player, Listening exercises, and Alphabet charts',
+    description: 'Secondary client fallback text-to-speech strictly filtered by native Indian voice locales.',
+    usageLocation: 'Offline TTS Fallback',
     isFree: true,
   },
   {

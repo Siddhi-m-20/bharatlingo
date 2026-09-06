@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const ThemeContext = createContext(null)
 
-// UI Translations for Common Site Labels across 9 Languages
+// UI Translations for Common Site Labels across 8 Languages
 export const uiTranslations = {
   learn: {
     en: 'Learn',
@@ -13,7 +13,26 @@ export const uiTranslations = {
     bn: 'শিখুন',
     pa: 'ਸਿੱਖੋ',
     gu: 'શીખો',
-    raj: 'सीखो',
+  },
+  stories: {
+    en: 'Stories',
+    hi: 'कहानियाँ',
+    mr: 'गोष्टी',
+    ta: 'கதைகள்',
+    te: 'కథలు',
+    bn: 'গল্প',
+    pa: 'ਕਹਾਣੀਆਂ',
+    gu: 'વાર્તાઓ',
+  },
+  tutor: {
+    en: 'AI Tutor',
+    hi: 'एआई शिक्षक',
+    mr: 'एआय शिक्षक',
+    ta: 'AI ஆசிரியர்',
+    te: 'AI ట్యూటర్',
+    bn: 'এআই শিক্ষক',
+    pa: 'AI ਅਧਿਆਪਕ',
+    gu: 'AI ટ્યુટર',
   },
   dashboard: {
     en: 'Dashboard',
@@ -24,7 +43,6 @@ export const uiTranslations = {
     bn: 'ড্যাশবোর্ড',
     pa: 'ਡੈਸ਼ਬੋਰਡ',
     gu: 'ડેશબોર્ડ',
-    raj: 'डैशबोर्ड',
   },
   letters: {
     en: 'Letters / Script',
@@ -35,7 +53,6 @@ export const uiTranslations = {
     bn: 'বর্ণমালা',
     pa: 'ਵਰਣਮਾਲਾ',
     gu: 'મૂળાક્ષરો',
-    raj: 'वर्णमाला',
   },
   practice: {
     en: 'Practice',
@@ -46,7 +63,6 @@ export const uiTranslations = {
     bn: 'অনুশীলন',
     pa: 'ਅਭਿਆਸ',
     gu: 'અભ્યાસ',
-    raj: 'अभ्यास',
   },
   leaderboard: {
     en: 'Leaderboard',
@@ -56,8 +72,17 @@ export const uiTranslations = {
     te: 'లీడర్‌బోర్డ్',
     bn: 'লিডারবোর্ড',
     pa: 'ਲੀਡਰਬੋਰਡ',
-    gu: 'ਲੀਡਰਬੋਰਡ',
-    raj: 'लीडरबोर्ड',
+    gu: 'લીડરબોર્ડ',
+  },
+  curriculum: {
+    en: 'Curriculum CMS',
+    hi: 'पाठ्यक्रम',
+    mr: 'अभ्यासक्रम',
+    ta: 'பாடத்திட்டம்',
+    te: 'పాఠ్య ప్రణాళిక',
+    bn: 'পাঠ্যক্রম',
+    pa: 'ਪਾਠਕ੍ਰਮ',
+    gu: 'અભ્યાસક્રમ',
   },
   profile: {
     en: 'Profile',
@@ -67,8 +92,7 @@ export const uiTranslations = {
     te: 'ప్రొఫైల్',
     bn: 'প্রোফাইল',
     pa: 'ਪ੍ਰੋਫਾਈਲ',
-    gu: 'ਪ્રોਫાઇલ',
-    raj: 'प्रोफाइल',
+    gu: 'પ્રોફાઇલ',
   },
   settings: {
     en: 'Settings',
@@ -79,7 +103,6 @@ export const uiTranslations = {
     bn: 'সেটিংস',
     pa: 'ਸੈਟਿੰਗਾਂ',
     gu: 'સેટિંગ્સ',
-    raj: 'सेटिंग्स',
   },
   streak: {
     en: 'Streak',
@@ -89,8 +112,7 @@ export const uiTranslations = {
     te: 'వరుస రోజులు',
     bn: 'ধারাবাহিকতা',
     pa: 'ਲੜੀਵਾਰ ਦਿਨ',
-    gu: 'ਸੜંગ દિવસો',
-    raj: 'लगातार दिन',
+    gu: 'સળંગ દિવસો',
   },
   hearts: {
     en: 'Hearts',
@@ -101,7 +123,16 @@ export const uiTranslations = {
     bn: 'শক্তি',
     pa: 'ਊਰਜਾ',
     gu: 'ઉર્જા',
-    raj: 'ऊर्जा',
+  },
+  gems: {
+    en: 'Gems',
+    hi: 'रत्न / सिक्के',
+    mr: 'रत्ने / नाणी',
+    ta: 'மணிகள்',
+    te: 'మణులు',
+    bn: 'রত্ন',
+    pa: 'ਹੀਰੇ',
+    gu: 'રત્નો',
   },
   daily_goal: {
     en: 'Daily Goal',
@@ -112,7 +143,16 @@ export const uiTranslations = {
     bn: 'দৈনিক লক্ষ্য',
     pa: 'ਰੋਜ਼ਾਨਾ ਟੀਚਾ',
     gu: 'દૈનિક લક્ષ્ય',
-    raj: 'दैनिक लक्ष्य',
+  },
+  quests: {
+    en: 'Daily Quests',
+    hi: 'दैनिक लक्ष्य',
+    mr: 'दैनिक आव्हाने',
+    ta: 'தினசரி பணிகள்',
+    te: 'రోజువారీ టాస్క్‌లు',
+    bn: 'দৈনিক মিশন',
+    pa: 'ਰੋਜ਼ਾਨਾ ਚੁਣੌਤੀਆਂ',
+    gu: 'દૈનિક મિશન',
   },
   theme: {
     en: 'Theme',
@@ -123,7 +163,6 @@ export const uiTranslations = {
     bn: 'থিম',
     pa: 'ਥੀਮ',
     gu: 'થીમ',
-    raj: 'थीम',
   },
   site_language: {
     en: 'Site Language',
@@ -134,7 +173,46 @@ export const uiTranslations = {
     bn: 'সাইট ভাষা',
     pa: 'ਸਾਈਟ ਭਾਸ਼ਾ',
     gu: 'સાઇટ ભાષા',
-    raj: 'वेबसाइट भाषा',
+  },
+  continue: {
+    en: 'Continue',
+    hi: 'आगे बढ़ें',
+    mr: 'पुढे जा',
+    ta: 'தொடரவும்',
+    te: 'కొనసాగించు',
+    bn: 'চালিয়ে যান',
+    pa: 'ਜਾਰੀ ਰੱਖੋ',
+    gu: 'આગળ વધો',
+  },
+  check_answer: {
+    en: 'Check Answer',
+    hi: 'उत्तर जांचें',
+    mr: 'उत्तर तपासा',
+    ta: 'பதிலைச் சரிபார்க்கவும்',
+    te: 'సమాధానం సరిచూడండి',
+    bn: 'উত্তর পরীক্ষা করুন',
+    pa: 'ਜਵਾਬ ਚੈੱਕ ਕਰੋ',
+    gu: 'જવાબ ચકાસો',
+  },
+  excellent: {
+    en: '✓ Excellent!',
+    hi: '✓ बहुत बढ़िया!',
+    mr: '✓ उत्तम!',
+    ta: '✓ அற்புதம்!',
+    te: '✓ అద్భుతం!',
+    bn: '✓ চমৎকার!',
+    pa: '✓ ਬਹੁਤ ਵਧੀਆ!',
+    gu: '✓ ઉત્તમ!',
+  },
+  not_quite: {
+    en: '✗ Not quite right',
+    hi: '✗ सही नहीं है',
+    mr: '✗ थोडे चुकले',
+    ta: '✗ தவறு',
+    te: '✗ సరికాదు',
+    bn: '✗ সঠিক নয়',
+    pa: '✗ ਗ਼ਲਤ ਹੈ',
+    gu: '✗ ખોટું છે',
   },
 }
 
@@ -149,43 +227,52 @@ export function ThemeProvider({ children }) {
 
   const [siteLanguage, setSiteLanguageState] = useState(() => {
     try {
-      return localStorage.getItem('bharatlingo_site_language') || 'en'
+      return localStorage.getItem('bharatlingo_site_lang') || 'en'
     } catch (e) {
       return 'en'
     }
   })
 
-  // Apply theme to document root and sync .dark class
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-
     try {
       localStorage.setItem('bharatlingo_theme', theme)
-    } catch (e) {}
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    } catch (e) {
+      console.error(e)
+    }
   }, [theme])
 
-  // Save site language
   useEffect(() => {
     try {
-      localStorage.setItem('bharatlingo_site_language', siteLanguage)
-    } catch (e) {}
+      localStorage.setItem('bharatlingo_site_lang', siteLanguage)
+    } catch (e) {
+      console.error(e)
+    }
   }, [siteLanguage])
 
   const setTheme = (newTheme) => {
-    setThemeState(newTheme)
+    if (newTheme === 'dark' || newTheme === 'light') {
+      setThemeState(newTheme)
+    }
   }
 
-  const setSiteLanguage = (newLang) => {
-    setSiteLanguageState(newLang)
+  const toggleTheme = () => {
+    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'))
   }
 
-  // Translation helper
+  const setSiteLanguage = (langId) => {
+    if (langId) {
+      setSiteLanguageState(langId)
+    }
+  }
+
+  // Translation helper for UI labels
   const t = (key) => {
+    if (!key) return ''
     const entry = uiTranslations[key]
     if (!entry) return key
     return entry[siteLanguage] || entry['en'] || key
@@ -196,6 +283,7 @@ export function ThemeProvider({ children }) {
       value={{
         theme,
         setTheme,
+        toggleTheme,
         siteLanguage,
         setSiteLanguage,
         t,

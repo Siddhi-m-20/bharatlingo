@@ -6,24 +6,50 @@ const AuthContext = createContext(null)
 // Helper: map DB snake_case profile to App user format
 function mapProfileToUser(profile, authUser) {
   if (!profile && !authUser) return null
+
+  const learningLang = profile?.learning_language || null
+  const existingCompleted = Array.isArray(profile?.completed_lessons) ? profile.completed_lessons : []
+  const initialLangProgress = profile?.language_progress || {}
+
+  // Initialize or ensure active learning language progress exists
+  if (learningLang && !initialLangProgress[learningLang]) {
+    initialLangProgress[learningLang] = {
+      completedLessons: existingCompleted,
+      xp: profile?.xp || 0,
+      level: profile?.level || 'beginner',
+      assessmentScore: profile?.assessment_score ?? null,
+      learningPlan: profile?.learning_plan || null,
+      legendaryCompleted: profile?.legendary_completed || [],
+    }
+  }
+
   return {
     id: profile?.id || authUser?.id,
     name: profile?.name || authUser?.user_metadata?.name || authUser?.email?.split('@')[0] || 'Learner',
     email: profile?.email || authUser?.email,
+    avatar: profile?.avatar || null,
+    bio: profile?.bio || '',
     preferredLanguage: profile?.preferred_language || 'en',
-    learningLanguage: profile?.learning_language || null,
-    goal: profile?.goal || null,
+    learningLanguage: learningLang,
+    goal: profile?.goal || 'conversation',
     level: profile?.level || 'beginner',
     dailyGoal: profile?.daily_goal || 10,
-    ageRange: profile?.age_range || null,
+    ageRange: profile?.age_range || 'adult',
     assessmentScore: profile?.assessment_score ?? null,
+    hasCompletedAssessment: profile?.has_completed_assessment ?? (profile?.assessment_score !== null && profile?.assessment_score !== undefined || existingCompleted.length > 0),
     learningPlan: profile?.learning_plan || null,
     xp: profile?.xp || 0,
+    gems: profile?.gems !== undefined ? profile.gems : 100,
+    hearts: profile?.hearts !== undefined ? profile.hearts : 5,
     streak: profile?.streak || 0,
     lastActiveDate: profile?.last_active_date || null,
-    completedLessons: profile?.completed_lessons || [],
+    completedLessons: existingCompleted,
+    languageProgress: initialLangProgress,
+    legendaryCompleted: profile?.legendary_completed || [],
     vocabulary: profile?.vocabulary || {},
     achievements: profile?.achievements || [],
+    settings: profile?.settings || { audio: true, soundFx: true, speaking: true },
+    activeQuests: profile?.active_quests || null,
     createdAt: profile?.created_at || new Date().toISOString(),
   }
 }
@@ -32,6 +58,8 @@ function mapProfileToUser(profile, authUser) {
 function mapUserUpdatesToProfile(updates) {
   const mapped = {}
   if (updates.name !== undefined) mapped.name = updates.name
+  if (updates.avatar !== undefined) mapped.avatar = updates.avatar
+  if (updates.bio !== undefined) mapped.bio = updates.bio
   if (updates.preferredLanguage !== undefined) mapped.preferred_language = updates.preferredLanguage
   if (updates.learningLanguage !== undefined) mapped.learning_language = updates.learningLanguage
   if (updates.goal !== undefined) mapped.goal = updates.goal
@@ -39,20 +67,34 @@ function mapUserUpdatesToProfile(updates) {
   if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
   if (updates.ageRange !== undefined) mapped.age_range = updates.ageRange
   if (updates.assessmentScore !== undefined) mapped.assessment_score = updates.assessmentScore
+  if (updates.hasCompletedAssessment !== undefined) mapped.has_completed_assessment = updates.hasCompletedAssessment
   if (updates.learningPlan !== undefined) mapped.learning_plan = updates.learningPlan
   if (updates.xp !== undefined) mapped.xp = updates.xp
+  if (updates.gems !== undefined) mapped.gems = updates.gems
+  if (updates.hearts !== undefined) mapped.hearts = updates.hearts
   if (updates.streak !== undefined) mapped.streak = updates.streak
   if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate
   if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
+  if (updates.languageProgress !== undefined) mapped.language_progress = updates.languageProgress
+  if (updates.legendaryCompleted !== undefined) mapped.legendary_completed = updates.legendaryCompleted
   if (updates.vocabulary !== undefined) mapped.vocabulary = updates.vocabulary
   if (updates.achievements !== undefined) mapped.achievements = updates.achievements
+  if (updates.settings !== undefined) mapped.settings = updates.settings
+  if (updates.activeQuests !== undefined) mapped.active_quests = updates.activeQuests
   return mapped
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('bharatlingo_user')
+      return stored ? JSON.parse(stored) : null
+    } catch {
+      return null
+    }
+  })
   const [loading, setLoading] = useState(true)
-  const userRef = useRef(null)
+  const userRef = useRef(user)
 
   useEffect(() => {
     userRef.current = user
@@ -122,34 +164,39 @@ export function AuthProvider({ children }) {
     let isMounted = true
 
     const initAuth = async () => {
+      // 1. Initial hydration from localStorage
+      const storedUser = localStorage.getItem('bharatlingo_user')
+      let localUser = null
+      if (storedUser) {
+        try {
+          localUser = JSON.parse(storedUser)
+          if (isMounted) {
+            setUser(localUser)
+            userRef.current = localUser
+          }
+        } catch (e) {}
+      }
+
+      // 2. Sync with Supabase session if configured and online
       if (isSupabaseConfigured() && supabase) {
         try {
           const { data: { session }, error } = await supabase.auth.getSession()
-          if (error) throw error
-
-          if (session?.user && isMounted) {
+          if (!error && session?.user && isMounted) {
             const userProfile = await fetchSupabaseProfile(session.user)
-            if (isMounted) {
-              setUser(userProfile)
-              localStorage.setItem('bharatlingo_user', JSON.stringify(userProfile))
+            if (isMounted && userProfile) {
+              // Merge local completions if present
+              const mergedCompleted = Array.from(new Set([
+                ...(userProfile.completedLessons || []),
+                ...(localUser?.completedLessons || [])
+              ]))
+              const finalProfile = { ...userProfile, completedLessons: mergedCompleted }
+              setUser(finalProfile)
+              userRef.current = finalProfile
+              localStorage.setItem('bharatlingo_user', JSON.stringify(finalProfile))
             }
           }
         } catch (err) {
-          console.warn('Supabase session load error, falling back to local session:', err)
-          const storedUser = localStorage.getItem('bharatlingo_user')
-          if (storedUser && isMounted) {
-            setUser(JSON.parse(storedUser))
-          }
-        }
-      } else {
-        // Fallback to localStorage
-        const storedUser = localStorage.getItem('bharatlingo_user')
-        if (storedUser && isMounted) {
-          try {
-            setUser(JSON.parse(storedUser))
-          } catch (e) {
-            console.error('Error loading stored local user:', e)
-          }
+          console.warn('Supabase session load error:', err)
         }
       }
 
@@ -321,6 +368,64 @@ export function AuthProvider({ children }) {
     return mockUser
   }
 
+  // Login with Google OAuth
+  const loginWithGoogle = async () => {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/onboarding`,
+          },
+        })
+        if (error) {
+          console.warn('Supabase Google OAuth not enabled or error:', error.message)
+          // Fall through to local fallback so user is never blocked
+        } else if (data?.url) {
+          return data
+        }
+      } catch (err) {
+        console.warn('Supabase Google OAuth error, falling back to local Google profile:', err)
+      }
+    }
+
+    // Local / Offline fallback Google profile
+    const googleUser = {
+      id: 'google_' + Date.now().toString(),
+      name: 'Google Learner',
+      email: 'learner@gmail.com',
+      preferredLanguage: 'en',
+      learningLanguage: 'hi',
+      goal: 'conversation',
+      level: 'beginner',
+      dailyGoal: 10,
+      ageRange: 'adult',
+      assessmentScore: 85,
+      hasCompletedAssessment: true,
+      xp: 40,
+      gems: 100,
+      hearts: 5,
+      streak: 1,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      completedLessons: [],
+      languageProgress: {
+        hi: {
+          completedLessons: [],
+          xp: 40,
+          level: 'beginner',
+        },
+      },
+      legendaryCompleted: [],
+      vocabulary: {},
+      achievements: [],
+      createdAt: new Date().toISOString(),
+    }
+    userRef.current = googleUser
+    setUser(googleUser)
+    localStorage.setItem('bharatlingo_user', JSON.stringify(googleUser))
+    return googleUser
+  }
+
   // Logout
   const logout = async () => {
     if (isSupabaseConfigured() && supabase) {
@@ -382,6 +487,7 @@ export function AuthProvider({ children }) {
         loading,
         login,
         signup,
+        loginWithGoogle,
         logout,
         updateUser,
         isSupabaseActive: isSupabaseConfigured(),

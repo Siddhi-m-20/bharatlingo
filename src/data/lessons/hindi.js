@@ -24,14 +24,24 @@ export const hindiLessons = [
       {
         type: 'listening',
         prompt: 'Listen to the audio and select what you hear',
+        audioText: 'धन्यवाद',
         options: ['नमस्कार', 'धन्यवाद', 'कृपया', 'अलविदा'],
         correctAnswer: 'धन्यवाद',
+        xp: 15,
+      },
+      {
+        type: 'speaking',
+        prompt: 'Say this word aloud: "नमस्कार"',
+        targetWord: 'नमस्कार',
+        pronunciation: 'namaskar',
+        correctAnswer: 'नमस्कार',
         xp: 15,
       },
       {
         type: 'translation',
         prompt: 'Translate "Thank you" to Hindi',
         correctAnswer: 'धन्यवाद',
+        wordBank: ['धन्यवाद', 'नमस्कार', 'कृपया', 'हाँ'],
         xp: 15,
       },
       {
@@ -72,14 +82,17 @@ export const hindiLessons = [
       {
         type: 'listening',
         prompt: 'Listen to the audio and select what you hear',
+        audioText: 'घर',
         options: ['घर', 'पानी', 'दोस्त', 'किताब'],
         correctAnswer: 'घर',
         xp: 15,
       },
       {
-        type: 'translation',
-        prompt: 'Translate "Friend" to Hindi',
-        correctAnswer: 'दोस्त',
+        type: 'sentence-order',
+        prompt: 'Arrange the words to say "This is my home"',
+        sentence: 'यह मेरा घर है',
+        words: ['है', 'यह', 'घर', 'मेरा'],
+        correctAnswer: 'यह मेरा घर है',
         xp: 15,
       },
       {
@@ -95,11 +108,13 @@ export const hindiLessons = [
       },
     ],
   },
+
+  // UNIT 2: DAILY LIFE & NUMBERS
   {
     id: 'hi-numbers',
     name: 'Numbers 1 to 10',
     nameNative: 'संख्या १-१०',
-    unit: 'Unit 1: Fundamentals',
+    unit: 'Unit 2: Daily Life',
     order: 3,
     vocabulary: [
       { word: 'एक', translation: 'One', pronunciation: 'ek', example: 'एक कप चाय' },
@@ -120,14 +135,16 @@ export const hindiLessons = [
       {
         type: 'listening',
         prompt: 'Listen to the audio and select what you hear',
+        audioText: 'पाँच',
         options: ['एक', 'दो', 'तीन', 'पाँच'],
         correctAnswer: 'पाँच',
         xp: 15,
       },
       {
-        type: 'translation',
-        prompt: 'Translate "Two" to Hindi',
-        correctAnswer: 'दो',
+        type: 'fill-blank',
+        prompt: 'Complete the number sequence: एक, दो, ___ , चार',
+        options: ['तीन', 'पाँच', 'दस', 'छह'],
+        correctAnswer: 'तीन',
         xp: 15,
       },
       {
@@ -144,15 +161,15 @@ export const hindiLessons = [
     ],
   },
 
-  // UNIT 2: DAILY LIFE & FOOD
+  // UNIT 3: FOOD & DINING
   {
     id: 'hi-food',
     name: 'Food & Dining',
     nameNative: 'खान-पान',
-    unit: 'Unit 2: Daily Life',
+    unit: 'Unit 3: Food & Dining',
     order: 4,
     vocabulary: [
-      { word: 'खाना', translation: 'Food', pronunciation: 'khaana', example: 'खाना स्वादिष्ट है' },
+      { word: 'खाना', translation: 'Food / Meal', pronunciation: 'khaana', example: 'खाना स्वादिष्ट है' },
       { word: 'चाय', translation: 'Tea', pronunciation: 'chai', example: 'गरम चाय पीजिए' },
       { word: 'दूध', translation: 'Milk', pronunciation: 'doodh', example: 'दूध स्वास्थ्य के लिए अच्छा है' },
       { word: 'रोटी', translation: 'Bread / Roti', pronunciation: 'roti', example: 'ताज़ा रोटी' },
@@ -168,16 +185,19 @@ export const hindiLessons = [
         xp: 10,
       },
       {
-        type: 'listening',
-        prompt: 'Listen to the audio and select what you hear',
-        options: ['खाना', 'चाय', 'दूध', 'रोटी'],
-        correctAnswer: 'खाना',
+        type: 'speaking',
+        prompt: 'Say this word aloud: "चाय"',
+        targetWord: 'चाय',
+        pronunciation: 'chai',
+        correctAnswer: 'चाय',
         xp: 15,
       },
       {
-        type: 'translation',
-        prompt: 'Translate "Milk" to Hindi',
-        correctAnswer: 'दूध',
+        type: 'sentence-order',
+        prompt: 'Arrange words: "I want tea"',
+        sentence: 'मुझे चाय चाहिए',
+        words: ['चाहिए', 'मुझे', 'चाय'],
+        correctAnswer: 'मुझे चाय चाहिए',
         xp: 15,
       },
       {
@@ -193,11 +213,13 @@ export const hindiLessons = [
       },
     ],
   },
+
+  // UNIT 4: FAMILY & RELATIONS
   {
     id: 'hi-family',
     name: 'Family & Relations',
     nameNative: 'परिवार और रिश्ते',
-    unit: 'Unit 2: Daily Life',
+    unit: 'Unit 4: Family & Relations',
     order: 5,
     vocabulary: [
       { word: 'मां', translation: 'Mother', pronunciation: 'maan', example: 'मेरी मां' },
@@ -216,15 +238,17 @@ export const hindiLessons = [
       },
       {
         type: 'listening',
-        prompt: 'Listen to the audio and select what you hear',
-        options: ['मां', 'पिता', 'भाई', 'बहन'],
-        correctAnswer: 'भाई',
+        prompt: 'Listen and select what you hear',
+        audioText: 'परिवार',
+        options: ['मां', 'पिता', 'भाई', 'परिवार'],
+        correctAnswer: 'परिवार',
         xp: 15,
       },
       {
         type: 'translation',
-        prompt: 'Translate "Father" to Hindi',
-        correctAnswer: 'पिता',
+        prompt: 'Translate "Brother" to Hindi',
+        correctAnswer: 'भाई',
+        wordBank: ['भाई', 'बहन', 'मां', 'पिता'],
         xp: 15,
       },
       {
@@ -241,12 +265,12 @@ export const hindiLessons = [
     ],
   },
 
-  // UNIT 3: TRAVEL & PLACES
+  // UNIT 5: TRAVEL & PLACES
   {
     id: 'hi-travel',
-    name: 'Travel & Places',
+    name: 'Travel & Directions',
     nameNative: 'यात्रा और स्थान',
-    unit: 'Unit 3: Travel & Places',
+    unit: 'Unit 5: Travel & Places',
     order: 6,
     vocabulary: [
       { word: 'कहाँ', translation: 'Where', pronunciation: 'kahaan', example: 'स्टेशन कहाँ है?' },
@@ -254,6 +278,8 @@ export const hindiLessons = [
       { word: 'बाजार', translation: 'Market', pronunciation: 'bazaar', example: 'बाजार पास में है' },
       { word: 'शहर', translation: 'City', pronunciation: 'shahar', example: 'सुंदर शहर' },
       { word: 'स्टेशन', translation: 'Station', pronunciation: 'station', example: 'रेलवे स्टेशन' },
+      { word: 'दाएं', translation: 'Right', pronunciation: 'dayen', example: 'दाएं मुड़िए' },
+      { word: 'बाएं', translation: 'Left', pronunciation: 'bayen', example: 'बाएं मुड़िए' },
     ],
     exercises: [
       {
@@ -264,28 +290,259 @@ export const hindiLessons = [
         xp: 10,
       },
       {
-        type: 'listening',
-        prompt: 'Listen to the audio and select what you hear',
-        options: ['कहाँ', 'सड़क', 'बाजार', 'शहर'],
-        correctAnswer: 'बाजार',
-        xp: 15,
-      },
-      {
-        type: 'translation',
-        prompt: 'Translate "City" to Hindi',
-        correctAnswer: 'शहर',
+        type: 'sentence-order',
+        prompt: 'Arrange: "Where is the station?"',
+        sentence: 'स्टेशन कहाँ है',
+        words: ['है', 'स्टेशन', 'कहाँ'],
+        correctAnswer: 'स्टेशन कहाँ है',
         xp: 15,
       },
       {
         type: 'matching',
-        prompt: 'Match travel terms',
+        prompt: 'Match directions and travel terms',
         pairs: [
           { word: 'कहाँ', meaning: 'Where' },
           { word: 'सड़क', meaning: 'Road' },
-          { word: 'बाजार', meaning: 'Market' },
-          { word: 'शहर', meaning: 'City' },
+          { word: 'दाएं', meaning: 'Right' },
+          { word: 'बाएं', meaning: 'Left' },
         ],
         xp: 20,
+      },
+    ],
+  },
+
+  // UNIT 6: SHOPPING & BAZAARS
+  {
+    id: 'hi-shopping',
+    name: 'Shopping & Bargaining',
+    nameNative: 'खरीददारी और मोलभाव',
+    unit: 'Unit 6: Shopping & Bazaars',
+    order: 7,
+    vocabulary: [
+      { word: 'दाम', translation: 'Price / Cost', pronunciation: 'daam', example: 'इसका दाम कितना है?' },
+      { word: 'रुपये', translation: 'Rupees', pronunciation: 'rupaye', example: 'पचास रुपये' },
+      { word: 'महंगा', translation: 'Expensive', pronunciation: 'mehanga', example: 'यह बहुत महंगा है' },
+      { word: 'सस्ता', translation: 'Cheap / Affordable', pronunciation: 'sasta', example: 'सस्ता सामान' },
+      { word: 'कपड़े', translation: 'Clothes', pronunciation: 'kapde', example: 'सुंदर कपड़े' },
+      { word: 'दुकान', translation: 'Shop', pronunciation: 'dukaan', example: 'किताब की दुकान' },
+    ],
+    exercises: [
+      {
+        type: 'multiple-choice',
+        prompt: 'What does "दाम" mean?',
+        options: ['Price', 'Shop', 'Clothes', 'Money'],
+        correctAnswer: 'Price',
+        xp: 10,
+      },
+      {
+        type: 'speaking',
+        prompt: 'Say this shopping phrase: "दाम कितना है"',
+        targetWord: 'दाम कितना है',
+        pronunciation: 'daam kitna hai',
+        correctAnswer: 'दाम कितना है',
+        xp: 15,
+      },
+      {
+        type: 'sentence-order',
+        prompt: 'Arrange: "This is very expensive"',
+        sentence: 'यह बहुत महंगा है',
+        words: ['है', 'यह', 'महंगा', 'बहुत'],
+        correctAnswer: 'यह बहुत महंगा है',
+        xp: 15,
+      },
+      {
+        type: 'matching',
+        prompt: 'Match market vocabulary',
+        pairs: [
+          { word: 'दाम', meaning: 'Price' },
+          { word: 'महंगा', meaning: 'Expensive' },
+          { word: 'सस्ता', meaning: 'Cheap' },
+          { word: 'दुकान', meaning: 'Shop' },
+        ],
+        xp: 20,
+      },
+    ],
+  },
+
+  // UNIT 7: HEALTH & WELLNESS
+  {
+    id: 'hi-health',
+    name: 'Health & Emergency',
+    nameNative: 'स्वास्थ्य और चिकित्सा',
+    unit: 'Unit 7: Health & Wellness',
+    order: 8,
+    vocabulary: [
+      { word: 'डॉक्टर', translation: 'Doctor', pronunciation: 'doctor', example: 'डॉक्टर को बुलाइए' },
+      { word: 'दवा', translation: 'Medicine', pronunciation: 'dawa', example: 'समय पर दवा लें' },
+      { word: 'अस्पताल', translation: 'Hospital', pronunciation: 'aspataal', example: 'पास में अस्पताल है' },
+      { word: 'दर्द', translation: 'Pain', pronunciation: 'dard', example: 'सिर में दर्द है' },
+      { word: 'मदद', translation: 'Help', pronunciation: 'madad', example: 'कृपया मदद कीजिए' },
+    ],
+    exercises: [
+      {
+        type: 'multiple-choice',
+        prompt: 'What does "मदद" mean?',
+        options: ['Help', 'Doctor', 'Hospital', 'Medicine'],
+        correctAnswer: 'Help',
+        xp: 10,
+      },
+      {
+        type: 'listening',
+        prompt: 'Listen and identify the audio',
+        audioText: 'दवा',
+        options: ['डॉक्टर', 'दवा', 'दर्द', 'अस्पताल'],
+        correctAnswer: 'दवा',
+        xp: 15,
+      },
+      {
+        type: 'fill-blank',
+        prompt: 'Complete: "मुझे सिर में ___ है" (I have a headache)',
+        options: ['दर्द', 'दवा', 'मदद', 'डॉक्टर'],
+        correctAnswer: 'दर्द',
+        xp: 15,
+      },
+      {
+        type: 'matching',
+        prompt: 'Match medical terms',
+        pairs: [
+          { word: 'डॉक्टर', meaning: 'Doctor' },
+          { word: 'दवा', meaning: 'Medicine' },
+          { word: 'अस्पताल', meaning: 'Hospital' },
+          { word: 'दर्द', meaning: 'Pain' },
+        ],
+        xp: 20,
+      },
+    ],
+  },
+
+  // UNIT 8: WORK & PROFESSIONAL LIFE
+  {
+    id: 'hi-work',
+    name: 'Work & Professional Life',
+    nameNative: 'कामकाज और व्यवसाय',
+    unit: 'Unit 8: Work & Professional',
+    order: 9,
+    vocabulary: [
+      { word: 'काम', translation: 'Work / Job', pronunciation: 'kaam', example: 'आज बहुत काम है' },
+      { word: 'दफ़्तर', translation: 'Office', pronunciation: 'daftar', example: 'दफ़्तर का समय' },
+      { word: 'बैठक', translation: 'Meeting', pronunciation: 'baithak', example: 'महत्वपूर्ण बैठक' },
+      { word: 'समय', translation: 'Time', pronunciation: 'samay', example: 'समय पर पहुँचना' },
+      { word: 'संदेश', translation: 'Message', pronunciation: 'sandesh', example: 'संदेश भेजिए' },
+    ],
+    exercises: [
+      {
+        type: 'multiple-choice',
+        prompt: 'What does "दफ़्तर" mean?',
+        options: ['Office', 'Meeting', 'Time', 'Message'],
+        correctAnswer: 'Office',
+        xp: 10,
+      },
+      {
+        type: 'sentence-order',
+        prompt: 'Arrange: "Send a message"',
+        sentence: 'संदेश भेजिए',
+        words: ['भेजिए', 'संदेश'],
+        correctAnswer: 'संदेश भेजिए',
+        xp: 15,
+      },
+      {
+        type: 'matching',
+        prompt: 'Match professional terms',
+        pairs: [
+          { word: 'काम', meaning: 'Work' },
+          { word: 'दफ़्तर', meaning: 'Office' },
+          { word: 'बैठक', meaning: 'Meeting' },
+          { word: 'समय', meaning: 'Time' },
+        ],
+        xp: 20,
+      },
+    ],
+  },
+
+  // UNIT 9: CULTURE & CELEBRATIONS
+  {
+    id: 'hi-festivals',
+    name: 'Festivals & Celebrations',
+    nameNative: 'त्योहार और संस्कृति',
+    unit: 'Unit 9: Culture & Celebrations',
+    order: 10,
+    vocabulary: [
+      { word: 'त्योहार', translation: 'Festival', pronunciation: 'tyohaar', example: 'दीपावली का त्योहार' },
+      { word: 'बधाई', translation: 'Congratulations / Greetings', pronunciation: 'badhaai', example: 'जन्मदिन की बधाई' },
+      { word: 'खुशी', translation: 'Happiness / Joy', pronunciation: 'khushi', example: 'खुशी का दिन' },
+      { word: 'संगीत', translation: 'Music', pronunciation: 'sangeet', example: 'भारतीय शास्त्रीय संगीत' },
+      { word: 'नृत्य', translation: 'Dance', pronunciation: 'nritya', example: 'लोक नृत्य' },
+    ],
+    exercises: [
+      {
+        type: 'multiple-choice',
+        prompt: 'What does "त्योहार" mean?',
+        options: ['Festival', 'Music', 'Dance', 'Congratulations'],
+        correctAnswer: 'Festival',
+        xp: 10,
+      },
+      {
+        type: 'speaking',
+        prompt: 'Say: "बधाई हो" (Congratulations)',
+        targetWord: 'बधाई हो',
+        pronunciation: 'badhaai ho',
+        correctAnswer: 'बधाई हो',
+        xp: 15,
+      },
+      {
+        type: 'matching',
+        prompt: 'Match cultural words',
+        pairs: [
+          { word: 'त्योहार', meaning: 'Festival' },
+          { word: 'बधाई', meaning: 'Congratulations' },
+          { word: 'संगीत', meaning: 'Music' },
+          { word: 'नृत्य', meaning: 'Dance' },
+        ],
+        xp: 20,
+      },
+    ],
+  },
+
+  // UNIT 10: FLUENCY & IDIOMS
+  {
+    id: 'hi-mastery',
+    name: 'Fluency & Idioms',
+    nameNative: 'मुहावरे और प्रवीणता',
+    unit: 'Unit 10: Fluency & Mastery',
+    order: 11,
+    vocabulary: [
+      { word: 'दाल में काला', translation: 'Something fishy / Suspicious', pronunciation: 'daal mein kaala', example: 'कुछ तो दाल में काला है' },
+      { word: 'चार चाँद लगाना', translation: 'To add charm / Enhance beauty', pronunciation: 'chaar chaand lagaana', example: 'उसने महफ़िल में चार चाँद लगा दिए' },
+      { word: 'नौ दो ग्यारह होना', translation: 'To flee / Run away', pronunciation: 'nau do gyaarah hona', example: 'चोर नौ दो ग्यारह हो गया' },
+      { word: 'हाथ बंटाना', translation: 'To lend a hand / Help', pronunciation: 'haath bantaana', example: 'काम में हाथ बंटाना' },
+    ],
+    exercises: [
+      {
+        type: 'multiple-choice',
+        prompt: 'What does the idiom "दाल में काला" signify?',
+        options: ['Something suspicious', 'Black lentils', 'Good cooking', 'Late arrival'],
+        correctAnswer: 'Something suspicious',
+        xp: 15,
+      },
+      {
+        type: 'reading',
+        prompt: 'Read the short story passage and answer:',
+        passage: 'रोहन ने बाजार में एक पुरानी किताब देखी। उसने कहा, "यह किताब बहुत दुर्लभ है!" उसने तुरंत उसे खरीद लिया।',
+        question: 'What did Rohan see in the market?',
+        options: ['An old book (पुरानी किताब)', 'A sweet shop', 'A bicycle', 'A new watch'],
+        correctAnswer: 'An old book (पुरानी किताब)',
+        xp: 20,
+      },
+      {
+        type: 'matching',
+        prompt: 'Match Hindi idioms with their meanings',
+        pairs: [
+          { word: 'दाल में काला', meaning: 'Something suspicious' },
+          { word: 'चार चाँद लगाना', meaning: 'To add charm' },
+          { word: 'नौ दो ग्यारह होना', meaning: 'To run away' },
+          { word: 'हाथ बंटाना', meaning: 'To lend a hand' },
+        ],
+        xp: 25,
       },
     ],
   },

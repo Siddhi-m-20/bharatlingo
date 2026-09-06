@@ -2,11 +2,24 @@ import express from 'express'
 import {
   getDynamicLessons,
   getDynamicLesson,
+  getAdaptiveLesson,
   generateLearningPlan,
   generateAssessmentQuestions,
 } from '../services/lessonEngine.js'
 
 const router = express.Router()
+
+router.get('/lessons/adaptive', (req, res) => {
+  try {
+    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null } = req.query
+    const lesson = getAdaptiveLesson({ languageId, goal, ageRange, level, topicId })
+    res.json(lesson)
+  } catch (err) {
+    console.error('Adaptive lesson error:', err)
+    res.status(500).json({ error: 'Could not generate adaptive lesson.' })
+  }
+})
+
 
 router.get('/languages', (req, res) => {
   const languages = [
@@ -18,7 +31,6 @@ router.get('/languages', (req, res) => {
     { id: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇮🇳' },
     { id: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
     { id: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
-    { id: 'raj', name: 'Rajasthani', nativeName: 'राजस्थानी', flag: '🇮🇳' },
   ]
   res.json(languages)
 })

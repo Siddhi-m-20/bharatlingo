@@ -2,15 +2,16 @@ import BharatMascot from '../Mascot/BharatMascot'
 
 export default function BharatLingoLogo({ size = 'medium', showText = true, className = '' }) {
   const sizeMap = {
-    small: { icon: 42, text: 'text-xl', sub: 'text-[10px]' },
-    medium: { icon: 54, text: 'text-2xl', sub: 'text-[11px]' },
-    large: { icon: 70, text: 'text-3xl', sub: 'text-xs' },
+    compact: { icon: 32, text: 'text-lg', sub: 'text-[9px]' },
+    small: { icon: 36, text: 'text-lg', sub: 'text-[9px]' },
+    medium: { icon: 40, text: 'text-xl', sub: 'text-[10px]' },
+    large: { icon: 54, text: 'text-2xl', sub: 'text-xs' },
   }
 
   const currentSize = sizeMap[size] || sizeMap.medium
 
   return (
-    <div className={`flex items-center gap-3.5 select-none cursor-pointer ${className}`}>
+    <div className={`flex items-center gap-2.5 select-none cursor-pointer ${className}`}>
       {/* Official Mascot Character: Mayur (The Peacock) */}
       <BharatMascot size={currentSize.icon} mood="waving" />
 
@@ -22,7 +23,7 @@ export default function BharatLingoLogo({ size = 'medium', showText = true, clas
               BHARAT<span className="text-[#0B8F62] dark:text-[#34D399]">LINGO</span>
             </span>
           </div>
-          <span className={`font-black uppercase tracking-widest text-[#77736B] dark:text-slate-400 ${currentSize.sub} mt-1`}>
+          <span className={`font-extrabold uppercase tracking-wider text-[#77736B] dark:text-slate-400 ${currentSize.sub} mt-1`}>
             Learn Indian Languages
           </span>
         </div>

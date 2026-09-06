@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, BookA, Target, Trophy, User, Settings } from 'lucide-react'
+import { Home, BookA, Target, Trophy, User, Settings, BookOpen, Bot, PenTool } from 'lucide-react'
 import BharatLingoLogo from '../Logo/BharatLingoLogo'
 import AlphabetModal from '../AlphabetModal/AlphabetModal'
 import { useAuth } from '../../services/auth'
@@ -18,7 +18,10 @@ export default function AppSidebar() {
 
   const navItems = [
     { to: '/dashboard', label: t('learn') || 'LEARN', icon: Home },
-    { action: 'alphabet', label: t('letters') || 'SCRIPT / LETTERS', icon: BookA },
+    { to: '/stories', label: t('stories') || 'STORIES', icon: BookOpen },
+    { to: '/tutor', label: t('tutor') || 'AI TUTOR', icon: Bot },
+    { to: '/writing', label: 'WRITING', icon: PenTool },
+    { to: '/letters', label: t('letters') || 'SCRIPT / LETTERS', icon: BookA },
     { to: '/practice', label: t('practice') || 'PRACTICE', icon: Target },
     { to: '/leaderboard', label: t('leaderboard') || 'LEADERBOARDS', icon: Trophy },
     { to: '/profile', label: t('profile') || 'PROFILE', icon: User },
@@ -30,15 +33,15 @@ export default function AppSidebar() {
       {/* ======================================================== */}
       {/* 1. DESKTOP FIXED LEFT SIDEBAR (Width 256px / 64 Tailwind) */}
       {/* ======================================================== */}
-      <aside className="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 bg-white dark:bg-slate-900 border-r-2 border-[#E8E6E0] dark:border-slate-800 p-4 z-40">
+      <aside className="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 bg-white dark:bg-slate-900 border-r-2 border-[#E8E6E0] dark:border-slate-800 p-3.5 z-40">
         <div>
           {/* Logo Brand Header */}
-          <NavLink to="/dashboard" className="block px-2 py-2 mb-4">
+          <NavLink to="/dashboard" className="block px-2 py-1.5 mb-3">
             <BharatLingoLogo size="medium" />
           </NavLink>
 
           {/* Vertical Navigation Links */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             {navItems.map((item, idx) => {
               const Icon = item.icon
               if (item.action === 'alphabet') {
@@ -46,9 +49,9 @@ export default function AppSidebar() {
                   <button
                     key={idx}
                     onClick={() => setShowAlphabetModal(true)}
-                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-extrabold text-sm uppercase tracking-wider text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white transition-all text-left group"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white transition-all text-left group"
                   >
-                    <Icon size={22} className="text-[#77736B] group-hover:text-[#0B8F62] transition-colors" />
+                    <Icon size={19} className="text-[#77736B] group-hover:text-[#0B8F62] transition-colors" />
                     <span>{item.label}</span>
                   </button>
                 )
@@ -59,13 +62,13 @@ export default function AppSidebar() {
                 <NavLink
                   key={idx}
                   to={item.to}
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
                     isActive
-                      ? 'bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 border-2 border-[#0B8F62] text-[#0B8F62] dark:text-[#34D399] shadow-sm'
-                      : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white border-2 border-transparent'
+                      ? 'bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 border border-[#0B8F62] text-[#0B8F62] dark:text-[#34D399] shadow-sm'
+                      : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white border border-transparent'
                   }`}
                 >
-                  <Icon size={22} className={isActive ? 'text-[#0B8F62] dark:text-[#34D399]' : 'text-[#77736B]'} />
+                  <Icon size={19} className={isActive ? 'text-[#0B8F62] dark:text-[#34D399]' : 'text-[#77736B]'} />
                   <span>{item.label}</span>
                 </NavLink>
               )
@@ -75,9 +78,9 @@ export default function AppSidebar() {
 
         {/* Footer User Mini-Pill */}
         {user && (
-          <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-2xl border border-[#E8E6E0] dark:border-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-[#0B8F62] text-white flex items-center justify-center font-black text-xs shrink-0">
+          <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-xl border border-[#E8E6E0] dark:border-slate-700 flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="w-7 h-7 rounded-full bg-[#0B8F62] text-white flex items-center justify-center font-black text-xs shrink-0">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="overflow-hidden">

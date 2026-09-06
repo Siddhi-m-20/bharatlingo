@@ -13,7 +13,6 @@ VALUES
   ('bn', 'Bengali', 'বাংলা', 'Bengali', 'bn-IN', 'bn-IN', 'ben_Beng', '🇮🇳', true),
   ('pa', 'Punjabi', 'ਪੰਜਾਬੀ', 'Gurmukhi', 'pa-IN', 'pa-IN', 'pan_Guru', '🇮🇳', true),
   ('gu', 'Gujarati', 'ગુજરાતી', 'Gujarati', 'gu-IN', 'gu-IN', 'guj_Gujr', '🇮🇳', true),
-  ('raj', 'Rajasthani', 'राजस्थानी', 'Devanagari', 'hi-IN', 'hi-IN', 'raj_Deva', '🇮🇳', true),
   ('en', 'English', 'English', 'Latin', 'en-US', 'en-US', 'eng_Latn', '🇬🇧', true)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
@@ -31,7 +30,6 @@ VALUES
   ('en-bn', 'en', 'bn', 'Learn Bengali from English', 'Sweet and poetic Bengali for everyday communication.', 'beginner'),
   ('en-pa', 'en', 'pa', 'Learn Punjabi from English', 'Learn energetic Punjabi and Gurmukhi basics.', 'beginner'),
   ('en-gu', 'en', 'gu', 'Learn Gujarati from English', 'Explore Gujarat culture and master conversational Gujarati.', 'beginner'),
-  ('en-raj', 'en', 'raj', 'Learn Rajasthani from English', 'Learn traditional Rajasthani phrases and vocabulary.', 'beginner'),
   ('hi-mr', 'hi', 'mr', 'हिन्दी से मराठी सीखें', 'हिन्दी भाषियों के लिए आसान मराठी पाठ।', 'beginner'),
   ('hi-ta', 'hi', 'ta', 'हिन्दी से तमिल सीखें', 'हिन्दी के माध्यम से तमिल बोलना सीखें।', 'beginner'),
   ('mr-hi', 'mr', 'hi', 'मराठीतून हिन्दी शिका', 'मराठी भाषिकांसाठी सोपे आणि प्रभावी हिन्दी धडे.', 'beginner')

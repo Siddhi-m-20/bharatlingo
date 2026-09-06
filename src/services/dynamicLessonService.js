@@ -1,14 +1,19 @@
 /**
  * Dynamic Lesson Service — BharatLingo Frontend
  *
- * Fetches personalized lessons, learning plans, and assessment questions
- * from the backend API. No AI provider names or endpoints are exposed to UI.
- *
- * Fallback: If the server is unavailable, uses local lesson data.
+ * Fetches personalized adaptive lessons, learning plans, and assessment questions.
+ * Directs to the unified Adaptive Lesson Engine.
  */
 
-import { getLessonsForLanguage, getLessonById as getStaticLessonById } from '../data/lessons'
-import { getAssessmentQuestions as getStaticAssessmentQuestions } from '../data/questions'
+import { getLessonsForLanguage, getLessonById as getStaticLessonById } from '../data/lessons/index.js'
+import { getAssessmentQuestions as getStaticAssessmentQuestions } from '../data/questions/index.js'
+import {
+  generateAdaptiveLesson,
+  generateNextLesson,
+  generateLessonSequence,
+} from './lessonEngine.js'
+import { getLearnerProfile, getSkillProficiencies } from './learnerModel.js'
+
 
 const API_BASE = '/api'
 
@@ -25,99 +30,173 @@ async function apiFetch(path, options = {}) {
 }
 
 /**
- * Fetch dynamic lessons from the server.
- * Falls back to static local lessons if server is unreachable.
+ * Fetch the learner's next personalized adaptive lesson
  */
-export async function fetchDynamicLessons({ languageId, goal, ageRange = 'adult', level = 'beginner', count = 10 }) {
+export async function fetchNextAdaptiveLesson({
+  languageId,
+  topicId = null,
+  preferredLang = 'en',
+  level = 'beginner',
+  goal = 'conversation',
+}) {
+  // 1. Try server
   try {
-    const params = new URLSearchParams({ languageId, goal, ageRange, level, count })
-    const data = await apiFetch(`/lessons/dynamic?${params}`)
-    return data.lessons || []
-  } catch (err) {
-    console.warn('[DynamicLessons] Server unavailable, using static lessons:', err.message)
-    return getLessonsForLanguage(languageId, 'en')
+    const params = new URLSearchParams({ languageId, goal, level, ...(topicId ? { topicId } : {}) })
+    const data = await apiFetch(`/lessons/adaptive?${params}`)
+    if (data && data.exercises && data.exercises.length > 0) return data
+  } catch {
+    // fall through
   }
+
+  // 2. Client-side Adaptive Engine (Authoritative offline/local)
+  return generateAdaptiveLesson({
+    langId: languageId,
+    preferredLang,
+    topicId,
+    level,
+    goal,
+  })
 }
 
 /**
- * Fetch a single dynamic lesson by its sequential index.
- * Falls back to static lesson if server unavailable.
+ * Fetch dynamic lessons for continuous stream
  */
-export async function fetchDynamicLesson({ languageId, goal, ageRange = 'adult', level = 'beginner', lessonIndex = 0 }) {
+export async function fetchDynamicLessons({
+  languageId,
+  goal = 'conversation',
+  level = 'beginner',
+  count = 6,
+  preferredLang = 'en',
+}) {
   try {
-    const params = new URLSearchParams({ languageId, goal, ageRange, level })
-    const data = await apiFetch(`/lessons/dynamic/${lessonIndex}?${params}`)
-    return data
-  } catch (err) {
-    console.warn('[DynamicLesson] Server unavailable, using static lesson:', err.message)
-    const lessons = getLessonsForLanguage(languageId, 'en')
-    return lessons[lessonIndex] || lessons[0] || null
+    return generateLessonSequence({
+      langId: languageId,
+      preferredLang,
+      level,
+      goal,
+      count,
+    })
+  } catch {
+    return getLessonsForLanguage(languageId, preferredLang)
   }
 }
 
 /**
- * Fetch a lesson by ID — dynamic lessons have IDs like "hi-dynamic-0".
- * Static lessons use their original IDs.
+ * Fetch a lesson by ID (handles adaptive sessions, topic IDs, and legacy IDs)
  */
-export async function fetchLessonById({ languageId, lessonId, goal, ageRange = 'adult', level = 'beginner', preferredLangId = 'en' }) {
-  // Dynamic lesson ID pattern: {lang}-dynamic-{index}
-  const dynamicMatch = lessonId?.match(/^(\w+)-dynamic-(\d+)$/)
-  if (dynamicMatch) {
-    const lessonIndex = parseInt(dynamicMatch[2], 10)
-    return fetchDynamicLesson({ languageId, goal, ageRange, level, lessonIndex })
+export async function fetchLessonById({
+  languageId,
+  lessonId,
+  preferredLangId = 'en',
+  level = 'beginner',
+  goal = 'conversation',
+}) {
+  if (!lessonId) {
+    return fetchNextAdaptiveLesson({ languageId, preferredLang: preferredLangId, level, goal })
   }
-  // Static lesson
-  return getStaticLessonById(languageId, lessonId, preferredLangId)
+
+  // Match adaptive session pattern: {lang}-adaptive-{topic}-{timestamp}
+  const adaptiveMatch = lessonId.match(/^(\w+)-adaptive-(\w+)-(.+)$/)
+  if (adaptiveMatch) {
+    const topicId = adaptiveMatch[2]
+    return generateAdaptiveLesson({
+      langId: languageId,
+      preferredLang: preferredLangId,
+      topicId,
+      level,
+      goal,
+    })
+  }
+
+  // Match topic-based dynamic pattern: {lang}-gen-{topic}-{index}
+  const genMatch = lessonId.match(/^(\w+)-gen-(\w+)-(\d+)$/)
+  if (genMatch) {
+    const topicId = genMatch[2]
+    return generateAdaptiveLesson({
+      langId: languageId,
+      preferredLang: preferredLangId,
+      topicId,
+      level,
+      goal,
+    })
+  }
+
+  // Check static lesson fallback
+  const staticLesson = getStaticLessonById(languageId, lessonId, preferredLangId)
+  if (staticLesson && staticLesson.exercises) return staticLesson
+
+  // Fallback: Generate adaptive lesson for this topic
+  return generateAdaptiveLesson({
+    langId: languageId,
+    preferredLang: preferredLangId,
+    topicId: lessonId.replace(`${languageId}-`, ''),
+    level,
+    goal,
+  })
 }
 
 /**
- * Generate a personalized learning plan.
- * Returns a plan object with focusAreas, startingLevel, etc.
- * Never exposes AI provider names.
+ * Generate a personalized learning plan
  */
-export async function generatePersonalizedPlan({ languageId, ageRange, goal, level, assessmentScore, dailyGoal }) {
+export async function generatePersonalizedPlan({
+  languageId,
+  ageRange,
+  goal,
+  level,
+  assessmentScore,
+  dailyGoal,
+}) {
   try {
     const data = await apiFetch('/learning-plan', {
       method: 'POST',
       body: JSON.stringify({ languageId, ageRange, goal, level, assessmentScore, dailyGoal }),
     })
-    return data
-  } catch (err) {
-    console.warn('[LearningPlan] Server unavailable, generating local plan:', err.message)
-    return generateLocalPlan({ goal, assessmentScore, dailyGoal })
-  }
+    if (data && data.focusAreas) return data
+  } catch {}
+
+  return generateLocalPlan({ goal, assessmentScore, dailyGoal })
 }
 
 /**
- * Fetch dynamic assessment questions for initial placement.
- * Falls back to static questions if server unavailable.
+ * Fetch assessment questions for initial placement
  */
-export async function fetchAssessmentQuestions({ languageId, ageRange = 'adult', goal = 'conversation', count = 6 }) {
+export async function fetchAssessmentQuestions({
+  languageId,
+  ageRange = 'adult',
+  goal = 'conversation',
+  count = 6,
+}) {
   try {
     const params = new URLSearchParams({ languageId, ageRange, goal, count })
     const data = await apiFetch(`/assessment/questions?${params}`)
-    return data.questions || []
-  } catch (err) {
-    console.warn('[Assessment] Server unavailable, using static questions:', err.message)
-    return getStaticAssessmentQuestions(languageId, 'en')
-  }
+    if (data.questions && data.questions.length > 0) return data.questions
+  } catch {}
+
+  return getStaticAssessmentQuestions(languageId, 'en')
 }
 
-// ── Local plan fallback (no server needed) ───────────────────────────────────
+// ── Local plan fallback ────────────────────────────────────────────────────────
 function generateLocalPlan({ goal, assessmentScore, dailyGoal }) {
   const focusMap = {
-    travel:       ['Travel phrases', 'Directions', 'Restaurants', 'Transport'],
-    conversation: ['Everyday conversation', 'Essential vocabulary', 'Listening', 'Speaking'],
-    work:         ['Professional vocabulary', 'Formal greetings', 'Numbers'],
-    study:        ['Grammar', 'Reading', 'Writing'],
-    family:       ['Family terms', 'Everyday conversation', 'Emotions'],
-    culture:      ['Cultural phrases', 'Traditions', 'Food & festivals'],
-    fun:          ['Popular phrases', 'Entertainment', 'Games'],
+    travel:       ['Travel phrases', 'Directions & Transport', 'Restaurants', 'Accommodation'],
+    conversation: ['Everyday conversation', 'Essential vocabulary', 'Listening & Speaking'],
+    work:         ['Professional vocabulary', 'Formal greetings', 'Numbers & Finance'],
+    study:        ['Grammar fundamentals', 'Reading & Writing', 'Vocabulary building'],
+    family:       ['Family terms & relations', 'Everyday conversation', 'Expressing emotions'],
+    culture:      ['Cultural phrases', 'Festivals & traditions', 'Food & music'],
+    fun:          ['Popular expressions', 'Entertainment & media', 'Games & sports'],
   }
 
-  const startingLevel = assessmentScore !== null && assessmentScore !== undefined
-    ? (assessmentScore <= 30 ? 'Beginner' : assessmentScore <= 60 ? 'Elementary' : assessmentScore <= 80 ? 'Intermediate' : 'Advanced')
-    : 'Beginner'
+  const startingLevel =
+    assessmentScore == null
+      ? 'Beginner'
+      : assessmentScore <= 30
+      ? 'Beginner'
+      : assessmentScore <= 60
+      ? 'Elementary'
+      : assessmentScore <= 80
+      ? 'Intermediate'
+      : 'Advanced'
 
   return {
     startingLevel,

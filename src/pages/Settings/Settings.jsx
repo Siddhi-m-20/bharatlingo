@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useTheme } from '../../services/themeContext'
 import { languages } from '../../data/languages'
-import { API_CATALOGUE } from '../../services/freeLanguageApi'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import Button from '../../components/Button'
-import { Sun, Moon, Sparkles, Leaf, Globe2, Check, Volume2, VolumeX, Mic, MicOff } from 'lucide-react'
+import { Sun, Moon, Sparkles, Leaf, Check, Volume2, VolumeX, Mic, MicOff } from 'lucide-react'
 import { speechRecognitionService } from '../../services/audio/SpeechRecognitionService'
 
 const THEMES = [
@@ -202,34 +201,7 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Free Public Language APIs Documentation */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-3">
-          <div className="flex items-center gap-2">
-            <Globe2 size={18} className="text-[#0B8F62]" />
-            <h3 className="text-lg font-black text-[#25231F] dark:text-white">Active Free Language APIs</h3>
-          </div>
-          <p className="text-xs text-[#77736B] dark:text-slate-400">
-            BharatLingo uses 100% free, production-ready open APIs for linguistic intelligence:
-          </p>
 
-          <div className="space-y-2 pt-1">
-            {API_CATALOGUE.map((api, idx) => (
-              <div
-                key={idx}
-                className="p-3.5 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-2xl border border-[#E8E6E0] dark:border-slate-700 text-xs"
-              >
-                <div className="flex items-center justify-between font-black text-[#25231F] dark:text-white">
-                  <span>{api.name}</span>
-                  <span className="text-[10px] text-[#0B8F62] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">FREE</span>
-                </div>
-                <p className="text-[#77736B] dark:text-slate-400 mt-1">{api.description}</p>
-                <p className="text-[11px] font-bold text-[#0B8F62] dark:text-[#34D399] mt-1">
-                  Used in: {api.usageLocation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Audio Settings */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-4">
@@ -278,7 +250,7 @@ export default function Settings() {
 
             {!asrSupported && (
               <p className="text-xs text-[#F39A45] bg-[#F39A45]/10 rounded-xl p-3">
-                ⚠ Speech recognition requires Chrome or Edge. Other browsers don't support this API.
+                ⚠ Speaking practice requires a Chromium browser (Chrome or Edge) with microphone access enabled.
               </p>
             )}
           </div>

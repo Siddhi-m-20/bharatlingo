@@ -1,12 +1,13 @@
 /**
- * AudioButton — Full state machine audio control
+ * AudioButton — Synchronized state machine audio control for BharatLingo
  *
  * States: idle | loading | playing | completed | error | unsupported
  *
- * - Never silent/broken
- * - Manages its own state subscription from ttsService
+ * Features:
+ * - Synchronized with global central AudioService
+ * - Prevents multiple buttons from showing playing state simultaneously
  * - Provides waveform animation while playing
- * - Provides reload/replay
+ * - Provides immediate one-click retry if audio synthesis encounters an issue
  * - Keyboard accessible
  */
 
@@ -56,9 +57,9 @@ export default function AudioButton({
   text,
   languageId = 'hi',
   rate = 0.88,
-  size = 'medium',   // small | medium | large
+  size = 'medium',    // small | medium | large
   variant = 'button', // button | icon
-  label,             // optional custom label
+  label,              // optional custom label
   autoPlay = false,
   className = '',
   onStateChange,
@@ -66,24 +67,53 @@ export default function AudioButton({
   const [audioState, setAudioState] = useState(AUDIO_STATE.IDLE)
   const mountedRef = useRef(true)
   const autoPlayedRef = useRef(false)
+  const myTrackId = `${(languageId || 'hi').toLowerCase()}:${(text || '').trim()}`
 
   useEffect(() => {
     mountedRef.current = true
     return () => {
       mountedRef.current = false
-      // Don't stop globally — other buttons may be active
     }
   }, [])
 
-  // Subscribe to ttsService state only while this button "owns" the audio
-  // We manage state locally per-button, not globally
-  // (global service stops previous audio when new speak() is called)
+  // Subscribe to central AudioService for authoritative state synchronization
+  useEffect(() => {
+    const unsubscribe = ttsService.subscribe((state, activeId) => {
+      if (!mountedRef.current) return
 
-  const handlePlay = useCallback(async () => {
-    if (!text || audioState === AUDIO_STATE.LOADING) return
+      if (activeId === myTrackId) {
+        setAudioState(state)
+        if (onStateChange) onStateChange(state)
 
-    // If already playing (this button's audio), stop it
-    if (audioState === AUDIO_STATE.PLAYING) {
+        if (state === AUDIO_STATE.COMPLETED) {
+          setTimeout(() => {
+            if (mountedRef.current && ttsService.getActiveId() !== myTrackId) {
+              setAudioState(AUDIO_STATE.IDLE)
+            }
+          }, 1500)
+        }
+      } else {
+        // Another sound is playing or idle, ensure this button is idle
+        setAudioState((prev) => {
+          if (prev === AUDIO_STATE.PLAYING || prev === AUDIO_STATE.LOADING) {
+            return AUDIO_STATE.IDLE
+          }
+          return prev
+        })
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [myTrackId, onStateChange])
+
+  const handlePlay = useCallback(async (e) => {
+    if (e && e.stopPropagation) e.stopPropagation()
+    if (!text) return
+
+    // If currently playing, stop it
+    if (audioState === AUDIO_STATE.PLAYING && ttsService.getActiveId() === myTrackId) {
       ttsService.stop()
       if (mountedRef.current) setAudioState(AUDIO_STATE.IDLE)
       return
@@ -96,12 +126,15 @@ export default function AudioButton({
       rate,
       onEnd: ({ success }) => {
         if (!mountedRef.current) return
-        setAudioState(success ? AUDIO_STATE.COMPLETED : AUDIO_STATE.ERROR)
-        if (onStateChange) onStateChange(success ? AUDIO_STATE.COMPLETED : AUDIO_STATE.ERROR)
-        // Auto-reset to idle after a moment
-        setTimeout(() => {
-          if (mountedRef.current) setAudioState(AUDIO_STATE.IDLE)
-        }, 1200)
+        const nextState = success ? AUDIO_STATE.COMPLETED : AUDIO_STATE.ERROR
+        setAudioState(nextState)
+        if (onStateChange) onStateChange(nextState)
+
+        if (success) {
+          setTimeout(() => {
+            if (mountedRef.current) setAudioState(AUDIO_STATE.IDLE)
+          }, 1500)
+        }
       },
     })
 
@@ -110,53 +143,31 @@ export default function AudioButton({
     if (result.success) {
       setAudioState(AUDIO_STATE.PLAYING)
       if (onStateChange) onStateChange(AUDIO_STATE.PLAYING)
-    } else if (result.reason === 'unsupported') {
-      setAudioState(AUDIO_STATE.UNSUPPORTED)
-      if (onStateChange) onStateChange(AUDIO_STATE.UNSUPPORTED)
     } else {
       setAudioState(AUDIO_STATE.ERROR)
       if (onStateChange) onStateChange(AUDIO_STATE.ERROR)
     }
-  }, [text, languageId, rate, audioState, onStateChange])
+  }, [text, languageId, rate, audioState, myTrackId, onStateChange])
 
-  // Auto-play on mount (blocked by browser restrictions — handled gracefully)
+  // Auto-play on mount when requested (with gesture context fallback)
   useEffect(() => {
     if (autoPlay && text && !autoPlayedRef.current) {
       autoPlayedRef.current = true
-      // Delay slightly to allow user interaction context
       const t = setTimeout(() => {
         handlePlay()
-      }, 400)
+      }, 350)
       return () => clearTimeout(t)
     }
-  }, [autoPlay, text]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoPlay, text, handlePlay])
 
-  // Stop audio when text changes (new exercise)
+  // Preload audio in background for snappy responsiveness
   useEffect(() => {
-    return () => {
-      if (audioState === AUDIO_STATE.PLAYING) {
-        ttsService.stop()
-      }
+    if (text) {
+      ttsService.preload(text, languageId, rate)
     }
-  }, [text]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [text, languageId, rate])
 
-  if (!ttsService.isSupported()) {
-    if (variant === 'icon') {
-      return (
-        <span className="text-xs text-[#77736B] px-2 py-1 border border-[#E8E6E0] rounded-lg">
-          Audio not supported
-        </span>
-      )
-    }
-    return (
-      <div className={`flex items-center gap-2 px-4 py-2 bg-[#F7F5EF] border border-[#E8E6E0] rounded-xl text-sm text-[#77736B] ${className}`}>
-        <span>🔇</span>
-        <span>Audio not supported in this browser</span>
-      </div>
-    )
-  }
-
-  // ── Icon-only variant (small circular button) ─────────────────────────────
+  // ── Icon-only variant (circular button) ───────────────────────────────────
   if (variant === 'icon') {
     const sizes = { small: 'w-8 h-8', medium: 'w-10 h-10', large: 'w-12 h-12' }
     const iconSizes = { small: 16, medium: 20, large: 24 }
@@ -166,7 +177,7 @@ export default function AudioButton({
       switch (audioState) {
         case AUDIO_STATE.LOADING:   return <Spinner />
         case AUDIO_STATE.PLAYING:   return <Waveform active />
-        case AUDIO_STATE.ERROR:     return <span className="text-xs font-bold">!</span>
+        case AUDIO_STATE.ERROR:     return <RetryIcon size={iconSize} />
         case AUDIO_STATE.COMPLETED: return <ReplayIcon size={iconSize} />
         default:                    return <SpeakerIcon size={iconSize} />
       }
@@ -175,7 +186,7 @@ export default function AudioButton({
     const stateColor = () => {
       switch (audioState) {
         case AUDIO_STATE.PLAYING:   return 'bg-[#0FB878] ring-4 ring-[#0B8F62]/25'
-        case AUDIO_STATE.ERROR:     return 'bg-[#D84B42]'
+        case AUDIO_STATE.ERROR:     return 'bg-[#F39A45] hover:bg-[#E08328]'
         case AUDIO_STATE.LOADING:   return 'bg-[#0B8F62]/70'
         default:                    return 'bg-[#0B8F62] hover:bg-[#0FB878]'
       }
@@ -184,12 +195,12 @@ export default function AudioButton({
     return (
       <motion.button
         type="button"
-        className={`flex items-center justify-center rounded-full text-white transition-all focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:ring-offset-2 ${sizes[size] || sizes.medium} ${stateColor()} ${className}`}
+        className={`flex items-center justify-center rounded-full text-white transition-all focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:ring-offset-2 shadow-sm ${sizes[size] || sizes.medium} ${stateColor()} ${className}`}
         onClick={handlePlay}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
-        aria-label={label || `Play audio: ${text}`}
-        title={label || `Play audio: ${text}`}
+        aria-label={label || (audioState === AUDIO_STATE.ERROR ? `Retry audio for ${text}` : `Play audio: ${text}`)}
+        title={label || (audioState === AUDIO_STATE.ERROR ? 'Audio failed. Tap to retry.' : `Play audio: ${text}`)}
       >
         {stateIcon()}
       </motion.button>
@@ -203,15 +214,15 @@ export default function AudioButton({
   const isCompleted = audioState === AUDIO_STATE.COMPLETED
 
   const buttonContent = () => {
-    if (isLoading)   return <><Spinner /><span>Loading...</span></>
+    if (isLoading)   return <><Spinner /><span>Generating audio...</span></>
     if (isPlaying)   return <><Waveform active /><span>Playing...</span></>
-    if (isError)     return <><span className="font-bold">!</span><span>Audio unavailable</span></>
+    if (isError)     return <><RetryIcon size={16} /><span>Retry Audio</span></>
     if (isCompleted) return <><ReplayIcon size={16} /><span>Replay</span></>
     return <><SpeakerIcon size={16} /><span>{label || 'Listen'}</span></>
   }
 
   const buttonStyle = () => {
-    if (isError)   return 'bg-[#D84B42]/10 border-[#D84B42] text-[#D84B42]'
+    if (isError)   return 'bg-[#F39A45]/10 border-[#F39A45] text-[#D0731D] hover:bg-[#F39A45]/20'
     if (isPlaying) return 'bg-[#0B8F62] border-[#0B8F62] text-white ring-4 ring-[#0B8F62]/20'
     return 'bg-white border-[#0B8F62] text-[#0B8F62] hover:bg-[#0B8F62]/10'
   }
@@ -260,6 +271,14 @@ function ReplayIcon({ size = 16 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="1 4 1 10 7 10" />
       <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+    </svg>
+  )
+}
+
+function RetryIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
     </svg>
   )
 }

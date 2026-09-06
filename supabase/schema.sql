@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. LANGUAGES TABLE
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.languages (
-  id VARCHAR(10) PRIMARY KEY, -- e.g., 'hi', 'mr', 'ta', 'te', 'bn', 'pa', 'gu', 'raj', 'en'
+  id VARCHAR(10) PRIMARY KEY, -- e.g., 'hi', 'mr', 'ta', 'te', 'bn', 'pa', 'gu', 'en'
   name VARCHAR(100) NOT NULL,
   native_name VARCHAR(100) NOT NULL,
   script VARCHAR(50) NOT NULL,
@@ -324,56 +324,100 @@ ALTER TABLE public.leaderboard_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- 1. Public Content Tables (Read-only for all users)
+DROP POLICY IF EXISTS "Public read languages" ON public.languages;
 CREATE POLICY "Public read languages" ON public.languages FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read courses" ON public.courses;
 CREATE POLICY "Public read courses" ON public.courses FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read units" ON public.units;
 CREATE POLICY "Public read units" ON public.units FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read lessons" ON public.lessons;
 CREATE POLICY "Public read lessons" ON public.lessons FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read vocabulary" ON public.vocabulary;
 CREATE POLICY "Public read vocabulary" ON public.vocabulary FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read exercises" ON public.exercises;
 CREATE POLICY "Public read exercises" ON public.exercises FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read question_options" ON public.question_options;
 CREATE POLICY "Public read question_options" ON public.question_options FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read achievements" ON public.achievements;
 CREATE POLICY "Public read achievements" ON public.achievements FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read leaderboard" ON public.leaderboard_entries;
 CREATE POLICY "Public read leaderboard" ON public.leaderboard_entries FOR SELECT USING (true);
 
 -- 2. User Specific Tables (Owner access)
 -- Profiles
+DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
 CREATE POLICY "Users can read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Public read for leaderboard profiles" ON public.profiles;
 CREATE POLICY "Public read for leaderboard profiles" ON public.profiles FOR SELECT USING (true);
 
 -- User Progress
+DROP POLICY IF EXISTS "Users can read own progress" ON public.user_progress;
 CREATE POLICY "Users can read own progress" ON public.user_progress FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can upsert own progress" ON public.user_progress;
 CREATE POLICY "Users can upsert own progress" ON public.user_progress FOR ALL USING (auth.uid() = user_id);
 
 -- Lesson Attempts
+DROP POLICY IF EXISTS "Users can read own lesson attempts" ON public.lesson_attempts;
 CREATE POLICY "Users can read own lesson attempts" ON public.lesson_attempts FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own lesson attempts" ON public.lesson_attempts;
 CREATE POLICY "Users can insert own lesson attempts" ON public.lesson_attempts FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Exercise Attempts
+DROP POLICY IF EXISTS "Users can read own exercise attempts" ON public.exercise_attempts;
 CREATE POLICY "Users can read own exercise attempts" ON public.exercise_attempts FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own exercise attempts" ON public.exercise_attempts;
 CREATE POLICY "Users can insert own exercise attempts" ON public.exercise_attempts FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- XP Transactions
+DROP POLICY IF EXISTS "Users can read own xp transactions" ON public.xp_transactions;
 CREATE POLICY "Users can read own xp transactions" ON public.xp_transactions FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own xp transactions" ON public.xp_transactions;
 CREATE POLICY "Users can insert own xp transactions" ON public.xp_transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Streaks
+DROP POLICY IF EXISTS "Users can manage own streak" ON public.streaks;
 CREATE POLICY "Users can manage own streak" ON public.streaks FOR ALL USING (auth.uid() = user_id);
 
 -- Daily Goals
+DROP POLICY IF EXISTS "Users can manage own daily goals" ON public.daily_goals;
 CREATE POLICY "Users can manage own daily goals" ON public.daily_goals FOR ALL USING (auth.uid() = user_id);
 
 -- User Achievements
+DROP POLICY IF EXISTS "Users can read own achievements" ON public.user_achievements;
 CREATE POLICY "Users can read own achievements" ON public.user_achievements FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own achievements" ON public.user_achievements;
 CREATE POLICY "Users can insert own achievements" ON public.user_achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Hearts
+DROP POLICY IF EXISTS "Users can manage own hearts" ON public.hearts;
 CREATE POLICY "Users can manage own hearts" ON public.hearts FOR ALL USING (auth.uid() = user_id);
 
 -- Leaderboard Entries
+DROP POLICY IF EXISTS "Users can update own leaderboard entry" ON public.leaderboard_entries;
 CREATE POLICY "Users can update own leaderboard entry" ON public.leaderboard_entries FOR ALL USING (auth.uid() = user_id);
 
 -- Notifications
+DROP POLICY IF EXISTS "Users can manage own notifications" ON public.notifications;
 CREATE POLICY "Users can manage own notifications" ON public.notifications FOR ALL USING (auth.uid() = user_id);
 
 -- ==============================================================================

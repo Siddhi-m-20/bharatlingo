@@ -52,6 +52,13 @@ export default function Onboarding() {
   const [selectedGoal, setSelectedGoal]             = useState('')
   const [selectedDailyGoal, setSelectedDailyGoal]   = useState(10)
 
+  // If onboarding was already completed (learningLanguage + goal set), skip straight to dashboard.
+  // This prevents returning users from being asked the same questions every login.
+  if (user && user.learningLanguage && user.goal) {
+    navigate('/dashboard', { replace: true })
+    return null
+  }
+
   const handleNext = () => {
     if (currentStep < STEPS.DAILY_GOAL) {
       setCurrentStep(currentStep + 1)

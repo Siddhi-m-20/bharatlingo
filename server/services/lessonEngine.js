@@ -313,6 +313,12 @@ export function getDynamicLesson({ languageId, goal, ageRange, level, lessonInde
   return buildLesson(languageId, goal, ageRange, lessonIndex, level)
 }
 
+// ── Get adaptive lesson ──────────────────────────────────────────────────────
+export function getAdaptiveLesson({ languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null }) {
+  return buildLesson(languageId, goal, ageRange, 0, level)
+}
+
+
 // ── Generate dynamic assessment questions ────────────────────────────────────
 export function generateAssessmentQuestions({ languageId, ageRange, goal, count = 6 }) {
   const ageConfig = AGE_CONFIG[ageRange] || AGE_CONFIG['adult']

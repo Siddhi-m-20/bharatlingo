@@ -2,11 +2,11 @@
 
 **Learn India. One word at a time.**
 
-BharatLingo is a complete Indian language-learning application inspired by modern language-learning platforms. Learn Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, Rajasthani, and English through interactive lessons, gamification, and personalized learning paths.
+BharatLingo is a complete Indian language-learning application inspired by modern language-learning platforms. Learn Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English through interactive lessons, gamification, and personalized learning paths.
 
 ## Features
 
-- **9 Indian Languages**: Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, Rajasthani, and English
+- **8 Indian Languages**: Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English
 - **Interactive Lessons**: Multiple exercise types including multiple-choice, translation, listening, fill-in-the-blank, and matching
 - **Gamification**: XP system, streaks, hearts, achievements, and leaderboards
 - **Personalized Learning**: Placement assessment, adaptive learning paths, and daily goals
@@ -107,7 +107,6 @@ src/
 | Bengali | বাংলা | Bengali |
 | Punjabi | ਪੰਜਾਬੀ | Gurmukhi |
 | Gujarati | ગુજરાતી | Gujarati |
-| Rajasthani | राजस्थानी | Devanagari |
 | English | English | Latin |
 
 ## Learning Path
@@ -184,16 +183,6 @@ Provides higher quality text-to-speech.
 3. The app will use local TTS when available, falling back to browser SpeechSynthesis
 
 **Note**: All core functionality works without these services using browser-native capabilities and curated content.
-
-## Rajasthani Language Support
-
-Rajasthani is fully supported with:
-- Curated lesson content and vocabulary
-- Pronunciation guides
-- Conversation examples
-- Devanagari script support
-
-The app clearly distinguishes between AI-generated translation and curated educational content. Rajasthani uses Hindi voice fallback for audio with clear labeling.
 
 ## Accessibility
 

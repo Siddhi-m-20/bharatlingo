@@ -6,7 +6,6 @@ import { bengaliAssessmentQuestions } from './bengali.js'
 import { punjabiAssessmentQuestions } from './punjabi.js'
 import { gujaratiAssessmentQuestions } from './gujarati.js'
 import { englishAssessmentQuestions } from './english.js'
-import { rajasthaniAssessmentQuestions } from './rajasthani.js'
 import { getPromptText, dictionary } from '../translations.js'
 import { getLanguageById } from '../languages.js'
 
@@ -19,7 +18,6 @@ export const rawAssessmentQuestions = {
   pa: punjabiAssessmentQuestions,
   gu: gujaratiAssessmentQuestions,
   en: englishAssessmentQuestions,
-  raj: rajasthaniAssessmentQuestions,
 }
 
 function translateAssessmentMeaning(meaning, preferredLang) {

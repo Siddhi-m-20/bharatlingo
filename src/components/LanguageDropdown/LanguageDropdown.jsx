@@ -40,21 +40,21 @@ export default function LanguageDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F7F5EF] dark:bg-slate-800 hover:bg-[#E8E6E0] dark:hover:bg-slate-700 border border-[#E8E6E0] dark:border-slate-700 rounded-xl transition-all text-xs font-black text-[#25231F] dark:text-white"
+        className="flex items-center gap-1 px-2 py-1 bg-[#F7F5EF] dark:bg-slate-800 hover:bg-[#E8E6E0] dark:hover:bg-slate-700 border border-[#E8E6E0] dark:border-slate-700 rounded-lg transition-all text-xs font-black text-[#25231F] dark:text-white shrink-0"
         title="Switch Learning Course"
       >
-        <LanguageFlag languageId={currentLang.id} size={18} />
-        <span className="truncate max-w-[70px]">{currentLang.name}</span>
-        <ChevronDown size={13} className={`text-[#77736B] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <LanguageFlag languageId={currentLang.id} size={16} />
+        <span className="truncate max-w-[58px]">{currentLang.name}</span>
+        <ChevronDown size={12} className={`text-[#77736B] transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            initial={{ opacity: 0, y: 6, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            className="absolute left-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border-2 border-[#E8E6E0] dark:border-slate-800 p-3.5 z-50 overflow-hidden"
+            exit={{ opacity: 0, y: 6, scale: 0.95 }}
+            className="absolute left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border-2 border-[#E8E6E0] dark:border-slate-800 p-3 z-50 overflow-hidden"
           >
             {/* Learning Language Section */}
             <div className="px-2 py-1 text-[11px] font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider">

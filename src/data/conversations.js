@@ -306,47 +306,6 @@ export const CONVERSATION_SCENARIOS = [
           grammarNote: '"ਸਕਦਾ ਹਾਂ" (masculine) / "ਸਕਦੀ ਹਾਂ" (feminine).',
         },
       ],
-      raj: [
-        {
-          id: 1,
-          tutorMessage: 'खम्मा घणी सा! आप कांई लेवोला?',
-          pronunciation: 'Khamma Ghani Sa! Aap kaan-i levola?',
-          englishMeaning: 'Royal greetings! What would you like to have?',
-          expectedKeywords: ['चाय', 'चाहिजै', 'दीजो', 'एक', 'सा'],
-          suggestedReplies: [
-            'म्हनै एक कप मसाला चाय चाहिजै सा।',
-            'एक चाय अर कचौरी दीजो सा।',
-          ],
-          culturalTip: '"खम्मा घणी" is the most honorable Rajasthani greeting, and "सा" (Sa) is appended to sentences for high respect.',
-          grammarNote: '"चाहिजै" is the Marwari expression for wanting/needing.',
-        },
-        {
-          id: 2,
-          tutorMessage: 'जरूर सा! चाय मांय खांड कितरी घालूं?',
-          pronunciation: 'Zaroor sa! Chai maay khaand kitri ghaalun?',
-          englishMeaning: 'Certainly! How much sugar should I add in the tea?',
-          expectedKeywords: ['कम', 'खांड', 'चमची', 'बिना'],
-          suggestedReplies: [
-            'कम खांड घालजो सा।',
-            'एक चमची खांड घणी है।',
-          ],
-          culturalTip: '"घणी है" means "plenty / sufficient".',
-          grammarNote: '"खांड" is used for sugar across Rajasthan.',
-        },
-        {
-          id: 3,
-          tutorMessage: 'आ लो सा आपरी ताती चाय! सगळा बीस रूपिया होया।',
-          pronunciation: 'Aa lo sa aapri taati chai! Sagla bees rupiya hoya.',
-          englishMeaning: 'Here is your hot tea! Total is twenty rupees.',
-          expectedKeywords: ['धन्यवाद', 'रूपिया', 'लो', 'सा'],
-          suggestedReplies: [
-            'घणो धन्यवाद सा! आ लो बीस रूपिया।',
-            'कांई म्हैं ऑनलाइन पे कर सकूं?',
-          ],
-          culturalTip: '"ताती चाय" refers to steaming hot tea in Marwari/Mewari.',
-          grammarNote: '"आ लो सा" is the respectful way to present items.',
-        },
-      ],
       en: [
         {
           id: 1,
