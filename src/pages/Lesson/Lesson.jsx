@@ -27,7 +27,18 @@ export default function Lesson() {
   const { lessonId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { hearts, loseHeart, addXP, updateStreak, completeLesson, completeLegendaryLesson, unlockAchievement } = useProgress()
+  const {
+    hearts,
+    loseHeart,
+    restoreHearts,
+    gems,
+    spendGems,
+    addXP,
+    updateStreak,
+    completeLesson,
+    completeLegendaryLesson,
+    unlockAchievement,
+  } = useProgress()
 
   const isLegendary = new URLSearchParams(window.location.search).get('mode') === 'legendary'
 
@@ -199,12 +210,34 @@ export default function Lesson() {
     setLessonComplete(true)
   }
 
-  const handleContinueNextLesson = () => {
-    if (nextLesson) {
+  const handleContinueNextLesson = async () => {
+    if (nextLesson?.id) {
       navigate(`/lesson/${nextLesson.id}`)
     } else {
+      try {
+        const following = await fetchNextAdaptiveLesson({
+          languageId: user.learningLanguage,
+          preferredLang: user.preferredLanguage || 'en',
+          level: user.level || 'beginner',
+          goal: user.goal || 'conversation',
+        })
+        if (following?.id) {
+          navigate(`/lesson/${following.id}`)
+          return
+        }
+      } catch {}
       navigate('/dashboard')
     }
+  }
+
+  const handleReplayTopic = () => {
+    const topicId = lesson?.topicId || lesson?.id || 'greetings'
+    const newSessionId = `adaptive_${user.learningLanguage}_${topicId}_${Date.now()}`
+    navigate(`/lesson/${newSessionId}`)
+  }
+
+  const handlePracticeWeak = () => {
+    navigate('/practice')
   }
 
   const renderExercise = () => {
@@ -486,21 +519,52 @@ export default function Lesson() {
   }
 
   if (hearts === 0 && !lessonComplete) {
+    const currentGems = user?.gems !== undefined ? Number(user.gems) : gems
+    const canRefillWithGems = currentGems >= 50
+
     return (
       <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <QuestionCard>
-            <div className="text-center py-8">
-              <div className="text-6xl mb-4">💔</div>
-              <h2 className="text-3xl font-bold text-[#25231F] dark:text-white mb-2">You're out of hearts!</h2>
-              <p className="text-[#77736B] dark:text-slate-400 mb-6">Practice review to restore your hearts and continue learning.</p>
-              <div className="space-y-3">
-                <Button size="large" className="w-full" onClick={() => navigate('/practice')}>
-                  Practice Review
+            <div className="text-center py-6 px-2 space-y-4">
+              <div className="text-6xl animate-bounce">💔</div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white">You're out of hearts!</h2>
+                <p className="text-xs sm:text-sm font-semibold text-[#77736B] dark:text-slate-400 mt-1">
+                  Keep learning by refilling with gems or review words in practice to earn them back.
+                </p>
+              </div>
+
+              <div className="space-y-2.5 pt-2">
+                {canRefillWithGems && (
+                  <Button
+                    size="large"
+                    className="w-full justify-center flex items-center gap-2 font-black py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-md"
+                    onClick={() => {
+                      if (spendGems(50, 'heart_refill')) {
+                        restoreHearts()
+                      }
+                    }}
+                  >
+                    <span>Refill 5 Hearts (50 💎)</span>
+                  </Button>
+                )}
+
+                <Button
+                  variant={canRefillWithGems ? 'outline' : 'primary'}
+                  size="large"
+                  className="w-full justify-center flex items-center gap-2 font-black"
+                  onClick={() => navigate('/practice')}
+                >
+                  <span>Practice Review (Earn Hearts Free)</span>
                 </Button>
-                <Button variant="outline" size="large" className="w-full" onClick={() => navigate('/dashboard')}>
+
+                <button
+                  className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  onClick={() => navigate('/dashboard')}
+                >
                   Back to Dashboard
-                </Button>
+                </button>
               </div>
             </div>
           </QuestionCard>
@@ -525,6 +589,8 @@ export default function Lesson() {
               accuracy={accuracy}
               nextLesson={nextLesson}
               onContinueNext={handleContinueNextLesson}
+              onReplayTopic={handleReplayTopic}
+              onPracticeWeak={handlePracticeWeak}
               onGoDashboard={() => navigate('/dashboard')}
             />
           </QuestionCard>
