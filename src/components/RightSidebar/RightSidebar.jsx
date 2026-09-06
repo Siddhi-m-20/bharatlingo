@@ -46,12 +46,12 @@ export default function RightSidebar() {
         <XPBadge xp={user?.xp || 0} />
         <div className="flex items-center gap-1 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 shrink-0 font-black text-xs">
           <span className="text-[11px]">💎</span>
-          <span>{gems}</span>
+          <span>{user?.gems !== undefined ? Number(user.gems) : gems}</span>
         </div>
         <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 px-2 py-1 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 shrink-0 font-black text-xs">
           <Heart size={13} className="text-rose-500 fill-rose-500 shrink-0" />
-          <span>{hearts}</span>
-          {hearts < 5 && (
+          <span>{user?.hearts !== undefined ? Number(user.hearts) : hearts}</span>
+          {(user?.hearts !== undefined ? Number(user.hearts) : hearts) < 5 && (
             <button
               onClick={restoreHearts}
               className="text-emerald-600 hover:scale-110 transition-transform ml-0.5 shrink-0"

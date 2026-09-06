@@ -19,20 +19,20 @@ const DEFAULT_QUESTS = [
 ]
 
 export function ProgressProvider({ children }) {
-  const [hearts, setHearts] = useState(5)
-  const [gems, setGems] = useState(100)
+  const { user, updateUser } = useAuth()
+  const [hearts, setHearts] = useState(() => (user?.hearts !== undefined ? Number(user.hearts) : 5))
+  const [gems, setGems] = useState(() => (user?.gems !== undefined ? Number(user.gems) : 100))
   const [currentLesson, setCurrentLesson] = useState(null)
   const [lessonProgress, setLessonProgress] = useState(0)
-  const [quests, setQuests] = useState(DEFAULT_QUESTS)
-  const { user, updateUser } = useAuth()
+  const [quests, setQuests] = useState(() => (user?.activeQuests && Array.isArray(user.activeQuests) && user.activeQuests.length > 0 ? user.activeQuests : DEFAULT_QUESTS))
 
-  // Initialize hearts and gems from user profile
+  // Synchronize local state whenever the authoritative user object updates
   useEffect(() => {
     if (user?.hearts !== undefined) {
-      setHearts(user.hearts)
+      setHearts(Number(user.hearts))
     }
     if (user?.gems !== undefined) {
-      setGems(user.gems)
+      setGems(Number(user.gems))
     }
     if (user?.activeQuests && Array.isArray(user.activeQuests) && user.activeQuests.length > 0) {
       setQuests(user.activeQuests)
@@ -40,83 +40,97 @@ export function ProgressProvider({ children }) {
   }, [user?.hearts, user?.gems, user?.activeQuests])
 
   const loseHeart = () => {
-    setHearts((prev) => {
-      const next = Math.max(0, prev - 1)
-      if (user && updateUser) {
-        updateUser({ hearts: next })
-      }
-      return next
+    if (!updateUser) return
+    updateUser((currentUser) => {
+      const currentHearts = currentUser.hearts !== undefined ? Number(currentUser.hearts) : 5
+      const nextHearts = Math.max(0, currentHearts - 1)
+      setHearts(nextHearts)
+      return { hearts: nextHearts }
     })
   }
 
   const restoreHearts = () => {
     setHearts(5)
-    if (user && updateUser) {
+    if (updateUser) {
       updateUser({ hearts: 5 })
     }
   }
 
   const addGems = (amount) => {
-    if (user && updateUser && amount > 0) {
-      const newGems = (user.gems || 0) + amount
+    if (!amount || amount <= 0 || !updateUser) return
+    updateUser((currentUser) => {
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const newGems = currentGems + amount
       setGems(newGems)
-      updateUser({ gems: newGems })
-    }
+      return { gems: newGems }
+    })
   }
 
   const spendGems = (amount, reason = '') => {
-    const currentGems = user?.gems !== undefined ? user.gems : gems
-    if (currentGems < amount) {
-      return false
-    }
-    const newGems = currentGems - amount
-    setGems(newGems)
-    if (user && updateUser) {
-      updateUser({ gems: newGems })
-    }
-    return true
+    if (!updateUser || amount <= 0) return false
+    let success = false
+    updateUser((currentUser) => {
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      if (currentGems < amount) {
+        success = false
+        return {}
+      }
+      success = true
+      const newGems = currentGems - amount
+      setGems(newGems)
+      return { gems: newGems }
+    })
+    return success
   }
 
   const addXP = (amount) => {
-    if (user && updateUser && amount > 0) {
-      const currentLearningLang = user.learningLanguage || 'hi'
-      const newTotalXP = (user.xp || 0) + amount
+    if (!amount || amount <= 0 || !updateUser) return
 
-      updateUser((currentUser) => {
-        const langProgress = currentUser.languageProgress || {}
-        const currentLangData = langProgress[currentLearningLang] || {
-          completedLessons: currentUser.completedLessons || [],
-          xp: 0,
-          level: currentUser.level || 'beginner',
-        }
-        const updatedLangXP = (currentLangData.xp || 0) + amount
+    updateUser((currentUser) => {
+      const targetLang = currentUser.learningLanguage || 'hi'
+      const newTotalXP = (Number(currentUser.xp) || 0) + amount
+      const langProgress = currentUser.languageProgress || {}
+      const currentLangData = langProgress[targetLang] || {
+        completedLessons: currentUser.completedLessons || [],
+        xp: 0,
+        level: currentUser.level || 'beginner',
+      }
+      const updatedLangXP = (Number(currentLangData.xp) || 0) + amount
 
-        return {
-          xp: newTotalXP,
-          languageProgress: {
-            ...langProgress,
-            [currentLearningLang]: {
-              ...currentLangData,
-              xp: updatedLangXP,
-            },
+      const updatedAchievements = [...(currentUser.achievements || [])]
+      let achievementsChanged = false
+
+      if (newTotalXP >= 100 && !updatedAchievements.includes('xp_100')) {
+        updatedAchievements.push('xp_100')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'xp_100')
+      }
+      if (newTotalXP >= 500 && !updatedAchievements.includes('xp_500')) {
+        updatedAchievements.push('xp_500')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'xp_500')
+      }
+      if (newTotalXP >= 1000 && !updatedAchievements.includes('xp_1000')) {
+        updatedAchievements.push('xp_1000')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'xp_1000')
+      }
+
+      return {
+        xp: newTotalXP,
+        achievements: achievementsChanged ? updatedAchievements : currentUser.achievements,
+        languageProgress: {
+          ...langProgress,
+          [targetLang]: {
+            ...currentLangData,
+            xp: updatedLangXP,
           },
-        }
-      })
+        },
+      }
+    })
 
-      // Progress quests
-      trackQuestProgress('xp', amount)
-
-      // Check XP Achievements
-      if (newTotalXP >= 100 && !user.achievements?.includes('xp_100')) {
-        unlockAchievement('xp_100')
-      }
-      if (newTotalXP >= 500 && !user.achievements?.includes('xp_500')) {
-        unlockAchievement('xp_500')
-      }
-      if (newTotalXP >= 1000 && !user.achievements?.includes('xp_1000')) {
-        unlockAchievement('xp_1000')
-      }
-    }
+    // Progress quests
+    trackQuestProgress('xp', amount)
   }
 
   const trackQuestProgress = (type, amount = 1) => {
@@ -137,7 +151,7 @@ export function ProgressProvider({ children }) {
           completed: newCurrent >= q.target,
         }
       })
-      if (user && updateUser) {
+      if (updateUser) {
         updateUser({ activeQuests: updated })
       }
       return updated
@@ -153,7 +167,7 @@ export function ProgressProvider({ children }) {
 
     setQuests((prev) => {
       const updated = prev.map((item) => (item.id === questId ? { ...item, claimed: true } : item))
-      if (user && updateUser) {
+      if (updateUser) {
         updateUser({ activeQuests: updated })
       }
       return updated
@@ -162,67 +176,80 @@ export function ProgressProvider({ children }) {
 
   // Dynamic consecutive day streak calculation with freeze support
   const updateStreak = () => {
-    if (!user || !updateUser) return { increased: false, newStreak: user?.streak || 1 }
+    if (!updateUser) return { increased: false, newStreak: 1 }
 
     const todayStr = getLocalDateString(new Date())
-    const lastActive = user.lastActiveDate
-
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
     const yesterdayStr = getLocalDateString(yesterday)
 
-    let newStreak = user.streak || 0
-    let increased = false
+    let finalResult = { increased: false, newStreak: 1 }
 
-    if (!lastActive) {
-      newStreak = 1
-      increased = true
-    } else if (lastActive === todayStr) {
-      newStreak = Math.max(1, user.streak || 1)
-      increased = false
-    } else if (lastActive === yesterdayStr) {
-      newStreak = (user.streak || 0) + 1
-      increased = true
-    } else {
-      newStreak = 1
-      increased = true
-    }
+    updateUser((currentUser) => {
+      const lastActive = currentUser.lastActiveDate
+      let newStreak = Number(currentUser.streak) || 0
+      let increased = false
 
-    updateUser({
-      streak: newStreak,
-      lastActiveDate: todayStr,
+      if (!lastActive) {
+        newStreak = 1
+        increased = true
+      } else if (lastActive === todayStr) {
+        newStreak = Math.max(1, Number(currentUser.streak) || 1)
+        increased = false
+      } else if (lastActive === yesterdayStr) {
+        newStreak = (Number(currentUser.streak) || 0) + 1
+        increased = true
+      } else {
+        newStreak = 1
+        increased = true
+      }
+
+      finalResult = { increased, newStreak }
+
+      const updatedAchievements = [...(currentUser.achievements || [])]
+      let achievementsChanged = false
+
+      if (newStreak >= 3 && !updatedAchievements.includes('streak_3')) {
+        updatedAchievements.push('streak_3')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'streak_3')
+      }
+      if (newStreak >= 7 && !updatedAchievements.includes('streak_7')) {
+        updatedAchievements.push('streak_7')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'streak_7')
+      }
+      if (newStreak >= 30 && !updatedAchievements.includes('streak_30')) {
+        updatedAchievements.push('streak_30')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'streak_30')
+      }
+
+      if (currentUser.id) {
+        syncStreakToDatabase(currentUser.id, newStreak, todayStr)
+      }
+
+      return {
+        streak: newStreak,
+        lastActiveDate: todayStr,
+        achievements: achievementsChanged ? updatedAchievements : currentUser.achievements,
+      }
     })
 
-    if (user.id) {
-      syncStreakToDatabase(user.id, newStreak, todayStr)
-    }
-
-    // Check streak achievements
-    if (newStreak >= 3 && !user.achievements?.includes('streak_3')) {
-      unlockAchievement('streak_3')
-    }
-    if (newStreak >= 7 && !user.achievements?.includes('streak_7')) {
-      unlockAchievement('streak_7')
-    }
-    if (newStreak >= 30 && !user.achievements?.includes('streak_30')) {
-      unlockAchievement('streak_30')
-    }
-
-    return { increased, newStreak }
+    return finalResult
   }
 
   // Sequential lesson completion and unlocking per target language
   const completeLesson = async (lessonId, attemptData = {}) => {
-    if (!user || !updateUser) return
+    if (!updateUser) return { updatedCompleted: [], isFirstTime: false }
 
-    const learningLang = user.learningLanguage || 'hi'
     let isFirstTime = false
-    let existingCompleted = []
     let updatedCompleted = []
 
     await updateUser((currentUser) => {
+      const targetLang = currentUser.learningLanguage || 'hi'
       const langProgress = currentUser.languageProgress || {}
-      const currentLangData = langProgress[learningLang] || {
+      const currentLangData = langProgress[targetLang] || {
         completedLessons: currentUser.completedLessons || [],
         xp: 0,
         level: currentUser.level || 'beginner',
@@ -231,11 +258,33 @@ export function ProgressProvider({ children }) {
       isFirstTime = !existingCompleted.includes(lessonId)
       updatedCompleted = isFirstTime ? [...existingCompleted, lessonId] : existingCompleted
 
+      const allCompleted = Array.from(new Set([
+        ...(Array.isArray(currentUser.completedLessons) ? currentUser.completedLessons : []),
+        ...updatedCompleted,
+      ]))
+
+      const updatedAchievements = [...(currentUser.achievements || [])]
+      let achievementsChanged = false
+
+      if (existingCompleted.length === 0 && !updatedAchievements.includes('first_step')) {
+        updatedAchievements.push('first_step')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'first_step')
+      }
+
+      // Calculate gems bonus
+      const gemBonus = (isFirstTime ? 5 : 2) + (attemptData.isPerfect ? 5 : 0)
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const nextGems = currentGems + gemBonus
+      setGems(nextGems)
+
       return {
-        completedLessons: updatedCompleted,
+        completedLessons: allCompleted,
+        gems: nextGems,
+        achievements: achievementsChanged ? updatedAchievements : currentUser.achievements,
         languageProgress: {
           ...langProgress,
-          [learningLang]: {
+          [targetLang]: {
             ...currentLangData,
             completedLessons: updatedCompleted,
           },
@@ -243,17 +292,11 @@ export function ProgressProvider({ children }) {
       }
     })
 
-    // Award Gems for completion
-    addGems(isFirstTime ? 5 : 2)
-    if (attemptData.isPerfect) {
-      addGems(5)
-    }
-
     // Quest tracking
     trackQuestProgress('lesson', 1)
 
     // Record in Supabase database tables if connected
-    if (user.id) {
+    if (user?.id) {
       await recordLessonCompletion({
         userId: user.id,
         lessonId: lessonId,
@@ -264,54 +307,81 @@ export function ProgressProvider({ children }) {
       })
     }
 
-    // First lesson achievement
-    if (existingCompleted.length === 0 && !user.achievements?.includes('first_step')) {
-      unlockAchievement('first_step')
-    }
-
     return { updatedCompleted, isFirstTime }
   }
 
   // Legendary mode completion for a lesson
   const completeLegendaryLesson = async (lessonId) => {
-    if (!user || !updateUser) return
-    const learningLang = user.learningLanguage || 'hi'
+    if (!updateUser) return
+    let updated = []
 
     await updateUser((currentUser) => {
+      const targetLang = currentUser.learningLanguage || 'hi'
       const langProgress = currentUser.languageProgress || {}
-      const currentLangData = langProgress[learningLang] || { legendaryCompleted: [] }
+      const currentLangData = langProgress[targetLang] || { legendaryCompleted: [] }
       const existing = currentLangData.legendaryCompleted || []
-      const updated = existing.includes(lessonId) ? existing : [...existing, lessonId]
+      updated = existing.includes(lessonId) ? existing : [...existing, lessonId]
+
+      const allLegendary = Array.from(new Set([
+        ...(Array.isArray(currentUser.legendaryCompleted) ? currentUser.legendaryCompleted : []),
+        ...updated,
+      ]))
+
+      const updatedAchievements = [...(currentUser.achievements || [])]
+      let achievementsChanged = false
+      if (!updatedAchievements.includes('legendary_master')) {
+        updatedAchievements.push('legendary_master')
+        achievementsChanged = true
+        if (currentUser.id) recordAchievementUnlock(currentUser.id, 'legendary_master')
+      }
+
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const nextGems = currentGems + 20
+      setGems(nextGems)
+
+      const currentXP = Number(currentUser.xp) || 0
+      const nextXP = currentXP + 40
 
       return {
-        legendaryCompleted: updated,
+        xp: nextXP,
+        gems: nextGems,
+        legendaryCompleted: allLegendary,
+        achievements: achievementsChanged ? updatedAchievements : currentUser.achievements,
         languageProgress: {
           ...langProgress,
-          [learningLang]: {
+          [targetLang]: {
             ...currentLangData,
             legendaryCompleted: updated,
+            xp: (Number(currentLangData.xp) || 0) + 40,
           },
         },
       }
     })
 
-    addXP(40)
-    addGems(20)
-    unlockAchievement('legendary_master')
+    trackQuestProgress('xp', 40)
   }
 
   const unlockAchievement = (achievementId) => {
-    if (!user || !updateUser) return
-    const currentAchievements = Array.isArray(user.achievements) ? user.achievements : []
-    if (!currentAchievements.includes(achievementId)) {
-      const nextAchievements = [...currentAchievements, achievementId]
-      updateUser({ achievements: nextAchievements })
-      addGems(15) // Gems bonus for unlocking achievement!
+    if (!updateUser) return
+    updateUser((currentUser) => {
+      const currentAchievements = Array.isArray(currentUser.achievements) ? currentUser.achievements : []
+      if (!currentAchievements.includes(achievementId)) {
+        const nextAchievements = [...currentAchievements, achievementId]
+        const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+        const nextGems = currentGems + 15
+        setGems(nextGems)
 
-      if (user.id) {
-        recordAchievementUnlock(user.id, achievementId)
+        if (currentUser.id) {
+          recordAchievementUnlock(currentUser.id, achievementId)
+        }
+
+        return {
+          achievements: nextAchievements,
+          gems: nextGems,
+        }
       }
-    }
+      return {}
+    })
   }
 
   return (
@@ -337,6 +407,9 @@ export function ProgressProvider({ children }) {
         completeLesson,
         completeLegendaryLesson,
         unlockAchievement,
+        streak: Number(user?.streak) || 0,
+        xp: Number(user?.xp) || 0,
+        user,
       }}
     >
       {children}
