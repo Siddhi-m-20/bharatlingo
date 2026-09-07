@@ -12,7 +12,7 @@ import {
   generateNextLesson,
   generateLessonSequence,
 } from './lessonEngine.js'
-import { getLearnerProfile, getSkillProficiencies } from './learnerModel.js'
+import { getLearnerProfile, getSkillProficiencies, getLearnerSnapshot } from './learnerModel.js'
 
 
 const API_BASE = '/api'
@@ -39,10 +39,19 @@ export async function fetchNextAdaptiveLesson({
   level = 'beginner',
   goal = 'conversation',
 }) {
-  // 1. Try server
+  // 1. Try server, sending the learner model so it adapts like the client does
   try {
-    const params = new URLSearchParams({ languageId, goal, level, ...(topicId ? { topicId } : {}) })
-    const data = await apiFetch(`/lessons/adaptive?${params}`)
+    const data = await apiFetch('/lessons/adaptive', {
+      method: 'POST',
+      body: JSON.stringify({
+        languageId,
+        goal,
+        level,
+        preferredLang,
+        topicId,
+        learnerState: getLearnerSnapshot(languageId),
+      }),
+    })
     if (data && data.exercises && data.exercises.length > 0) return data
   } catch {
     // fall through
@@ -167,7 +176,7 @@ export async function fetchAssessmentQuestions({
   count = 6,
 }) {
   try {
-    const params = new URLSearchParams({ languageId, ageRange, goal, count })
+    const params = new URLSearchParams({ languageId, ageRange, goal, count, preferredLang: 'en' })
     const data = await apiFetch(`/assessment/questions?${params}`)
     if (data.questions && data.questions.length > 0) return data.questions
   } catch {}

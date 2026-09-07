@@ -276,10 +276,9 @@ export function recordExerciseAttempt(languageId, exercise, isCorrect, options =
 }
 
 /**
- * Identify weak areas for adaptive targeting
+ * Identify weak areas from an already-loaded profile (pure)
  */
-export function getWeakAreas(languageId = 'hi') {
-  const profile = getLearnerProfile(languageId)
+export function deriveWeakAreas(profile) {
   const weakTopics = []
 
   Object.values(profile.topics).forEach((t) => {
@@ -307,6 +306,24 @@ export function getWeakAreas(languageId = 'hi') {
     topics: weakTopics.sort((a, b) => a.accuracy - b.accuracy),
     skills: weakSkills.sort((a, b) => a.score - b.score),
     hasWeaknesses: weakTopics.length > 0 || weakSkills.length > 0,
+  }
+}
+
+/**
+ * Identify weak areas for adaptive targeting
+ */
+export function getWeakAreas(languageId = 'hi') {
+  return deriveWeakAreas(getLearnerProfile(languageId))
+}
+
+/**
+ * Portable snapshot of the learner model for stateless consumers (the API
+ * server) so they can generate the same adaptive lesson the client would.
+ */
+export function getLearnerSnapshot(languageId = 'hi', reviewLimit = 3) {
+  return {
+    stats: { [languageId]: getLearnerProfile(languageId) },
+    reviewCandidates: getReviewCandidates(languageId, reviewLimit),
   }
 }
 

@@ -5,34 +5,48 @@ import {
   getAdaptiveLesson,
   generateLearningPlan,
   generateAssessmentQuestions,
+  UnsupportedLanguageError,
 } from '../services/lessonEngine.js'
+import { languages as supportedLanguages } from '../../src/data/languages.js'
 
 const router = express.Router()
 
-router.get('/lessons/adaptive', (req, res) => {
+// Never fall back to another language: an unsupported language is a client error.
+function handleLessonError(res, err, fallbackMessage) {
+  if (err instanceof UnsupportedLanguageError) {
+    return res.status(400).json({ error: err.message })
+  }
+  console.error(fallbackMessage, err)
+  return res.status(500).json({ error: fallbackMessage })
+}
+
+function adaptiveLessonHandler(req, res) {
   try {
-    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null } = req.query
-    const lesson = getAdaptiveLesson({ languageId, goal, ageRange, level, topicId })
+    const source = req.method === 'POST' ? { ...req.query, ...req.body } : req.query
+    const {
+      languageId = 'hi',
+      goal = 'conversation',
+      ageRange = 'adult',
+      level = 'beginner',
+      preferredLang = 'en',
+      topicId = null,
+      learnerState = null,
+    } = source
+    const lesson = getAdaptiveLesson({ languageId, goal, ageRange, level, preferredLang, topicId, learnerState })
     res.json(lesson)
   } catch (err) {
-    console.error('Adaptive lesson error:', err)
-    res.status(500).json({ error: 'Could not generate adaptive lesson.' })
+    handleLessonError(res, err, 'Could not generate adaptive lesson.')
   }
-})
+}
+
+// GET is the cold-start variant; POST carries the learner snapshot so the API
+// adapts to the same learner model the client uses.
+router.get('/lessons/adaptive', adaptiveLessonHandler)
+router.post('/lessons/adaptive', adaptiveLessonHandler)
 
 
 router.get('/languages', (req, res) => {
-  const languages = [
-    { id: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
-    { id: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-    { id: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳' },
-    { id: 'ta', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳' },
-    { id: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
-    { id: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇮🇳' },
-    { id: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
-    { id: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
-  ]
-  res.json(languages)
+  res.json(supportedLanguages.map(({ id, name, nativeName, flag }) => ({ id, name, nativeName, flag })))
 })
 
 /**
@@ -42,18 +56,18 @@ router.get('/languages', (req, res) => {
  */
 router.get('/lessons/dynamic', (req, res) => {
   try {
-    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', count = '10' } = req.query
+    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', preferredLang = 'en', count = '10' } = req.query
     const lessons = getDynamicLessons({
       languageId,
       goal,
       ageRange,
       level,
+      preferredLang,
       count: Math.min(parseInt(count, 10) || 10, 50),
     })
     res.json({ lessons, generatedAt: new Date().toISOString() })
   } catch (err) {
-    console.error('Dynamic lessons error:', err)
-    res.status(500).json({ error: 'Could not generate lessons. Please try again.' })
+    handleLessonError(res, err, 'Could not generate lessons. Please try again.')
   }
 })
 
@@ -63,13 +77,12 @@ router.get('/lessons/dynamic', (req, res) => {
  */
 router.get('/lessons/dynamic/:index', (req, res) => {
   try {
-    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner' } = req.query
+    const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', preferredLang = 'en' } = req.query
     const lessonIndex = Math.max(0, parseInt(req.params.index, 10) || 0)
-    const lesson = getDynamicLesson({ languageId, goal, ageRange, level, lessonIndex })
+    const lesson = getDynamicLesson({ languageId, goal, ageRange, level, preferredLang, lessonIndex })
     res.json(lesson)
   } catch (err) {
-    console.error('Dynamic lesson error:', err)
-    res.status(500).json({ error: 'Could not generate lesson. Please try again.' })
+    handleLessonError(res, err, 'Could not generate lesson. Please try again.')
   }
 })
 
@@ -84,8 +97,7 @@ router.post('/learning-plan', (req, res) => {
     const plan = generateLearningPlan({ languageId, ageRange, goal, level, assessmentScore, dailyGoal })
     res.json(plan)
   } catch (err) {
-    console.error('Learning plan error:', err)
-    res.status(500).json({ error: 'Could not generate learning plan. Please try again.' })
+    handleLessonError(res, err, 'Could not generate learning plan. Please try again.')
   }
 })
 
@@ -96,17 +108,17 @@ router.post('/learning-plan', (req, res) => {
  */
 router.get('/assessment/questions', (req, res) => {
   try {
-    const { languageId = 'hi', ageRange = 'adult', goal = 'conversation', count = '6' } = req.query
+    const { languageId = 'hi', ageRange = 'adult', goal = 'conversation', preferredLang = 'en', count = '6' } = req.query
     const questions = generateAssessmentQuestions({
       languageId,
       ageRange,
       goal,
+      preferredLang,
       count: Math.min(parseInt(count, 10) || 6, 12),
     })
     res.json({ questions })
   } catch (err) {
-    console.error('Assessment questions error:', err)
-    res.status(500).json({ error: 'Could not load assessment. Please try again.' })
+    handleLessonError(res, err, 'Could not load assessment. Please try again.')
   }
 })
 
