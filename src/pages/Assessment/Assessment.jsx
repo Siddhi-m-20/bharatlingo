@@ -5,6 +5,7 @@ import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { getLanguageById } from '../../data/languages'
 import { fetchAssessmentQuestions, generatePersonalizedPlan } from '../../services/dynamicLessonService'
+import { recordExerciseAttempt } from '../../services/learnerModel'
 import QuestionCard from '../../components/QuestionCard'
 import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
@@ -125,7 +126,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
 export default function Assessment() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
-  const { addXP } = useProgress()
+  const { addXP, addGems } = useProgress()
 
   const [questions, setQuestions]   = useState([])
   const [loading, setLoading]       = useState(true)
@@ -143,16 +144,6 @@ export default function Assessment() {
   // Load assessment questions from dynamic API
   useEffect(() => {
     if (!user) return
-
-    // If user already completed assessment or has existing progress, skip straight to dashboard!
-    if (
-      user.hasCompletedAssessment ||
-      (user.assessmentScore !== null && user.assessmentScore !== undefined) ||
-      (user.completedLessons && user.completedLessons.length > 0)
-    ) {
-      navigate('/dashboard')
-      return
-    }
 
     if (!user?.learningLanguage) {
       navigate('/onboarding')
@@ -194,7 +185,11 @@ export default function Assessment() {
     setAnswers((prev) => [...prev, { question: currentQuestion, answer, isCorrect }])
     setShowResult(true)
     if (isCorrect) addXP(q.xp || 10)
-  }, [showResult, questions, currentQuestion, addXP])
+
+    try {
+      recordExerciseAttempt(user?.learningLanguage || 'hi', q, isCorrect)
+    } catch {}
+  }, [showResult, questions, currentQuestion, addXP, user?.learningLanguage])
 
   const handleNext = async () => {
     if (currentQuestion < questions.length - 1) {
@@ -217,8 +212,20 @@ export default function Assessment() {
     else if (percentage <= 80) level = 'intermediate'
     else                       level = 'advanced'
 
+    // Award initial completion rewards (XP + Diamonds) based on placement
+    const completionBonusXP = 20
+    const completionBonusGems = 25
+    addXP(completionBonusXP)
+    addGems(completionBonusGems)
+
     // Save assessment score and mark assessment as completed permanently
-    await updateUser({ level, assessmentScore: percentage, hasCompletedAssessment: true })
+    await updateUser({
+      level,
+      assessmentScore: percentage,
+      hasCompletedAssessment: true,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      streak: 1,
+    })
 
     // Generate personalized learning plan (server-side — no provider details exposed)
     setGeneratingPlan(true)

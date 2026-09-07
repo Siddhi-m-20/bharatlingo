@@ -20,46 +20,25 @@ const DEFAULT_QUESTS = [
 
 export function ProgressProvider({ children }) {
   const { user, updateUser } = useAuth()
-  const [hearts, setHearts] = useState(() => (user?.hearts !== undefined ? Number(user.hearts) : 5))
-  const [gems, setGems] = useState(() => (user?.gems !== undefined ? Number(user.gems) : 100))
+  const [gems, setGems] = useState(() => (user?.gems !== undefined ? Number(user.gems) : 0))
   const [currentLesson, setCurrentLesson] = useState(null)
   const [lessonProgress, setLessonProgress] = useState(0)
   const [quests, setQuests] = useState(() => (user?.activeQuests && Array.isArray(user.activeQuests) && user.activeQuests.length > 0 ? user.activeQuests : DEFAULT_QUESTS))
 
   // Synchronize local state whenever the authoritative user object updates
   useEffect(() => {
-    if (user?.hearts !== undefined) {
-      setHearts(Number(user.hearts))
-    }
     if (user?.gems !== undefined) {
       setGems(Number(user.gems))
     }
     if (user?.activeQuests && Array.isArray(user.activeQuests) && user.activeQuests.length > 0) {
       setQuests(user.activeQuests)
     }
-  }, [user?.hearts, user?.gems, user?.activeQuests])
-
-  const loseHeart = () => {
-    if (!updateUser) return
-    updateUser((currentUser) => {
-      const currentHearts = currentUser.hearts !== undefined ? Number(currentUser.hearts) : 5
-      const nextHearts = Math.max(0, currentHearts - 1)
-      setHearts(nextHearts)
-      return { hearts: nextHearts }
-    })
-  }
-
-  const restoreHearts = () => {
-    setHearts(5)
-    if (updateUser) {
-      updateUser({ hearts: 5 })
-    }
-  }
+  }, [user?.gems, user?.activeQuests])
 
   const addGems = (amount) => {
     if (!amount || amount <= 0 || !updateUser) return
     updateUser((currentUser) => {
-      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 0
       const newGems = currentGems + amount
       setGems(newGems)
       return { gems: newGems }
@@ -70,7 +49,7 @@ export function ProgressProvider({ children }) {
     if (!updateUser || amount <= 0) return false
     let success = false
     updateUser((currentUser) => {
-      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 0
       if (currentGems < amount) {
         success = false
         return {}
@@ -254,7 +233,7 @@ export function ProgressProvider({ children }) {
         xp: 0,
         level: currentUser.level || 'beginner',
       }
-      existingCompleted = Array.isArray(currentLangData.completedLessons) ? currentLangData.completedLessons : []
+      const existingCompleted = Array.isArray(currentLangData.completedLessons) ? currentLangData.completedLessons : []
       isFirstTime = !existingCompleted.includes(lessonId)
       updatedCompleted = isFirstTime ? [...existingCompleted, lessonId] : existingCompleted
 
@@ -274,7 +253,7 @@ export function ProgressProvider({ children }) {
 
       // Calculate gems bonus
       const gemBonus = (isFirstTime ? 5 : 2) + (attemptData.isPerfect ? 5 : 0)
-      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 0
       const nextGems = currentGems + gemBonus
       setGems(nextGems)
 
@@ -303,7 +282,6 @@ export function ProgressProvider({ children }) {
         xpEarned: attemptData.xpEarned || 25,
         accuracy: attemptData.accuracy || 100,
         isPerfect: attemptData.isPerfect || false,
-        heartsLost: attemptData.heartsLost || 0,
       })
     }
 
@@ -335,7 +313,7 @@ export function ProgressProvider({ children }) {
         if (currentUser.id) recordAchievementUnlock(currentUser.id, 'legendary_master')
       }
 
-      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+      const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 0
       const nextGems = currentGems + 20
       setGems(nextGems)
 
@@ -367,7 +345,7 @@ export function ProgressProvider({ children }) {
       const currentAchievements = Array.isArray(currentUser.achievements) ? currentUser.achievements : []
       if (!currentAchievements.includes(achievementId)) {
         const nextAchievements = [...currentAchievements, achievementId]
-        const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 100
+        const currentGems = currentUser.gems !== undefined ? Number(currentUser.gems) : 0
         const nextGems = currentGems + 15
         setGems(nextGems)
 
@@ -387,10 +365,6 @@ export function ProgressProvider({ children }) {
   return (
     <ProgressContext.Provider
       value={{
-        hearts,
-        setHearts,
-        loseHeart,
-        restoreHearts,
         gems,
         setGems,
         addGems,

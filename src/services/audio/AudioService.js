@@ -333,6 +333,54 @@ class CentralAudioService {
     })
   }
 
+  // ── Tier 2 Provider: High-Fidelity Direct Indic Cloud Audio ───────────────
+  async _playViaDirectIndicAudio(text, langId, rate, trackId, onEnd) {
+    const langCodeMap = {
+      hi: 'hi',
+      mr: 'mr',
+      ta: 'ta',
+      te: 'te',
+      bn: 'bn',
+      pa: 'pa',
+      gu: 'gu',
+      en: 'en',
+    }
+    const targetLang = langCodeMap[langId.toLowerCase()] || 'hi'
+    const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.trim())}&tl=${targetLang}&client=tw-ob`
+
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(directUrl)
+      audio.playbackRate = Math.max(0.5, Math.min(rate, 2.0))
+      this._activeAudioElement = audio
+
+      audio.onplay = () => {
+        if (this._activeId === trackId) {
+          this._setState(AUDIO_STATE.PLAYING, trackId, { provider: 'direct_indic_cloud' })
+        }
+      }
+
+      audio.onended = () => {
+        if (this._activeId === trackId) {
+          this._activeAudioElement = null
+          this._setState(AUDIO_STATE.COMPLETED, trackId, { provider: 'direct_indic_cloud' })
+          if (onEnd) onEnd({ success: true, provider: 'direct_indic_cloud' })
+        }
+        resolve({ success: true, provider: 'direct_indic_cloud' })
+      }
+
+      audio.onerror = (e) => {
+        if (this._activeId === trackId) {
+          this._activeAudioElement = null
+        }
+        reject(new Error('Direct Indic audio stream unavailable'))
+      }
+
+      audio.play().catch((err) => {
+        reject(err)
+      })
+    })
+  }
+
   // ── Fallback Provider: Browser SpeechSynthesis (Strict Matching Only) ─────
   async _playViaBrowserSpeech(text, langId, rate, pitch, trackId, onEnd) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -432,7 +480,7 @@ class CentralAudioService {
     })
   }
 
-  // ── Unified Speak Command (Robust Server /api/tts with Browser Fallback) ──
+  // ── Unified Speak Command (Robust Server /api/tts with Direct & Browser Fallbacks) ──
   async speak(text, langId = 'hi', { rate = 0.9, pitch = 1.0, onEnd } = {}) {
     if (!text || !text.trim()) {
       this._setState(AUDIO_STATE.ERROR, null, { error: 'No text provided' })
@@ -449,41 +497,51 @@ class CentralAudioService {
     this._activeId = trackId
     this._setState(AUDIO_STATE.LOADING, trackId)
 
-    // Tier 1: Primary Server TTS API (/api/tts with Disk/Memory Caching)
+    // Tier 1: Primary Server / Middleware Indic-TTS API (/api/tts with Disk/Memory Caching)
     try {
       const result = await this._playViaIndicTts(cleanText, cleanLang, rate, trackId, onEnd)
       return { success: true, provider: result.provider }
     } catch (indicErr) {
       if (import.meta.env.DEV) {
-        console.warn(`[TTS] Backend /api/tts failed (${indicErr.message}). Attempting Browser Speech fallback...`)
+        console.warn(`[TTS] Backend /api/tts failed (${indicErr.message}). Attempting Direct Indic Cloud Audio...`)
       }
 
-      // Tier 2: Strict Native Browser SpeechSynthesis Fallback
+      // Tier 2: Direct High-Fidelity Indic Cloud Audio Stream
       try {
-        const fallbackResult = await this._playViaBrowserSpeech(cleanText, cleanLang, rate, pitch, trackId, onEnd)
-        return { success: true, provider: fallbackResult.provider, voice: fallbackResult.voice }
-      } catch (browserErr) {
+        const directResult = await this._playViaDirectIndicAudio(cleanText, cleanLang, rate, trackId, onEnd)
+        return { success: true, provider: directResult.provider }
+      } catch (directErr) {
         if (import.meta.env.DEV) {
-          console.error('[TTS] All TTS tiers failed:', browserErr.message)
+          console.warn(`[TTS] Direct Indic stream failed (${directErr.message}). Attempting Browser Speech fallback...`)
         }
 
-        // Safety Audio Cue: Play subtle tone so user gets instant audible feedback
+        // Tier 3: Strict Native Browser SpeechSynthesis Fallback
         try {
-          playWebAudioChime(true)
-        } catch {}
+          const fallbackResult = await this._playViaBrowserSpeech(cleanText, cleanLang, rate, pitch, trackId, onEnd)
+          return { success: true, provider: fallbackResult.provider, voice: fallbackResult.voice }
+        } catch (browserErr) {
+          if (import.meta.env.DEV) {
+            console.error('[TTS] All TTS tiers failed:', browserErr.message)
+          }
 
-        if (this._activeId === trackId) {
-          this._setState(AUDIO_STATE.ERROR, trackId, {
-            error: browserErr.message || 'Audio synthesis unavailable',
+          // Safety Audio Cue: Play subtle tone so user gets instant audible feedback
+          try {
+            playWebAudioChime(true)
+          } catch {}
+
+          if (this._activeId === trackId) {
+            this._setState(AUDIO_STATE.ERROR, trackId, {
+              error: browserErr.message || 'Audio synthesis unavailable',
+              canRetry: true,
+            })
+            if (onEnd) onEnd({ success: false, reason: browserErr.message })
+          }
+
+          return {
+            success: false,
+            reason: browserErr.message || 'audio_unavailable',
             canRetry: true,
-          })
-          if (onEnd) onEnd({ success: false, reason: browserErr.message })
-        }
-
-        return {
-          success: false,
-          reason: browserErr.message || 'audio_unavailable',
-          canRetry: true,
+          }
         }
       }
     }

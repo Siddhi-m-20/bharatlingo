@@ -76,7 +76,7 @@ export default function WritingPractice() {
       <AppSidebar />
 
       {/* 2. CENTER CONTENT */}
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl">
           <div className="relative z-10">
@@ -96,7 +96,7 @@ export default function WritingPractice() {
         </div>
 
         {/* ── Category & Stats Switcher ── */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm">
           {/* Category Tabs */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
@@ -104,63 +104,73 @@ export default function WritingPractice() {
                 setActiveCategory('vowels')
                 setSelectedIndex(0)
               }}
-              className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                 activeCategory === 'vowels'
-                  ? 'bg-[#0B8F62] text-white shadow-md'
+                  ? 'bg-[#0B8F62] text-white shadow-md shadow-[#0B8F62]/20'
                   : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800'
               }`}
             >
-              स्वर (Vowels) - {scriptData.vowels?.length || 0}
+              स्वर (Vowels) • {scriptData.vowels?.length || 0}
             </button>
             <button
               onClick={() => {
                 setActiveCategory('consonants')
                 setSelectedIndex(0)
               }}
-              className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                 activeCategory === 'consonants'
-                  ? 'bg-[#0B8F62] text-white shadow-md'
+                  ? 'bg-[#0B8F62] text-white shadow-md shadow-[#0B8F62]/20'
                   : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800'
               }`}
             >
-              व्यंजन (Consonants) - {scriptData.consonants?.length || 0}
+              व्यंजन (Consonants) • {scriptData.consonants?.length || 0}
             </button>
           </div>
 
-          {/* Mastered Counter */}
-          <div className="flex items-center gap-1.5 text-xs font-black text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-3 py-1.5 rounded-xl">
-            <CheckCircle2 size={14} />
-            <span>
-              {masteredLetters.length} / {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} Mastered
-            </span>
+          {/* Mastered Counter & Progress */}
+          <div className="flex items-center gap-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2 rounded-2xl">
+            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex flex-col text-left">
+              <span className="text-xs font-black text-emerald-800 dark:text-emerald-300">
+                {masteredLetters.length} of {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} Mastered
+              </span>
+              <span className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-400/80">
+                {Math.round((masteredLetters.length / Math.max(1, (scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0))) * 100)}% Complete
+              </span>
+            </div>
           </div>
         </div>
 
         {/* ── Letter Horizontal Scroll Selector ── */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 p-3 shadow-sm">
-          <div className="flex items-center justify-between gap-2 mb-2 px-1">
-            <span className="text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider">
-              Select Character to Practice ({selectedIndex + 1} of {currentList.length})
-            </span>
-            <div className="flex items-center gap-1">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-2 mb-3 px-1">
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-[#25231F] dark:text-white uppercase tracking-wider">
+                Select Character ({selectedIndex + 1} of {currentList.length})
+              </h3>
+              <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
+                Tap any letter to trace with guided stroke auto-correction
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handlePrevLetter}
-                className="p-1 rounded-lg border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F]"
+                className="p-2 rounded-xl border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
                 title="Previous letter"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={18} />
               </button>
               <button
                 onClick={handleNextLetter}
-                className="p-1 rounded-lg border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F]"
+                className="p-2 rounded-xl border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
                 title="Next letter"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
             {currentList.map((item, idx) => {
               const isSelected = selectedIndex === idx
               const isMastered = masteredLetters.includes(item.char)
@@ -168,32 +178,42 @@ export default function WritingPractice() {
                 <button
                   key={idx}
                   onClick={() => setSelectedIndex(idx)}
-                  className={`flex-shrink-0 w-12 h-14 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
+                  className={`relative flex-shrink-0 w-14 h-16 rounded-2xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-sm scale-105'
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/15 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-md scale-105'
                       : isMastered
-                      ? 'border-[#0B8F62]/40 bg-white dark:bg-slate-800 text-[#25231F] dark:text-white'
-                      : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF] dark:bg-slate-800/60 text-[#77736B] dark:text-slate-300 hover:border-[#0B8F62]/40'
+                      ? 'border-emerald-400/60 bg-emerald-50/50 dark:bg-emerald-950/20 text-[#25231F] dark:text-white hover:border-[#0B8F62]'
+                      : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/60 dark:bg-slate-800/60 text-[#77736B] dark:text-slate-300 hover:border-[#0B8F62]/40'
                   }`}
                 >
-                  <span className="text-lg font-black leading-none">{item.char}</span>
-                  <span className="text-[9px] font-bold mt-0.5 opacity-80">{item.roman}</span>
+                  {isMastered && (
+                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#0B8F62] text-white flex items-center justify-center text-[9px] font-black shadow-xs">
+                      ✓
+                    </span>
+                  )}
+                  <span className="text-xl font-black leading-none">{item.char}</span>
+                  <span className="text-[10px] font-bold mt-0.5 opacity-80">{item.roman}</span>
                 </button>
               )
             })}
           </div>
         </div>
 
-        {/* ── Main Canvas Drawing Suite ── */}
-        <LetterWritingCanvas
-          key={`${currentLang}-${currentChar.char}`}
-          character={currentChar.char}
-          roman={currentChar.roman}
-          example={currentChar.example}
-          languageId={currentLang}
-          onMastered={handleMastered}
-          onNext={handleNextLetter}
-        />
+        {/* ── Main Canvas Drawing Suite (Duolingo Style) ── */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm">
+          <LetterWritingCanvas
+            key={`${currentLang}-${currentChar.char}`}
+            character={currentChar.char}
+            roman={currentChar.roman}
+            example={currentChar.example}
+            languageId={currentLang}
+            currentIndex={selectedIndex}
+            totalCount={currentList.length}
+            showTopBar={false}
+            onMastered={handleMastered}
+            onNext={handleNextLetter}
+          />
+        </div>
       </main>
 
       {/* 3. RIGHT SIDEBAR */}

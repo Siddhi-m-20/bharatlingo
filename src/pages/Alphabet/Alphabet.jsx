@@ -133,7 +133,7 @@ export default function Alphabet() {
     <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl mb-6">
           <div className="relative z-10">
@@ -204,15 +204,15 @@ export default function Alphabet() {
         {activeTab === 'writing' && (
           <div className="space-y-4">
             {/* Category selection */}
-            <div className="flex items-center justify-between gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center gap-1.5">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center gap-1.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
                     setWritingCategory('vowels')
                     setWritingIndex(0)
                   }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     writingCategory === 'vowels'
                       ? 'bg-[#0B8F62] text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -226,7 +226,7 @@ export default function Alphabet() {
                     setWritingCategory('consonants')
                     setWritingIndex(0)
                   }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     writingCategory === 'consonants'
                       ? 'bg-[#0B8F62] text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -236,29 +236,32 @@ export default function Alphabet() {
                 </button>
               </div>
 
-              <span className="text-[11px] font-black text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-2.5 py-1 rounded-xl">
-                {masteredLetters.length} Mastered
-              </span>
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-3 py-1.5 rounded-xl">
+                <CheckCircle2 size={15} />
+                <span>
+                  {masteredLetters.length} / {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} Mastered
+                </span>
+              </div>
             </div>
 
             {/* Letter carousel */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm">
               <div className="flex items-center justify-between gap-2 mb-2 px-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase">
+                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Pick Character ({writingIndex + 1}/{writingList.length})
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={handlePrevWritingLetter}
-                    className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                   >
-                    <ChevronLeft size={14} />
+                    <ChevronLeft size={16} />
                   </button>
                   <button
                     onClick={handleNextWritingLetter}
-                    className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                   >
-                    <ChevronRight size={14} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
@@ -271,16 +274,21 @@ export default function Alphabet() {
                     <button
                       key={idx}
                       onClick={() => setWritingIndex(idx)}
-                      className={`flex-shrink-0 w-11 h-13 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
+                      className={`relative flex-shrink-0 w-13 h-15 rounded-xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-sm scale-105'
+                          ? 'border-[#0B8F62] bg-[#0B8F62]/15 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-sm scale-105'
                           : isMastered
-                          ? 'border-[#0B8F62]/40 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'
+                          ? 'border-emerald-400/60 bg-emerald-50/50 dark:bg-emerald-950/20 text-slate-900 dark:text-white'
                           : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:border-[#0B8F62]/40'
                       }`}
                     >
-                      <span className="text-base font-black leading-none">{item.char}</span>
-                      <span className="text-[8px] font-bold mt-0.5 opacity-70">{item.roman}</span>
+                      {isMastered && (
+                        <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#0B8F62] text-white flex items-center justify-center text-[9px] font-black shadow-xs">
+                          ✓
+                        </span>
+                      )}
+                      <span className="text-lg font-black leading-none">{item.char}</span>
+                      <span className="text-[9px] font-bold mt-0.5 opacity-70">{item.roman}</span>
                     </button>
                   )
                 })}
@@ -288,15 +296,20 @@ export default function Alphabet() {
             </div>
 
             {/* Main Canvas Drawing Suite */}
-            <LetterWritingCanvas
-              key={`${currentLang}-${currentWritingChar.char}`}
-              character={currentWritingChar.char}
-              roman={currentWritingChar.roman}
-              example={currentWritingChar.example}
-              languageId={currentLang}
-              onMastered={handleMasteredLetter}
-              onNext={handleNextWritingLetter}
-            />
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+              <LetterWritingCanvas
+                key={`${currentLang}-${currentWritingChar.char}`}
+                character={currentWritingChar.char}
+                roman={currentWritingChar.roman}
+                example={currentWritingChar.example}
+                languageId={currentLang}
+                currentIndex={writingIndex}
+                totalCount={writingList.length}
+                showTopBar={false}
+                onMastered={handleMasteredLetter}
+                onNext={handleNextWritingLetter}
+              />
+            </div>
           </div>
         )}
 

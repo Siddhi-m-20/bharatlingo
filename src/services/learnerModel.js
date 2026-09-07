@@ -110,11 +110,11 @@ export function getLearnerProfile(languageId = 'hi', existingStats = null) {
 
 
   const defaultSkills = {
-    [SKILL_TYPES.VOCABULARY]: { attempts: 0, correct: 0, score: 75 },
-    [SKILL_TYPES.LISTENING]:  { attempts: 0, correct: 0, score: 75 },
-    [SKILL_TYPES.SPEAKING]:   { attempts: 0, correct: 0, score: 75 },
-    [SKILL_TYPES.GRAMMAR]:    { attempts: 0, correct: 0, score: 75 },
-    [SKILL_TYPES.READING]:    { attempts: 0, correct: 0, score: 75 },
+    [SKILL_TYPES.VOCABULARY]: { attempts: 0, correct: 0, score: 0 },
+    [SKILL_TYPES.LISTENING]:  { attempts: 0, correct: 0, score: 0 },
+    [SKILL_TYPES.SPEAKING]:   { attempts: 0, correct: 0, score: 0 },
+    [SKILL_TYPES.GRAMMAR]:    { attempts: 0, correct: 0, score: 0 },
+    [SKILL_TYPES.READING]:    { attempts: 0, correct: 0, score: 0 },
   }
 
   const defaultTopics = {}
@@ -125,7 +125,7 @@ export function getLearnerProfile(languageId = 'hi', existingStats = null) {
       icon: t.icon,
       attempts: 0,
       correct: 0,
-      accuracy: 100,
+      accuracy: 0,
       masteryLevel: 1, // 1 to 5
       lastPracticedAt: null,
     }
@@ -137,7 +137,7 @@ export function getLearnerProfile(languageId = 'hi', existingStats = null) {
     totalCorrect: rawLang.totalCorrect || 0,
     overallAccuracy: rawLang.totalAttempts > 0
       ? Math.round((rawLang.totalCorrect / rawLang.totalAttempts) * 100)
-      : 80,
+      : 0,
     currentDifficultyLevel: rawLang.currentDifficultyLevel || 1, // 1: Beginner, 2: Elementary, 3: Intermediate, 4: Advanced, 5: Mastery
     skills: {
       ...defaultSkills,
@@ -177,14 +177,17 @@ export function recordExerciseAttempt(languageId, exercise, isCorrect, options =
 
   // 2. Update skill metrics
   if (!profile.skills[skill]) {
-    profile.skills[skill] = { attempts: 0, correct: 0, score: 75 }
+    profile.skills[skill] = { attempts: 0, correct: 0, score: 0 }
   }
   const s = profile.skills[skill]
   s.attempts += 1
   if (isCorrect) s.correct += 1
-  // Exponential moving average for skill score (gives more weight to recent performance)
-  const currentSkillAcc = Math.round((s.correct / s.attempts) * 100)
-  s.score = Math.round(s.score * 0.7 + (isCorrect ? 100 : 30) * 0.3)
+  // Calculate dynamic skill score
+  if (s.attempts === 1) {
+    s.score = isCorrect ? 100 : 35
+  } else {
+    s.score = Math.round(s.score * 0.65 + (isCorrect ? 100 : 30) * 0.35)
+  }
 
   // 3. Update topic metrics
   if (!profile.topics[topicId]) {
@@ -367,13 +370,19 @@ export function getReviewCandidates(languageId = 'hi', limit = 5) {
  */
 export function getSkillProficiencies(languageId = 'hi') {
   const profile = getLearnerProfile(languageId)
+  const getSkillScore = (type) => {
+    const s = profile.skills[type]
+    if (!s || s.attempts === 0) return 0
+    return Math.min(100, Math.max(0, s.score))
+  }
+
   return {
-    vocabulary: Math.min(100, Math.max(10, profile.skills[SKILL_TYPES.VOCABULARY]?.score || 75)),
-    listening:  Math.min(100, Math.max(10, profile.skills[SKILL_TYPES.LISTENING]?.score || 75)),
-    speaking:   Math.min(100, Math.max(10, profile.skills[SKILL_TYPES.SPEAKING]?.score || 75)),
-    grammar:    Math.min(100, Math.max(10, profile.skills[SKILL_TYPES.GRAMMAR]?.score || 75)),
-    reading:    Math.min(100, Math.max(10, profile.skills[SKILL_TYPES.READING]?.score || 75)),
-    overall:    profile.overallAccuracy || 80,
+    vocabulary: getSkillScore(SKILL_TYPES.VOCABULARY),
+    listening:  getSkillScore(SKILL_TYPES.LISTENING),
+    speaking:   getSkillScore(SKILL_TYPES.SPEAKING),
+    grammar:    getSkillScore(SKILL_TYPES.GRAMMAR),
+    reading:    getSkillScore(SKILL_TYPES.READING),
+    overall:    profile.totalAttempts > 0 ? profile.overallAccuracy : 0,
     difficulty: profile.currentDifficultyLevel || 1,
   }
 }

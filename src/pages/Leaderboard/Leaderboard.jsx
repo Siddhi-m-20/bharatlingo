@@ -74,16 +74,40 @@ export default function Leaderboard() {
   // Demo users for the active league
   const leagueUsers = DEMO_USERS_BY_LEAGUE[activeLeague] || DEMO_USERS_BY_LEAGUE['gold']
 
+  // Load registered users from local storage
+  let localRegisteredUsers = []
+  try {
+    const raw = localStorage.getItem('bharatlingo_users')
+    localRegisteredUsers = raw ? JSON.parse(raw) : []
+  } catch {}
+
+  // Filter registered users belonging to this league
+  const activeLeagueMin = currentLeagueMeta.minXP
+  const nextLeague = LEAGUES[LEAGUES.findIndex((l) => l.id === activeLeague) + 1]
+  const activeLeagueMax = nextLeague ? nextLeague.minXP : Infinity
+
+  const registeredInLeague = localRegisteredUsers
+    .filter((u) => {
+      const uXP = Number(u.xp) || 0
+      return uXP >= activeLeagueMin && uXP < activeLeagueMax && u.id !== user?.id
+    })
+    .map((u) => ({
+      id: u.id,
+      name: u.name || u.email?.split('@')[0] || 'Learner',
+      xp: Number(u.xp) || 0,
+      streak: Number(u.streak) || 0,
+    }))
+
   // If viewing the user's active league, add the user into the list
   const isViewingMyLeague = activeLeague === defaultLeague.id
-  let combinedList = [...leagueUsers]
+  let combinedList = [...leagueUsers, ...registeredInLeague]
   if (isViewingMyLeague && user) {
     if (!combinedList.some((u) => u.id === user.id)) {
       combinedList.push({
         id: user.id,
         name: user.name,
-        xp: user.xp || 0,
-        streak: user.streak || 0,
+        xp: Number(user.xp) || 0,
+        streak: Number(user.streak) || 0,
         isCurrentUser: true,
       })
     }
@@ -96,7 +120,7 @@ export default function Leaderboard() {
     <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* League Selector Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           {LEAGUES.map((league) => {

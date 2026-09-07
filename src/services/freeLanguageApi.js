@@ -105,7 +105,7 @@ export const API_CATALOGUE = [
   {
     name: 'Open Indic-TTS Engine',
     url: 'Self-Hosted / Open-Source Indic-TTS API (/api/tts)',
-    description: 'Server & local neural text-to-speech engine optimized for 9 Indian languages with audio caching.',
+    description: 'Server & local neural text-to-speech engine optimized for 8 supported languages with audio caching.',
     usageLocation: 'Lesson Audio Player, Listening exercises, Vocabulary charts, and Alphabet sounds',
     isFree: true,
   },

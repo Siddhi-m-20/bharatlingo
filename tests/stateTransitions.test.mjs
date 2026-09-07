@@ -34,7 +34,6 @@ function mapProfileToUser(profile, authUser) {
     learningPlan: profile?.learning_plan || null,
     xp: Number(profile?.xp) || 0,
     gems: profile?.gems !== undefined ? Number(profile.gems) : 100,
-    hearts: profile?.hearts !== undefined ? Number(profile.hearts) : 5,
     streak: Number(profile?.streak) || 0,
     lastActiveDate: profile?.last_active_date || null,
     completedLessons: existingCompleted,
@@ -122,13 +121,6 @@ function mergeUserProfiles(remoteProfile, localProfile) {
   const localStreak = Number(localProfile.streak) || 0
   const mergedStreak = Math.max(remoteStreak, localStreak)
 
-  let mergedHearts = 5
-  if (localProfile.hearts !== undefined && localProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(localProfile.hearts)))
-  } else if (remoteProfile.hearts !== undefined && remoteProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(remoteProfile.hearts)))
-  }
-
   const mergedQuests = localProfile.activeQuests || remoteProfile.activeQuests || null
 
   return {
@@ -148,7 +140,6 @@ function mergeUserProfiles(remoteProfile, localProfile) {
     learningPlan: localProfile.learningPlan || remoteProfile.learningPlan || null,
     xp: mergedXP,
     gems: mergedGems,
-    hearts: mergedHearts,
     streak: mergedStreak,
     lastActiveDate: localProfile.lastActiveDate || remoteProfile.lastActiveDate || null,
     completedLessons: mergedCompleted,
@@ -162,7 +153,7 @@ function mergeUserProfiles(remoteProfile, localProfile) {
 }
 
 function runStateTransitionTests() {
-  console.log('🧪 Starting State Transition & Invariance Verification Suite...\n')
+  console.log('🧪 Starting State Transition & Invariance Verification Suite (Heart-Free Model)...\n')
   let passed = 0
   let failed = 0
 
@@ -213,7 +204,6 @@ function runStateTransitionTests() {
       id: 'usr_1',
       learningLanguage: 'hi',
       xp: 50,
-      hearts: 5,
       gems: 100,
       streak: 1,
       completedLessons: ['hi-1'],
@@ -229,92 +219,39 @@ function runStateTransitionTests() {
       beforeState,
       afterState,
       { xp: 60 },
-      ['hearts', 'gems', 'streak', 'learningLanguage', 'completedLessons']
+      ['gems', 'streak', 'learningLanguage', 'completedLessons']
     )
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 2: Wrong Answer Submission (-1 Heart)
+  // ACTIVITY 2: Wrong Answer Submission (Learning Continues Uninterrupted)
   // -------------------------------------------------------------
   {
     const beforeState = {
       id: 'usr_1',
       learningLanguage: 'hi',
       xp: 60,
-      hearts: 5,
       gems: 100,
       streak: 1,
     }
 
+    // Pedagogical principle: No hearts, no energy penalty. User continues seamlessly.
     const afterState = {
       ...beforeState,
-      hearts: Math.max(0, beforeState.hearts - 1),
+      perfectLesson: false,
     }
 
     assertState(
-      'Wrong Answer (-1 Heart)',
+      'Wrong Answer (No Heart Penalties - Continuous Learning)',
       beforeState,
       afterState,
-      { hearts: 4 },
+      { perfectLesson: false },
       ['xp', 'gems', 'streak', 'learningLanguage']
     )
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 3: Heart Loss Bounded at 0 (Cannot drop below 0)
-  // -------------------------------------------------------------
-  {
-    const beforeState = {
-      id: 'usr_1',
-      learningLanguage: 'hi',
-      xp: 60,
-      hearts: 0,
-      gems: 100,
-    }
-
-    const afterState = {
-      ...beforeState,
-      hearts: Math.max(0, beforeState.hearts - 1),
-    }
-
-    assertState(
-      'Heart Loss at 0 (Safe Floor)',
-      beforeState,
-      afterState,
-      { hearts: 0 },
-      ['xp', 'gems', 'learningLanguage']
-    )
-  }
-
-  // -------------------------------------------------------------
-  // ACTIVITY 4: Heart Refill using Gems (-50 Gems, +5 Hearts)
-  // -------------------------------------------------------------
-  {
-    const beforeState = {
-      id: 'usr_1',
-      xp: 60,
-      hearts: 0,
-      gems: 120,
-      streak: 1,
-    }
-
-    const afterState = {
-      ...beforeState,
-      gems: beforeState.gems - 50,
-      hearts: 5,
-    }
-
-    assertState(
-      'Refill Hearts with Gems (-50 💎, Hearts = 5)',
-      beforeState,
-      afterState,
-      { gems: 70, hearts: 5 },
-      ['xp', 'streak']
-    )
-  }
-
-  // -------------------------------------------------------------
-  // ACTIVITY 5: Lesson Completion (+25 XP, +5 Gems, Streak Increment)
+  // ACTIVITY 3: Lesson Completion (+25 XP, +5 Gems, Streak Increment)
   // -------------------------------------------------------------
   {
     const beforeState = {
@@ -322,7 +259,6 @@ function runStateTransitionTests() {
       learningLanguage: 'hi',
       xp: 60,
       gems: 70,
-      hearts: 4,
       streak: 1,
       completedLessons: ['hi-greetings-1'],
       achievements: [],
@@ -350,19 +286,18 @@ function runStateTransitionTests() {
         streak: 2,
         completedLessons: ['hi-greetings-1', 'hi-greetings-2'],
       },
-      ['hearts', 'learningLanguage', 'achievements']
+      ['learningLanguage', 'achievements']
     )
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 6: Repeat Lesson on Same Day (Streak Invariant)
+  // ACTIVITY 4: Repeat Lesson on Same Day (Streak Invariant)
   // -------------------------------------------------------------
   {
     const beforeState = {
       id: 'usr_1',
       xp: 85,
       gems: 75,
-      hearts: 4,
       streak: 2,
       lastActiveDate: '2026-09-06',
       completedLessons: ['hi-greetings-1', 'hi-greetings-2'],
@@ -391,12 +326,12 @@ function runStateTransitionTests() {
         xp: 110,
         gems: 77,
       },
-      ['streak', 'hearts', 'completedLessons', 'lastActiveDate']
+      ['streak', 'completedLessons', 'lastActiveDate']
     )
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 7: Legendary Challenge Mastery (+40 XP, +20 Gems)
+  // ACTIVITY 5: Legendary Challenge Mastery (+40 XP, +20 Gems)
   // -------------------------------------------------------------
   {
     const beforeState = {
@@ -430,7 +365,7 @@ function runStateTransitionTests() {
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 8: Claiming Quest Reward (+15 XP, +10 Gems, Marked Claimed)
+  // ACTIVITY 6: Claiming Quest Reward (+15 XP, +10 Gems, Marked Claimed)
   // -------------------------------------------------------------
   {
     const beforeState = {
@@ -470,7 +405,7 @@ function runStateTransitionTests() {
   }
 
   // -------------------------------------------------------------
-  // ACTIVITY 9: Page Refresh / Session Rehydration (Zero Downgrade Invariance)
+  // ACTIVITY 7: Page Refresh / Session Rehydration (Zero Downgrade Invariance)
   // -------------------------------------------------------------
   {
     const localSessionState = {
@@ -480,7 +415,6 @@ function runStateTransitionTests() {
       learningLanguage: 'hi',
       xp: 165,
       gems: 107,
-      hearts: 4,
       streak: 2,
       completedLessons: ['hi-greetings-1', 'hi-greetings-2'],
       legendaryCompleted: ['hi-greetings-1'],
@@ -494,7 +428,6 @@ function runStateTransitionTests() {
       email: 'rohan@example.com',
       xp: 40,
       gems: 100,
-      hearts: 5,
       streak: 1,
       completed_lessons: ['hi-greetings-1'],
     }
@@ -507,7 +440,7 @@ function runStateTransitionTests() {
       localSessionState,
       mergedRehydratedState,
       {},
-      ['xp', 'gems', 'hearts', 'streak', 'completedLessons', 'legendaryCompleted', 'achievements', 'learningLanguage']
+      ['xp', 'gems', 'streak', 'completedLessons', 'legendaryCompleted', 'achievements', 'learningLanguage']
     )
   }
 

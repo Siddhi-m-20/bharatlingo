@@ -189,7 +189,7 @@ export default function ConversationTutor() {
       <AppSidebar />
 
       {/* 2. CENTER TUTOR CONVERSATION HUB */}
-      <main className="flex-1 max-w-[660px] md:ml-64 px-4 py-6 md:py-8 flex flex-col space-y-4 min-h-screen">
+      <main className="flex-1 max-w-[660px] md:ml-72 px-4 py-6 md:py-8 flex flex-col space-y-4 min-h-screen">
         {/* Header Title Banner */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -43,11 +43,11 @@ import {
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { streak, hearts, gems } = useProgress()
+  const { streak, gems } = useProgress()
 
   const [nextLesson, setNextLesson] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [skillStats, setSkillStats] = useState({ vocabulary: 75, listening: 75, speaking: 75, grammar: 75, overall: 80, difficulty: 1 })
+  const [skillStats, setSkillStats] = useState(() => getSkillProficiencies(user?.learningLanguage || 'hi'))
   const [weakAreas, setWeakAreas] = useState({ topics: [], skills: [], hasWeaknesses: false })
   const [dueReviews, setDueReviews] = useState([])
   const [showAlphabetModal, setShowAlphabetModal] = useState(false)
@@ -59,6 +59,15 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user?.learningLanguage || !user?.goal) {
       navigate('/onboarding')
+      return
+    }
+
+    if (
+      !user?.hasCompletedAssessment &&
+      (user?.assessmentScore === null || user?.assessmentScore === undefined) &&
+      (!user?.completedLessons || user.completedLessons.length === 0)
+    ) {
+      navigate('/assessment')
       return
     }
 
@@ -130,7 +139,7 @@ export default function Dashboard() {
       <AppSidebar />
 
       {/* 2. CENTER CONTENT */}
-      <main className="flex-1 max-w-[640px] md:ml-64 px-4 py-5 space-y-4">
+      <main className="flex-1 max-w-[640px] md:ml-72 px-4 py-5 space-y-4">
 
         {/* ── Placement Plan Welcome Banner (Dismissible) ───────────────── */}
         <AnimatePresence>

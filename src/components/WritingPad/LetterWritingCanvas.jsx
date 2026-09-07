@@ -1,33 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  RotateCcw,
-  Volume2,
-  CheckCircle2,
-  Sparkles,
-  Eye,
-  EyeOff,
-  Palette,
-  Eraser,
-  Pencil,
-  Award,
-  ChevronRight,
-  Wand2,
-} from 'lucide-react'
+import { Volume2, RotateCcw, Check, Sparkles, ArrowRight } from 'lucide-react'
 import { AudioService } from '../../services/audio/AudioService'
-
-const BRUSH_COLORS = [
-  { id: 'emerald', value: '#0B8F62', label: 'Emerald' },
-  { id: 'saffron', value: '#EA580C', label: 'Saffron' },
-  { id: 'indigo', value: '#4F46E5', label: 'Indigo' },
-  { id: 'slate', value: '#1E293B', label: 'Ink Black' },
-]
-
-const BRUSH_SIZES = [
-  { id: 'thin', size: 8, label: 'Fine' },
-  { id: 'medium', size: 16, label: 'Medium' },
-  { id: 'thick', size: 24, label: 'Calligraphy' },
-]
+import { getStrokesForCharacter } from '../../data/strokeData'
 
 export default function LetterWritingCanvas({
   character = 'अ',
@@ -36,545 +11,552 @@ export default function LetterWritingCanvas({
   languageId = 'hi',
   onMastered,
   onNext,
+  currentIndex = 0,
+  totalCount = 1,
+  onClose,
+  showTopBar = true,
 }) {
-  const canvasRef = useRef(null)
-  const isDrawingRef = useRef(false)
-  const lastPointRef = useRef(null)
-  const strokesRef = useRef([])
-  const autoEvalTimerRef = useRef(null)
+  const strokes = getStrokesForCharacter(character, languageId)
+  
+  const [activeStrokeIndex, setActiveStrokeIndex] = useState(0)
+  const [strokeProgress, setStrokeProgress] = useState(0)
+  const [isCompleted, setIsCompleted] = useState(false)
+  const [sparkles, setSparkles] = useState([])
+  const [isTracing, setIsTracing] = useState(false)
 
-  const [brushColor, setBrushColor] = useState('#0B8F62')
-  const [brushSize, setBrushSize] = useState(16)
-  const [isEraser, setIsEraser] = useState(false)
-  const [showGuide, setShowGuide] = useState(true)
-  const [autoCorrectEnabled, setAutoCorrectEnabled] = useState(true)
-  const [hasDrawn, setHasDrawn] = useState(false)
-  const [isAutoCorrected, setIsAutoCorrected] = useState(false)
-  const [accuracy, setAccuracy] = useState(null)
-  const [evaluationFeedback, setEvaluationFeedback] = useState(null)
-  const [isEvaluating, setIsEvaluating] = useState(false)
+  const svgRef = useRef(null)
+  const activePathRef = useRef(null)
+  const isTracingRef = useRef(false)
+  const pathSamplesRef = useRef([])
 
-  // Clear canvas & reset strokes
-  const clearCanvas = useCallback(() => {
-    if (autoEvalTimerRef.current) {
-      clearTimeout(autoEvalTimerRef.current)
-      autoEvalTimerRef.current = null
-    }
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    strokesRef.current = []
-    setHasDrawn(false)
-    setIsAutoCorrected(false)
-    setAccuracy(null)
-    setEvaluationFeedback(null)
-  }, [])
-
-  // Clear canvas when character changes
+  // Reset when character changes
   useEffect(() => {
-    clearCanvas()
-  }, [character, clearCanvas])
+    setActiveStrokeIndex(0)
+    setStrokeProgress(0)
+    setIsCompleted(false)
+    setSparkles([])
+    isTracingRef.current = false
+    setIsTracing(false)
+  }, [character])
 
-  // Play letter pronunciation
-  const handlePlayAudio = () => {
-    AudioService.speak(character, languageId)
-  }
+  // Memoized synchronous SVG path measurement & high-density sampling
+  const activeStroke = strokes[activeStrokeIndex]
 
-  // Get canvas coordinates relative to element
-  const getCoordinates = (e) => {
-    const canvas = canvasRef.current
-    if (!canvas) return { x: 0, y: 0 }
-    const rect = canvas.getBoundingClientRect()
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
+  const activePathData = useMemo(() => {
+    if (!activeStroke || activeStroke.type === 'dot') {
+      return { totalLength: 0, samples: [] }
     }
-  }
-
-  // Start stroke
-  const startDrawing = (e) => {
-    if (e.cancelable && e.type.startsWith('touch')) {
-      e.preventDefault()
-    }
-    if (autoEvalTimerRef.current) {
-      clearTimeout(autoEvalTimerRef.current)
-      autoEvalTimerRef.current = null
+    if (typeof document === 'undefined') {
+      return { totalLength: 100, samples: [] }
     }
 
-    const { x, y } = getCoordinates(e)
-    isDrawingRef.current = true
-    lastPointRef.current = { x, y }
-
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    ctx.beginPath()
-    ctx.arc(x, y, (isEraser ? brushSize * 1.5 : brushSize) / 2, 0, Math.PI * 2)
-    ctx.fillStyle = isEraser ? 'rgba(0,0,0,1)' : brushColor
-    if (isEraser) {
-      ctx.globalCompositeOperation = 'destination-out'
-    } else {
-      ctx.globalCompositeOperation = 'source-over'
-    }
-    ctx.fill()
-
-    strokesRef.current.push([{ x, y }])
-    setHasDrawn(true)
-  }
-
-  // Draw stroke curve
-  const draw = (e) => {
-    if (!isDrawingRef.current) return
-    if (e.cancelable && e.type.startsWith('touch')) {
-      e.preventDefault()
-    }
-
-    const { x, y } = getCoordinates(e)
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-
-    if (isEraser) {
-      ctx.globalCompositeOperation = 'destination-out'
-      ctx.lineWidth = brushSize * 1.8
-    } else {
-      ctx.globalCompositeOperation = 'source-over'
-      ctx.strokeStyle = brushColor
-      ctx.lineWidth = brushSize
-    }
-
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-
-    ctx.beginPath()
-    ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y)
-    // Smooth quadratic curve to midpoint
-    const midX = (lastPointRef.current.x + x) / 2
-    const midY = (lastPointRef.current.y + y) / 2
-    ctx.quadraticCurveTo(lastPointRef.current.x, lastPointRef.current.y, midX, midY)
-    ctx.stroke()
-
-    lastPointRef.current = { x, y }
-    const currentStroke = strokesRef.current[strokesRef.current.length - 1]
-    if (currentStroke) {
-      currentStroke.push({ x, y })
-    }
-  }
-
-  // ── Auto-Correction Snapping Renderer ──
-  const snapAndAutoCorrect = useCallback((score) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const width = canvas.width
-    const height = canvas.height
-
-    // Clear imperfect user strokes and render perfect calligraphic character with glow
-    ctx.clearRect(0, 0, width, height)
-    ctx.globalCompositeOperation = 'source-over'
-
-    // Subtle golden/emerald glow shadow
-    ctx.shadowColor = brushColor
-    ctx.shadowBlur = 18
-    ctx.fillStyle = brushColor
-    ctx.font = `bold ${Math.floor(height * 0.65)}px "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Bengali", "Noto Sans Gurmukhi", "Noto Sans Gujarati", sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(character, width / 2, height / 2)
-
-    // Reset shadow
-    ctx.shadowBlur = 0
-
-    setIsAutoCorrected(true)
-    const finalScore = Math.max(95, score || 96)
-    setAccuracy(finalScore)
-
-    setEvaluationFeedback({
-      type: 'excellent',
-      title: 'Auto-Corrected to Perfect Form! ✨',
-      stars: 3,
-      message: 'Your stroke was recognized in the correct frame and beautifully snapped!',
-    })
-
-    AudioService.playChime(true)
-    if (onMastered) onMastered(character, finalScore)
-  }, [brushColor, character, onMastered])
-
-  // ── Accuracy Stroke Evaluator ──
-  const evaluateWriting = useCallback((isAutoTriggered = false) => {
-    const canvas = canvasRef.current
-    if (!canvas || !hasDrawn) return
-
-    setIsEvaluating(true)
-
-    setTimeout(() => {
-      try {
-        const width = canvas.width
-        const height = canvas.height
-
-        // 1. Render reference letter on offscreen canvas
-        const offscreen = document.createElement('canvas')
-        offscreen.width = width
-        offscreen.height = height
-        const offCtx = offscreen.getContext('2d')
-
-        offCtx.fillStyle = '#000000'
-        offCtx.font = `bold ${Math.floor(height * 0.65)}px "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Bengali", "Noto Sans Gurmukhi", "Noto Sans Gujarati", sans-serif`
-        offCtx.textAlign = 'center'
-        offCtx.textBaseline = 'middle'
-        offCtx.fillText(character, width / 2, height / 2)
-
-        const refData = offCtx.getImageData(0, 0, width, height).data
-
-        // 2. Read user canvas pixels
-        const userCtx = canvas.getContext('2d')
-        const userData = userCtx.getImageData(0, 0, width, height).data
-
-        let refPixels = 0
-        let userPixels = 0
-        let overlapPixels = 0
-
-        // Step by 4 bytes (RGBA)
-        for (let i = 3; i < refData.length; i += 16) {
-          const refAlpha = refData[i] > 40
-          const userAlpha = userData[i] > 40
-
-          if (refAlpha) refPixels++
-          if (userAlpha) userPixels++
-          if (refAlpha && userAlpha) overlapPixels++
-        }
-
-        let calculatedScore = 0
-        if (refPixels > 0) {
-          const coverage = overlapPixels / refPixels
-          const precision = userPixels > 0 ? overlapPixels / userPixels : 0
-          const rawScore = coverage * 0.7 + precision * 0.3
-          calculatedScore = Math.min(100, Math.max(15, Math.round(rawScore * 135)))
-        } else {
-          calculatedScore = 85
-        }
-
-        // Auto-correct if within correct frame & autoCorrectEnabled
-        if (autoCorrectEnabled && calculatedScore >= 52 && !isAutoCorrected) {
-          snapAndAutoCorrect(calculatedScore)
-          return
-        }
-
-        setAccuracy(calculatedScore)
-
-        if (calculatedScore >= 80) {
-          setEvaluationFeedback({
-            type: 'excellent',
-            title: 'Outstanding Calligraphy! 🌟',
-            stars: 3,
-            message: 'Your strokes match the native letter form gracefully.',
-          })
-          AudioService.playChime(true)
-          if (onMastered) onMastered(character, calculatedScore)
-        } else if (calculatedScore >= 60) {
-          setEvaluationFeedback({
-            type: 'good',
-            title: 'Great Effort! 👍',
-            stars: 2,
-            message: 'Good stroke shape. Follow the guide lines closely for perfection.',
-          })
-          AudioService.playChime(true)
-        } else {
-          if (!isAutoTriggered) {
-            setEvaluationFeedback({
-              type: 'practice',
-              title: 'Keep Practicing ✏️',
-              stars: 1,
-              message: 'Trace smoothly over the character template from top to bottom.',
-            })
-          }
-        }
-      } catch (e) {
-        setAccuracy(92)
-        setEvaluationFeedback({
-          type: 'good',
-          title: 'Letter Completed! ✨',
-          stars: 2,
-          message: 'Nicely written! Keep practicing to master the script.',
-        })
-      } finally {
-        setIsEvaluating(false)
+    try {
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      pathEl.setAttribute('d', activeStroke.path)
+      const totalLength = pathEl.getTotalLength() || 100
+      const samples = []
+      const sampleCount = 80
+      for (let i = 0; i <= sampleCount; i++) {
+        const len = (i / sampleCount) * totalLength
+        const pt = pathEl.getPointAtLength(len)
+        samples.push({ x: pt.x, y: pt.y, t: i / sampleCount, len })
       }
-    }, 350)
-  }, [character, hasDrawn, autoCorrectEnabled, isAutoCorrected, snapAndAutoCorrect, onMastered])
+      return { totalLength, samples }
+    } catch {
+      return { totalLength: 100, samples: [] }
+    }
+  }, [activeStroke])
 
-  // Stop stroke & schedule auto-evaluation
-  const stopDrawing = () => {
-    isDrawingRef.current = false
-    lastPointRef.current = null
+  // Play audio pronunciation
+  const handlePlayAudio = useCallback(() => {
+    AudioService.speak(character, languageId)
+  }, [character, languageId])
 
-    // Schedule debounced auto-evaluation
-    if (autoCorrectEnabled && hasDrawn && !isAutoCorrected) {
-      if (autoEvalTimerRef.current) clearTimeout(autoEvalTimerRef.current)
-      autoEvalTimerRef.current = setTimeout(() => {
-        evaluateWriting(true)
-      }, 700)
+  // Auto-play audio on initial load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handlePlayAudio()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [character, handlePlayAudio])
+
+  // Reset current letter to practice again
+  const handleReset = () => {
+    setActiveStrokeIndex(0)
+    setStrokeProgress(0)
+    setIsCompleted(false)
+    setSparkles([])
+    isTracingRef.current = false
+    setIsTracing(false)
+  }
+
+  // Trigger spark particles on stroke completion
+  const spawnSparkle = (x, y) => {
+    const id = Date.now() + Math.random()
+    setSparkles((prev) => [...prev, { id, x, y }])
+    setTimeout(() => {
+      setSparkles((prev) => prev.filter((s) => s.id !== id))
+    }, 800)
+  }
+
+  // Advance to next stroke or finish character
+  const completeCurrentStroke = useCallback(() => {
+    const currentStroke = strokes[activeStrokeIndex]
+    if (currentStroke?.end) {
+      spawnSparkle(currentStroke.end.x, currentStroke.end.y)
+    }
+
+    try {
+      AudioService.playChime(true)
+    } catch {}
+
+    if (activeStrokeIndex + 1 >= strokes.length) {
+      // Completed all strokes for this letter
+      setActiveStrokeIndex(strokes.length)
+      setStrokeProgress(1)
+      setIsCompleted(true)
+      isTracingRef.current = false
+      setIsTracing(false)
+
+      // Audio feedback & speak character
+      setTimeout(() => {
+        handlePlayAudio()
+      }, 250)
+    } else {
+      // Advance to next stroke
+      setActiveStrokeIndex((prev) => prev + 1)
+      setStrokeProgress(0)
+      isTracingRef.current = false
+      setIsTracing(false)
+    }
+  }, [activeStrokeIndex, strokes, handlePlayAudio])
+
+  // Convert client pointer coordinate to SVG coordinate space
+  const getSvgCoordinates = (e) => {
+    const svg = svgRef.current
+    if (!svg) return { x: 0, y: 0 }
+    const pt = svg.createSVGPoint()
+    pt.x = e.clientX
+    pt.y = e.clientY
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse())
+    return { x: svgP.x, y: svgP.y }
+  }
+
+  // Handle pointer down (mouse click / touch)
+  const handlePointerDown = (e) => {
+    if (isCompleted || activeStrokeIndex >= strokes.length) return
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    e.preventDefault()
+
+    const currentStroke = strokes[activeStrokeIndex]
+    const { x, y } = getSvgCoordinates(e)
+
+    // If it's a dot stroke, clicking near it completes it immediately
+    if (currentStroke?.type === 'dot') {
+      const dist = Math.hypot(x - currentStroke.start.x, y - currentStroke.start.y)
+      if (dist < 60) {
+        completeCurrentStroke()
+      }
+      return
+    }
+
+    const samples = activePathData.samples
+    if (!samples || samples.length === 0) return
+
+    // Find distance to start or closest point on first half of stroke
+    const startPoint = samples[0]
+    const distToStart = Math.hypot(x - startPoint.x, y - startPoint.y)
+
+    let closestDist = Infinity
+    let closestT = 0
+    for (const sample of samples) {
+      const d = Math.hypot(x - sample.x, y - sample.y)
+      if (d < closestDist) {
+        closestDist = d
+        closestT = sample.t
+      }
+    }
+
+    // Generous start zone: within 80px of start point OR near curve with progress <= 0.4
+    if (distToStart <= 80 || (closestDist <= 75 && closestT <= 0.45)) {
+      isTracingRef.current = true
+      setIsTracing(true)
+      setStrokeProgress(Math.max(0, closestT))
+      try {
+        e.target.setPointerCapture?.(e.pointerId)
+      } catch {}
+    }
+  }
+
+  // Handle pointer move (smooth, forgiving auto-correct along path)
+  const handlePointerMove = (e) => {
+    if (isCompleted || activeStrokeIndex >= strokes.length) return
+
+    // Ensure mouse button is down for mouse interactions
+    if (e.pointerType === 'mouse' && e.buttons !== 1) {
+      if (isTracingRef.current) {
+        isTracingRef.current = false
+        setIsTracing(false)
+        if (strokeProgress < 0.65) setStrokeProgress(0)
+      }
+      return
+    }
+
+    const { x, y } = getSvgCoordinates(e)
+    const samples = activePathData.samples
+    if (!samples || samples.length === 0) return
+
+    // If mouse button is held down and user drags near the start, auto-start tracing
+    if (!isTracingRef.current) {
+      const startPt = samples[0]
+      if (Math.hypot(x - startPt.x, y - startPt.y) <= 70) {
+        isTracingRef.current = true
+        setIsTracing(true)
+        try {
+          e.target.setPointerCapture?.(e.pointerId)
+        } catch {}
+      } else {
+        return
+      }
+    }
+
+    const currentStroke = strokes[activeStrokeIndex]
+    if (currentStroke?.type === 'dot') return
+
+    // Find the closest point on the stroke curve to the cursor
+    let minDist = Infinity
+    let closestT = 0
+
+    for (const sample of samples) {
+      const d = Math.hypot(x - sample.x, y - sample.y)
+      if (d < minDist) {
+        minDist = d
+        closestT = sample.t
+      }
+    }
+
+    // Generous tolerance (up to 85px from curve) & smooth forward progression
+    if (minDist <= 85) {
+      if (closestT >= strokeProgress - 0.18) {
+        const newProgress = Math.max(strokeProgress, closestT)
+        setStrokeProgress(newProgress)
+
+        // Snap to 100% when reaching 80% of the stroke
+        if (newProgress >= 0.80) {
+          completeCurrentStroke()
+        }
+      }
+    }
+  }
+
+  // Handle pointer up / mouse button release
+  const handlePointerUp = (e) => {
+    if (isCompleted) return
+    isTracingRef.current = false
+    setIsTracing(false)
+
+    try {
+      if (e?.pointerId && e?.target?.releasePointerCapture) {
+        e.target.releasePointerCapture(e.pointerId)
+      }
+    } catch {}
+
+    // Snap completion if user dragged past 65%
+    if (strokeProgress >= 0.65) {
+      completeCurrentStroke()
+    } else {
+      setStrokeProgress(0)
+    }
+  }
+
+  // When user clicks the big green CHECK button
+  const handleCheck = () => {
+    if (!isCompleted) return
+
+    try {
+      AudioService.playVictory()
+    } catch {}
+
+    if (onMastered) {
+      onMastered(character, 100)
+    }
+
+    if (onNext) {
+      onNext()
     }
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-5 sm:p-6 shadow-sm space-y-5">
-      {/* ── Top Header & Character Overview ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-[#E8E6E0] dark:border-slate-800">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={handlePlayAudio}
-            className="w-14 h-14 rounded-2xl bg-[#0B8F62] hover:bg-[#09734e] text-white flex items-center justify-center transition-transform active:scale-95 shadow-md flex-shrink-0"
-            title="Hear native letter pronunciation"
-          >
-            <Volume2 size={26} />
-          </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-black text-[#25231F] dark:text-white">
-                {character}
-              </span>
-              <span className="text-sm font-bold px-2.5 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
-                /{roman}/
-              </span>
-            </div>
-            {example && (
-              <p className="text-xs font-semibold text-[#77736B] dark:text-slate-400 mt-0.5">
-                Example: <span className="text-[#25231F] dark:text-slate-200">{example}</span>
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setAutoCorrectEnabled(!autoCorrectEnabled)}
-            className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 border transition-all ${
-              autoCorrectEnabled
-                ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]'
-                : 'border-[#E8E6E0] dark:border-slate-800 text-[#77736B] dark:text-slate-400'
-            }`}
-            title="Smart Auto-Correct & Stroke Snapping"
-          >
-            <Wand2 size={14} />
-            <span>Auto-Correct {autoCorrectEnabled ? 'ON' : 'OFF'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowGuide(!showGuide)}
-            className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 border transition-all ${
-              showGuide
-                ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]'
-                : 'border-[#E8E6E0] dark:border-slate-800 text-[#77736B] dark:text-slate-400'
-            }`}
-            title="Toggle Letter Guide Outline"
-          >
-            {showGuide ? <Eye size={14} /> : <EyeOff size={14} />}
-            <span>Guide {showGuide ? 'ON' : 'OFF'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={clearCanvas}
-            className="px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 transition-colors"
-            title="Clear canvas"
-          >
-            <RotateCcw size={14} />
-            <span>Clear</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── Interactive Writing Canvas Box ── */}
-      <div className={`relative w-full aspect-square max-w-[360px] mx-auto rounded-3xl bg-[#F7F5EF] dark:bg-slate-950 border-2 border-dashed transition-all overflow-hidden select-none touch-none shadow-inner ${
-        isAutoCorrected
-          ? 'border-[#0B8F62] ring-4 ring-[#0B8F62]/20'
-          : 'border-[#0B8F62]/40'
-      }`}>
-        {/* Background Grid Lines for Calligraphy Alignment */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-[#25231F] dark:border-white" />
-          <div className="absolute top-0 bottom-0 left-1/2 border-l border-dashed border-[#25231F] dark:border-white" />
-          <div className="absolute top-1/4 left-0 right-0 border-t border-dotted border-[#25231F] dark:border-white" />
-          <div className="absolute bottom-1/4 left-0 right-0 border-t border-dotted border-[#25231F] dark:border-white" />
-        </div>
-
-        {/* Faint Guide Character */}
-        {showGuide && !isAutoCorrected && (
-          <div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-25 dark:opacity-20 select-none"
-            aria-hidden="true"
-          >
-            <span className="text-[180px] sm:text-[200px] font-black text-[#25231F] dark:text-white leading-none">
-              {character}
-            </span>
-          </div>
-        )}
-
-        {/* Active HTML5 Canvas */}
-        <canvas
-          ref={canvasRef}
-          width={400}
-          height={400}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-          className="relative z-10 w-full h-full cursor-crosshair touch-none"
-        />
-
-        {/* Empty Canvas Prompt Overlay */}
-        {!hasDrawn && (
-          <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 text-[11px] font-bold text-[#77736B] dark:text-slate-400 shadow-sm border border-[#E8E6E0] dark:border-slate-800">
-              <Pencil size={12} className="text-[#0B8F62]" /> Trace inside the frame — Auto-corrects on finish!
-            </span>
-          </div>
-        )}
-
-        {/* Auto-Corrected Glow Overlay */}
-        {isAutoCorrected && (
-          <div className="absolute top-3 right-3 pointer-events-none z-20">
-            <span className="inline-flex items-center gap-1 bg-[#0B8F62] text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md animate-pulse">
-              <Sparkles size={11} /> Auto-Snapped!
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* ── Toolbar: Color & Brush Sizes ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        {/* Color Palette */}
-        <div className="flex items-center gap-2">
-          <Palette size={14} className="text-[#77736B] dark:text-slate-400" />
-          {BRUSH_COLORS.map((c) => (
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between select-none">
+      {/* ── TOP HEADER: Progress Bar & Exit ── */}
+      {showTopBar && (
+        <div className="flex items-center gap-3 mb-4 w-full">
+          {onClose && (
             <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                setBrushColor(c.value)
-                setIsEraser(false)
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          )}
+
+          {/* Duolingo Pill Progress Bar */}
+          <div className="flex-1 h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <motion.div
+              className="h-full bg-[#58CC02] rounded-full"
+              initial={{ width: 0 }}
+              animate={{
+                width: `${Math.max(10, ((currentIndex + (isCompleted ? 1 : 0)) / Math.max(1, totalCount)) * 100)}%`,
               }}
-              className={`w-7 h-7 rounded-full transition-transform ${
-                brushColor === c.value && !isEraser
-                  ? 'ring-2 ring-offset-2 ring-[#0B8F62] scale-110'
-                  : 'hover:scale-105'
-              }`}
-              style={{ backgroundColor: c.value }}
-              title={c.label}
-              aria-label={c.label}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+
+          <button
+            onClick={handleReset}
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Reset letter"
+          >
+            <RotateCcw size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* ── TITLE ── */}
+      <div className="text-left mb-3">
+        <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white tracking-tight">
+          Trace the character
+        </h2>
+      </div>
+
+      {/* ── AUDIO BUTTON & CHARACTER PREVIEW ── */}
+      <div className="flex items-center gap-4 mb-4">
+        {/* Cyan Audio Speaker Button */}
+        <button
+          type="button"
+          onClick={handlePlayAudio}
+          className="w-13 h-13 rounded-2xl bg-[#1CB0F6] hover:bg-[#0ea5e9] active:scale-95 text-white flex items-center justify-center shadow-[0_3px_0_#0284c7] transition-all cursor-pointer shrink-0"
+          title="Listen to character pronunciation"
+        >
+          <Volume2 size={24} className="fill-current" />
+        </button>
+
+        {/* Character & Transliteration */}
+        <div className="flex flex-col">
+          <span className="text-3xl font-black text-[#25231F] dark:text-white leading-tight">
+            {character}
+          </span>
+          <span className="text-sm font-bold text-slate-400 dark:text-slate-500">
+            {roman}
+          </span>
+        </div>
+      </div>
+
+      {/* ── MAIN DUOLINGO TRACING CANVAS ── */}
+      <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[370px] mx-auto bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-100 dark:border-slate-800/80 shadow-lg p-2 flex items-center justify-center overflow-hidden touch-none">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 300 300"
+          className="w-full h-full cursor-crosshair select-none"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          {/* Subtle Duolingo Grid Crosshairs */}
+          <line
+            x1="150"
+            y1="25"
+            x2="150"
+            y2="275"
+            stroke="#E2E8F0"
+            className="dark:stroke-slate-800"
+            strokeWidth="2.5"
+            strokeDasharray="6 6"
+          />
+          <line
+            x1="25"
+            y1="150"
+            x2="275"
+            y2="150"
+            stroke="#E2E8F0"
+            className="dark:stroke-slate-800"
+            strokeWidth="2.5"
+            strokeDasharray="6 6"
+          />
+
+          {/* 1. Base Outline of ALL strokes (Faint light gray background) */}
+          {strokes.map((s, idx) => (
+            <path
+              key={`bg-${idx}`}
+              d={s.path}
+              stroke="#E2E8F0"
+              className="dark:stroke-slate-800/90"
+              strokeWidth={s.type === 'dot' ? '28' : '32'}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill={s.type === 'dot' ? '#E2E8F0' : 'none'}
             />
           ))}
 
-          <button
-            type="button"
-            onClick={() => setIsEraser(!isEraser)}
-            className={`p-1.5 rounded-xl border transition-all ${
-              isEraser
-                ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
-                : 'border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F]'
-            }`}
-            title="Eraser tool"
-          >
-            <Eraser size={16} />
-          </button>
-        </div>
+          {/* 2. Completed Strokes (Solid Vivid Blue) */}
+          {strokes.map((s, idx) => {
+            if (idx < activeStrokeIndex || isCompleted) {
+              return (
+                <path
+                  key={`done-${idx}`}
+                  d={s.path}
+                  stroke="#1CB0F6"
+                  strokeWidth={s.type === 'dot' ? '28' : '32'}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill={s.type === 'dot' ? '#1CB0F6' : 'none'}
+                />
+              )
+            }
+            return null
+          })}
 
-        {/* Brush Size Picker */}
-        <div className="flex items-center gap-1.5 bg-[#F7F5EF] dark:bg-slate-800/80 p-1 rounded-2xl border border-[#E8E6E0] dark:border-slate-700">
-          {BRUSH_SIZES.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => setBrushSize(b.size)}
-              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all ${
-                brushSize === b.size
-                  ? 'bg-white dark:bg-slate-700 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
-                  : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F]'
-              }`}
-            >
-              {b.label}
-            </button>
+          {/* 3. Active Stroke Guide (Animated dashed line + Snapped auto-correct fill) */}
+          {activeStroke && !isCompleted && (
+            <g>
+              {/* Invisible reference path for measurement */}
+              <path
+                ref={activePathRef}
+                d={activeStroke.path}
+                fill="none"
+                stroke="transparent"
+                strokeWidth="1"
+              />
+
+              {/* Animated Dashed Guide Line */}
+              {activeStroke.type !== 'dot' && (
+                <path
+                  d={activeStroke.path}
+                  stroke="#1CB0F6"
+                  strokeWidth="4"
+                  strokeDasharray="8 8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  className="animate-pulse"
+                />
+              )}
+
+              {/* Revealed Auto-Corrected Snapped Stroke Fill */}
+              {activeStroke.type !== 'dot' && strokeProgress > 0 && activePathData?.totalLength && (
+                <path
+                  d={activeStroke.path}
+                  stroke="#1CB0F6"
+                  strokeWidth="32"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  strokeDasharray={activePathData.totalLength}
+                  strokeDashoffset={activePathData.totalLength * (1 - strokeProgress)}
+                />
+              )}
+
+              {/* Dot Stroke Guide */}
+              {activeStroke.type === 'dot' && (
+                <circle
+                  cx={activeStroke.start.x}
+                  cy={activeStroke.start.y}
+                  r="15"
+                  fill="#1CB0F6"
+                  className="animate-ping opacity-75"
+                />
+              )}
+            </g>
+          )}
+
+          {/* 4. Directional Start Indicator Badge (Cyan bubble with white directional arrow) */}
+          {activeStroke && !isCompleted && activeStroke.type !== 'dot' && strokeProgress < 0.85 && (
+            <g transform={`translate(${activeStroke.start.x}, ${activeStroke.start.y})`}>
+              <circle
+                r="18"
+                fill="#1CB0F6"
+                className="shadow-lg filter drop-shadow-md"
+              />
+              <text
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="white"
+                fontSize="16"
+                fontWeight="900"
+                className="pointer-events-none select-none font-sans"
+              >
+                {activeStroke.arrow || '↓'}
+              </text>
+            </g>
+          )}
+
+          {/* 5. Destination End Arrow Marker */}
+          {activeStroke && !isCompleted && activeStroke.type !== 'dot' && activeStroke.end && (
+            <circle
+              cx={activeStroke.end.x}
+              cy={activeStroke.end.y}
+              r="7"
+              fill="#1CB0F6"
+              opacity="0.4"
+            />
+          )}
+
+          {/* 6. Sparkle particle bursts */}
+          {sparkles.map((sp) => (
+            <g key={sp.id} transform={`translate(${sp.x}, ${sp.y})`}>
+              <circle r="12" fill="#FBBF24" opacity="0.8" className="animate-ping" />
+              <circle r="6" fill="#10B981" />
+            </g>
           ))}
-        </div>
+        </svg>
+
+        {/* Full Letter Complete Glow Overlay */}
+        <AnimatePresence>
+          {isCompleted && (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="absolute inset-0 bg-[#1CB0F6]/10 flex flex-col items-center justify-center pointer-events-none"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+                className="w-14 h-14 rounded-full bg-[#58CC02] text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-2"
+              >
+                <Check size={32} strokeWidth={3.5} />
+              </motion.div>
+              <span className="text-sm font-black text-[#58CC02] uppercase tracking-wider">
+                Nicely Traced!
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── Evaluation Result Card ── */}
-      <AnimatePresence>
-        {evaluationFeedback && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`p-4 rounded-2xl border-2 flex items-center justify-between gap-4 ${
-              evaluationFeedback.type === 'excellent'
-                ? 'bg-[#0B8F62]/10 border-[#0B8F62] text-[#0B8F62] dark:text-[#34D399]'
-                : evaluationFeedback.type === 'good'
-                ? 'bg-[#3B82F6]/10 border-[#3B82F6] text-[#3B82F6] dark:text-[#60A5FA]'
-                : 'bg-[#F39A45]/10 border-[#F39A45] text-[#F39A45]'
-            }`}
-          >
-            <div>
-              <div className="flex items-center gap-1.5 font-black text-sm">
-                <span>{evaluationFeedback.title}</span>
-                <span className="text-xs bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full font-extrabold shadow-sm">
-                  {accuracy}% Accuracy
-                </span>
-              </div>
-              <p className="text-xs text-[#25231F] dark:text-slate-300 mt-1">
-                {evaluationFeedback.message}
-              </p>
-            </div>
+      {/* Example Context Pill */}
+      {example && (
+        <p className="text-center text-xs font-semibold text-slate-400 dark:text-slate-500 mt-3">
+          Example: <span className="font-bold text-slate-700 dark:text-slate-300">{example}</span>
+        </p>
+      )}
 
-            {onNext && (
-              <button
-                type="button"
-                onClick={onNext}
-                className="px-4 py-2 bg-[#0B8F62] hover:bg-[#09734e] text-white rounded-xl text-xs font-black flex items-center gap-1 shadow-md transition-transform active:scale-95 flex-shrink-0"
-              >
-                <span>Next Letter</span>
-                <ChevronRight size={14} />
-              </button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Manual Check Writing Button (Optional Backup) ── */}
-      <div className="pt-2">
+      {/* ── BOTTOM DUOLINGO ACTION BAR: CHECK BUTTON ── */}
+      <div className="pt-4 pb-2">
         <button
           type="button"
-          disabled={!hasDrawn || isEvaluating}
-          onClick={() => evaluateWriting(false)}
-          className={`w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-md transition-all ${
-            hasDrawn && !isEvaluating
-              ? 'bg-[#0B8F62] hover:bg-[#09734e] text-white active:scale-98 cursor-pointer'
-              : 'bg-[#E8E6E0] dark:bg-slate-800 text-[#77736B] dark:text-slate-500 cursor-not-allowed'
+          onClick={handleCheck}
+          disabled={!isCompleted}
+          className={`w-full py-3.5 sm:py-4 rounded-2xl uppercase tracking-wider font-black text-sm sm:text-base flex items-center justify-center gap-2 transition-all ${
+            isCompleted
+              ? 'bg-[#58CC02] hover:bg-[#61E002] active:translate-y-1 active:shadow-none text-white shadow-[0_4px_0_#46a302] cursor-pointer'
+              : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
           }`}
         >
-          {isEvaluating ? (
-            <span className="flex items-center gap-2">
-              <Sparkles size={16} className="animate-spin" /> Analyzing Stroke Accuracy...
-            </span>
-          ) : isAutoCorrected ? (
-            <span className="flex items-center gap-2">
-              <CheckCircle2 size={18} /> Mastered ({accuracy}%) — Click Next to Advance
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <CheckCircle2 size={18} /> Check Stroke & Accuracy
-            </span>
-          )}
+          <span>{isCompleted ? 'Check' : 'Check'}</span>
+          {isCompleted && <ArrowRight size={18} strokeWidth={3} />}
         </button>
       </div>
     </div>

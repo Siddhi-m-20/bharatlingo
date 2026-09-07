@@ -270,7 +270,7 @@ export default function SpeakingExercise({
   // ── Skip speaking ────────────────────────────────────────────────────────────
   const handleSkip = useCallback(() => {
     // Skip does NOT penalize: pass targetWord so it's treated as correct
-    // (ASR unavailable/failure should not remove hearts)
+    // (ASR unavailable/failure never penalizes the learner)
     onSubmit(targetWord)
   }, [targetWord, onSubmit])
 

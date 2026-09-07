@@ -33,15 +33,15 @@ export default function AppSidebar() {
       {/* ======================================================== */}
       {/* 1. DESKTOP FIXED LEFT SIDEBAR (Width 256px / 64 Tailwind) */}
       {/* ======================================================== */}
-      <aside className="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 bg-white dark:bg-slate-900 border-r-2 border-[#E8E6E0] dark:border-slate-800 p-3.5 z-40">
+      <aside className="hidden md:flex flex-col justify-between w-72 h-screen fixed left-0 top-0 bg-white dark:bg-slate-900 border-r-2 border-[#E8E6E0] dark:border-slate-800 p-4 z-40 overflow-y-auto">
         <div>
           {/* Logo Brand Header */}
-          <NavLink to="/dashboard" className="block px-2 py-1.5 mb-3">
-            <BharatLingoLogo size="medium" />
+          <NavLink to="/dashboard" className="block px-2 py-2 mb-4 hover:opacity-90 transition-opacity">
+            <BharatLingoLogo size="small" />
           </NavLink>
 
           {/* Vertical Navigation Links */}
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {navItems.map((item, idx) => {
               const Icon = item.icon
               if (item.action === 'alphabet') {
@@ -49,10 +49,10 @@ export default function AppSidebar() {
                   <button
                     key={idx}
                     onClick={() => setShowAlphabetModal(true)}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white transition-all text-left group"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white transition-all text-left group"
                   >
-                    <Icon size={19} className="text-[#77736B] group-hover:text-[#0B8F62] transition-colors" />
-                    <span>{item.label}</span>
+                    <Icon size={20} className="text-[#77736B] group-hover:text-[#0B8F62] transition-colors shrink-0" />
+                    <span className="truncate">{item.label}</span>
                   </button>
                 )
               }
@@ -62,14 +62,14 @@ export default function AppSidebar() {
                 <NavLink
                   key={idx}
                   to={item.to}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
                     isActive
                       ? 'bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 border border-[#0B8F62] text-[#0B8F62] dark:text-[#34D399] shadow-sm'
                       : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800 hover:text-[#25231F] dark:hover:text-white border border-transparent'
                   }`}
                 >
-                  <Icon size={19} className={isActive ? 'text-[#0B8F62] dark:text-[#34D399]' : 'text-[#77736B]'} />
-                  <span>{item.label}</span>
+                  <Icon size={20} className={`shrink-0 ${isActive ? 'text-[#0B8F62] dark:text-[#34D399]' : 'text-[#77736B]'}`} />
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               )
             })}
@@ -78,14 +78,14 @@ export default function AppSidebar() {
 
         {/* Footer User Mini-Pill */}
         {user && (
-          <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-xl border border-[#E8E6E0] dark:border-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <div className="w-7 h-7 rounded-full bg-[#0B8F62] text-white flex items-center justify-center font-black text-xs shrink-0">
+          <div className="mt-4 p-3 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-xl border border-[#E8E6E0] dark:border-slate-700 flex items-center justify-between min-w-0 max-w-full">
+            <div className="flex items-center gap-2.5 overflow-hidden min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-full bg-[#0B8F62] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <div className="overflow-hidden">
+              <div className="overflow-hidden min-w-0 flex-1">
                 <p className="text-xs font-bold text-[#25231F] dark:text-white truncate">{user.name}</p>
-                <p className="text-[10px] text-[#77736B] dark:text-slate-400 truncate">{user.email}</p>
+                <p className="text-[11px] text-[#77736B] dark:text-slate-400 truncate">{user.email}</p>
               </div>
             </div>
           </div>

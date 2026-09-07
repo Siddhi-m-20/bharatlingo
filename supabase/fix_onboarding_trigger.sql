@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (
-    id, name, email, preferred_language, learning_language, goal, level, daily_goal, xp, streak, hearts, completed_lessons, vocabulary, achievements
+    id, name, email, preferred_language, learning_language, goal, level, daily_goal, xp, streak, completed_lessons, vocabulary, achievements
   ) VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
@@ -26,7 +26,6 @@ BEGIN
     10,
     0,
     0,
-    5,
     '[]'::jsonb,
     '{}'::jsonb,
     '[]'::jsonb
@@ -34,10 +33,6 @@ BEGIN
 
   INSERT INTO public.streaks (user_id, current_streak, longest_streak, last_extended_date)
   VALUES (new.id, 0, 0, NULL)
-  ON CONFLICT (user_id) DO NOTHING;
-
-  INSERT INTO public.hearts (user_id, current_hearts, max_hearts)
-  VALUES (new.id, 5, 5)
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;

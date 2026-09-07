@@ -102,7 +102,7 @@ export default function Settings() {
       <AppSidebar />
 
       {/* 2. CENTER SETTINGS CONTENT */}
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Appearance & Themes */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
           <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../../services/auth'
+import { useAuth, getNextAuthRedirect } from '../../services/auth'
 import Button from '../../components/Button'
 
 export default function Login() {
@@ -45,8 +45,9 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
-      await loginWithGoogle()
-      navigate('/dashboard')
+      const loggedUser = await loginWithGoogle()
+      const destination = getNextAuthRedirect(loggedUser)
+      navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || 'Google sign-in failed' })
     } finally {
@@ -61,8 +62,9 @@ export default function Login() {
     
     setLoading(true)
     try {
-      await login(formData.email, formData.password)
-      navigate('/dashboard')
+      const loggedUser = await login(formData.email, formData.password)
+      const destination = getNextAuthRedirect(loggedUser)
+      navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || 'Invalid email or password' })
     } finally {

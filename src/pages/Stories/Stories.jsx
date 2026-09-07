@@ -25,7 +25,7 @@ export default function Stories() {
       <AppSidebar />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Header banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-6 md:p-8 text-white shadow-xl mb-8">
           <div className="relative z-10">

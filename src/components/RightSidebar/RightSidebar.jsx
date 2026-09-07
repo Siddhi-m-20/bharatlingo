@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Trophy, Zap, Heart, RotateCcw, Search, Volume2, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Trophy, Zap, Search, Volume2, Sparkles, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { getLanguageById } from '../../data/languages'
@@ -14,7 +14,7 @@ import XPBadge from '../XPBadge'
 export default function RightSidebar() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { hearts, restoreHearts, gems, quests, claimQuestReward } = useProgress()
+  const { gems, quests, claimQuestReward } = useProgress()
 
   const [queryText, setQueryText] = useState('')
   const [translatedResult, setTranslatedResult] = useState(null)
@@ -39,27 +39,14 @@ export default function RightSidebar() {
 
   return (
     <aside className="w-80 hidden lg:flex flex-col space-y-4 shrink-0 py-6 pr-4">
-      {/* 1. TOP HEADER STATUS BAR (Flag, Streak, XP, Gems, Hearts) */}
-      <div className="flex items-center justify-between gap-1 p-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm w-full min-w-0">
+      {/* 1. TOP HEADER STATUS BAR (Flag, Streak, XP, Gems) */}
+      <div className="flex items-center justify-between gap-1.5 p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-full min-w-0">
         <LanguageDropdown />
         <StreakBadge streak={user?.streak || 0} />
         <XPBadge xp={user?.xp || 0} />
-        <div className="flex items-center gap-1 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 shrink-0 font-black text-xs">
-          <span className="text-[11px]">💎</span>
+        <div className="flex items-center gap-1 bg-cyan-50 dark:bg-cyan-950/60 px-2.5 py-1 rounded-xl border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 shrink-0 font-black text-xs">
+          <span className="text-xs">💎</span>
           <span>{user?.gems !== undefined ? Number(user.gems) : gems}</span>
-        </div>
-        <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 px-2 py-1 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 shrink-0 font-black text-xs">
-          <Heart size={13} className="text-rose-500 fill-rose-500 shrink-0" />
-          <span>{user?.hearts !== undefined ? Number(user.hearts) : hearts}</span>
-          {(user?.hearts !== undefined ? Number(user.hearts) : hearts) < 5 && (
-            <button
-              onClick={restoreHearts}
-              className="text-emerald-600 hover:scale-110 transition-transform ml-0.5 shrink-0"
-              title="Refill Hearts"
-            >
-              <RotateCcw size={10} />
-            </button>
-          )}
         </div>
       </div>
 

@@ -10,7 +10,7 @@
  * Features:
  * - Real TTS audio via central AudioButton & AudioService
  * - Normal vs Slow-speed replay
- * - Safe fallback if audio unavailable (never consumes hearts on audio failure)
+ * - Safe fallback if audio unavailable (never penalizes learner on audio failure)
  * - Dialogue / Audio Comprehension question format
  */
 

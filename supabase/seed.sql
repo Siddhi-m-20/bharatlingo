@@ -51,31 +51,31 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Lessons
-INSERT INTO public.lessons (id, unit_id, language_id, lesson_order, name, name_native, category, xp_reward, hearts_cost)
+INSERT INTO public.lessons (id, unit_id, language_id, lesson_order, name, name_native, category, xp_reward)
 VALUES
-  ('hi-greetings', 'hi-unit-1', 'hi', 1, 'Greetings', 'अभिवादन', 'Everyday Essentials', 25, 1),
-  ('hi-everyday', 'hi-unit-1', 'hi', 2, 'Everyday Words', 'दैनिक शब्द', 'Everyday Essentials', 25, 1),
-  ('hi-numbers', 'hi-unit-1', 'hi', 3, 'Numbers 1-10', 'संख्या १-१०', 'Everyday Essentials', 30, 1),
-  ('hi-food', 'hi-unit-2', 'hi', 4, 'Food & Drink', 'खान-पान', 'Daily Life', 30, 1),
-  ('hi-family', 'hi-unit-2', 'hi', 5, 'Family & Relations', 'परिवार और रिश्ते', 'Daily Life', 35, 1),
-  ('hi-travel', 'hi-unit-3', 'hi', 6, 'Travel & Directions', 'यात्रा और दिशाएं', 'Travel & Places', 40, 1),
+  ('hi-greetings', 'hi-unit-1', 'hi', 1, 'Greetings', 'अभिवादन', 'Everyday Essentials', 25),
+  ('hi-everyday', 'hi-unit-1', 'hi', 2, 'Everyday Words', 'दैनिक शब्द', 'Everyday Essentials', 25),
+  ('hi-numbers', 'hi-unit-1', 'hi', 3, 'Numbers 1-10', 'संख्या १-१०', 'Everyday Essentials', 30),
+  ('hi-food', 'hi-unit-2', 'hi', 4, 'Food & Drink', 'खान-पान', 'Daily Life', 30),
+  ('hi-family', 'hi-unit-2', 'hi', 5, 'Family & Relations', 'परिवार और रिश्ते', 'Daily Life', 35),
+  ('hi-travel', 'hi-unit-3', 'hi', 6, 'Travel & Directions', 'यात्रा और दिशाएं', 'Travel & Places', 40),
 
-  ('mr-greetings', 'mr-unit-1', 'mr', 1, 'Greetings', 'नमस्कार', 'Everyday Essentials', 25, 1),
-  ('mr-everyday', 'mr-unit-1', 'mr', 2, 'Everyday Words', 'दैनिक शब्द', 'Everyday Essentials', 25, 1),
-  ('mr-numbers', 'mr-unit-1', 'mr', 3, 'Numbers 1-10', 'संख्या १-१०', 'Everyday Essentials', 30, 1),
-  ('mr-food', 'mr-unit-2', 'mr', 4, 'Food & Drink', 'अन्न व पेय', 'Daily Life', 30, 1),
-  ('mr-family', 'mr-unit-2', 'mr', 5, 'Family', 'कुटुंब', 'Daily Life', 35, 1),
+  ('mr-greetings', 'mr-unit-1', 'mr', 1, 'Greetings', 'नमस्कार', 'Everyday Essentials', 25),
+  ('mr-everyday', 'mr-unit-1', 'mr', 2, 'Everyday Words', 'दैनिक शब्द', 'Everyday Essentials', 25),
+  ('mr-numbers', 'mr-unit-1', 'mr', 3, 'Numbers 1-10', 'संख्या १-१०', 'Everyday Essentials', 30),
+  ('mr-food', 'mr-unit-2', 'mr', 4, 'Food & Drink', 'अन्न व पेय', 'Daily Life', 30),
+  ('mr-family', 'mr-unit-2', 'mr', 5, 'Family', 'कुटुंब', 'Daily Life', 35),
 
-  ('ta-greetings', 'ta-unit-1', 'ta', 1, 'Greetings', 'வணக்கம்', 'Everyday Essentials', 25, 1),
-  ('ta-everyday', 'ta-unit-1', 'ta', 2, 'Everyday Words', 'தினசரி சொற்கள்', 'Everyday Essentials', 25, 1),
-  ('te-greetings', 'te-unit-1', 'te', 1, 'Greetings', 'నమస్కారం', 'Everyday Essentials', 25, 1),
-  ('te-everyday', 'te-unit-1', 'te', 2, 'Everyday Words', 'రోజువారీ పదాలు', 'Everyday Essentials', 25, 1),
-  ('bn-greetings', 'bn-unit-1', 'bn', 1, 'Greetings', 'নমস্কার / সালাম', 'Everyday Essentials', 25, 1),
-  ('bn-everyday', 'bn-unit-1', 'bn', 2, 'Everyday Words', 'দৈনন্দিন শব্দ', 'Everyday Essentials', 25, 1),
-  ('pa-greetings', 'pa-unit-1', 'pa', 1, 'Greetings', 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ', 'Everyday Essentials', 25, 1),
-  ('pa-everyday', 'pa-unit-1', 'pa', 2, 'Everyday Words', 'ਰੋਜ਼ਾਨਾ ਸ਼ਬਦ', 'Everyday Essentials', 25, 1),
-  ('gu-greetings', 'gu-unit-1', 'gu', 1, 'Greetings', 'નમસ્તે', 'Everyday Essentials', 25, 1),
-  ('gu-everyday', 'gu-unit-1', 'gu', 2, 'Everyday Words', 'રોજિંદા શબ્દો', 'Everyday Essentials', 25, 1)
+  ('ta-greetings', 'ta-unit-1', 'ta', 1, 'Greetings', 'வணக்கம்', 'Everyday Essentials', 25),
+  ('ta-everyday', 'ta-unit-1', 'ta', 2, 'Everyday Words', 'தினசரி சொற்கள்', 'Everyday Essentials', 25),
+  ('te-greetings', 'te-unit-1', 'te', 1, 'Greetings', 'నమస్కారం', 'Everyday Essentials', 25),
+  ('te-everyday', 'te-unit-1', 'te', 2, 'Everyday Words', 'రోజువారీ పదాలు', 'Everyday Essentials', 25),
+  ('bn-greetings', 'bn-unit-1', 'bn', 1, 'Greetings', 'নমস্কার / সালাম', 'Everyday Essentials', 25),
+  ('bn-everyday', 'bn-unit-1', 'bn', 2, 'Everyday Words', 'দৈনন্দিন शब्द', 'Everyday Essentials', 25),
+  ('pa-greetings', 'pa-unit-1', 'pa', 1, 'Greetings', 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ', 'Everyday Essentials', 25),
+  ('pa-everyday', 'pa-unit-1', 'pa', 2, 'Everyday Words', 'ਰੋਜ਼ਾਨਾ ਸ਼ਬਦ', 'Everyday Essentials', 25),
+  ('gu-greetings', 'gu-unit-1', 'gu', 1, 'Greetings', 'નમસ્તે', 'Everyday Essentials', 25),
+  ('gu-everyday', 'gu-unit-1', 'gu', 2, 'Everyday Words', 'રોજિંદા શબ્દો', 'Everyday Essentials', 25)
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Achievements

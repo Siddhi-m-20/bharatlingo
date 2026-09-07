@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../services/auth'
+import { useAuth, getNextAuthRedirect } from '../../services/auth'
 import Button from '../../components/Button'
 
 export default function Signup() {
@@ -46,8 +46,9 @@ export default function Signup() {
   const handleGoogleSignup = async () => {
     setLoading(true)
     try {
-      await loginWithGoogle()
-      navigate('/dashboard')
+      const loggedUser = await loginWithGoogle()
+      const destination = getNextAuthRedirect(loggedUser)
+      navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || 'Google sign-in failed' })
     } finally {

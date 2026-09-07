@@ -10,8 +10,8 @@ export default function QuestionCard({
   return (
     <motion.div
       className={`
-        bg-white rounded-2xl shadow-lg p-6 md:p-8
-        ${showResult ? (isCorrect ? 'border-2 border-[#2F9E69]' : 'border-2 border-[#D84B42]') : ''}
+        bg-white dark:bg-slate-900 border border-[#E8E6E0] dark:border-slate-800 rounded-2xl shadow-lg p-6 md:p-8
+        ${showResult ? (isCorrect ? 'border-2 border-[#2F9E69] dark:border-[#2F9E69]' : 'border-2 border-[#D84B42] dark:border-[#D84B42]') : ''}
         ${className}
       `}
       initial={{ opacity: 0, y: 20 }}

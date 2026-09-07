@@ -12,7 +12,6 @@ export async function recordLessonCompletion({
   xpEarned,
   accuracy = 100,
   isPerfect = false,
-  heartsLost = 0,
   durationSeconds = 60,
 }) {
   if (!userId) return null
@@ -28,7 +27,6 @@ export async function recordLessonCompletion({
           xp_earned: xpEarned,
           accuracy: accuracy,
           is_perfect: isPerfect,
-          hearts_lost: heartsLost,
           duration_seconds: durationSeconds,
         },
       ])

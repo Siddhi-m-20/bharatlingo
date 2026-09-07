@@ -38,7 +38,6 @@ function mapProfileToUser(profile, authUser) {
     learningPlan: profile?.learning_plan || null,
     xp: Number(profile?.xp) || 0,
     gems: profile?.gems !== undefined ? Number(profile.gems) : 100,
-    hearts: profile?.hearts !== undefined ? Number(profile.hearts) : 5,
     streak: Number(profile?.streak) || 0,
     lastActiveDate: profile?.last_active_date || null,
     completedLessons: existingCompleted,
@@ -66,7 +65,6 @@ function mapUserUpdatesToProfile(updates) {
   if (updates.assessmentScore !== undefined) mapped.assessment_score = updates.assessmentScore
   if (updates.learningPlan !== undefined) mapped.learning_plan = updates.learningPlan
   if (updates.xp !== undefined) mapped.xp = Number(updates.xp)
-  if (updates.hearts !== undefined) mapped.hearts = Number(updates.hearts)
   if (updates.streak !== undefined) mapped.streak = Number(updates.streak)
   if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate
   if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
@@ -149,13 +147,6 @@ function mergeUserProfiles(remoteProfile, localProfile) {
   const localStreak = Number(localProfile.streak) || 0
   const mergedStreak = Math.max(remoteStreak, localStreak)
 
-  let mergedHearts = 5
-  if (localProfile.hearts !== undefined && localProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(localProfile.hearts)))
-  } else if (remoteProfile.hearts !== undefined && remoteProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(remoteProfile.hearts)))
-  }
-
   const mergedQuests = localProfile.activeQuests || remoteProfile.activeQuests || null
 
   return {
@@ -175,7 +166,6 @@ function mergeUserProfiles(remoteProfile, localProfile) {
     learningPlan: localProfile.learningPlan || remoteProfile.learningPlan || null,
     xp: mergedXP,
     gems: mergedGems,
-    hearts: mergedHearts,
     streak: mergedStreak,
     lastActiveDate: localProfile.lastActiveDate || remoteProfile.lastActiveDate || null,
     completedLessons: mergedCompleted,
@@ -212,7 +202,6 @@ function runSuite() {
       email: 'priya@gmail.com',
       xp: 40,
       gems: 100,
-      hearts: 5,
       streak: 1,
       completed_lessons: ['hi-1'],
       language_progress: { hi: { xp: 40, completedLessons: ['hi-1'] } }
@@ -224,7 +213,6 @@ function runSuite() {
       email: 'priya@gmail.com',
       xp: 145, // Earned 105 XP during session
       gems: 130, // Earned 30 Gems
-      hearts: 3, // Lost 2 hearts
       streak: 2,
       completedLessons: ['hi-1', 'hi-2', 'hi-3'],
       languageProgress: { hi: { xp: 145, completedLessons: ['hi-1', 'hi-2', 'hi-3'] } }
@@ -235,7 +223,6 @@ function runSuite() {
 
     assert(merged.xp === 145, `XP remains 145 (does not drop to 40 on refresh)`)
     assert(merged.gems === 130, `Gems remain 130 (does not drop to 100 on refresh)`)
-    assert(merged.hearts === 3, `Hearts remain 3 (in-session heart loss preserved)`)
     assert(merged.streak === 2, `Streak remains 2 (does not drop to 1 on refresh)`)
     assert(merged.completedLessons.length === 3, `All 3 completed lessons retained`)
     assert(merged.languageProgress.hi.xp === 145, `Language progress Hindi XP remains 145`)
@@ -248,7 +235,6 @@ function runSuite() {
       id: 'usr_abc',
       xp: 40,
       gems: 100,
-      hearts: 5,
       learningLanguage: 'hi',
       completedLessons: [],
       languageProgress: { hi: { xp: 40, completedLessons: [] } }
@@ -272,12 +258,7 @@ function runSuite() {
       }
     }
 
-    // Simulate answering 1 question wrong (-1 heart)
-    currentUser = {
-      ...currentUser,
-      hearts: Math.max(0, currentUser.hearts - 1)
-    }
-
+    // Pedagogical principle: Mistake does not deduct hearts or halt learning
     // Simulate completing lesson (+15 bonus XP, +5 gems)
     currentUser = {
       ...currentUser,
@@ -288,15 +269,13 @@ function runSuite() {
 
     assert(currentUser.xp === 85, `Total XP correctly accumulated to 85 (40 + 30 + 15), got: ${currentUser.xp}`)
     assert(currentUser.gems === 105, `Total Gems accumulated to 105, got: ${currentUser.gems}`)
-    assert(currentUser.hearts === 4, `Hearts correctly reduced to 4, got: ${currentUser.hearts}`)
 
     // Now simulate refresh: remote DB still has 40
-    const remoteStale = mapProfileToUser({ id: 'usr_abc', xp: 40, gems: 100, hearts: 5 }, { id: 'usr_abc' })
+    const remoteStale = mapProfileToUser({ id: 'usr_abc', xp: 40, gems: 100 }, { id: 'usr_abc' })
     const afterRefresh = mergeUserProfiles(remoteStale, currentUser)
 
     assert(afterRefresh.xp === 85, `Post-refresh XP is 85, got: ${afterRefresh.xp}`)
     assert(afterRefresh.gems === 105, `Post-refresh Gems is 105, got: ${afterRefresh.gems}`)
-    assert(afterRefresh.hearts === 4, `Post-refresh Hearts is 4, got: ${afterRefresh.hearts}`)
   }
 
   // TEST 3: Safe SQL Column Mapping
@@ -305,7 +284,6 @@ function runSuite() {
     const appUpdates = {
       name: 'Rohan',
       xp: 260,
-      hearts: 4,
       streak: 4,
       avatar: 'https://avatar.url',
       preferredLanguage: 'en',
@@ -326,7 +304,6 @@ function runSuite() {
 
     assert(mapped.name === 'Rohan', `Name mapped: ${mapped.name}`)
     assert(mapped.xp === 260, `XP mapped as number: ${mapped.xp}`)
-    assert(mapped.hearts === 4, `Hearts mapped as number: ${mapped.hearts}`)
     assert(mapped.streak === 4, `Streak mapped as number: ${mapped.streak}`)
     assert(mapped.avatar_url === 'https://avatar.url', `Avatar mapped to avatar_url: ${mapped.avatar_url}`)
     assert(mapped.preferred_language === 'en', `preferred_language mapped: ${mapped.preferred_language}`)
@@ -337,6 +314,7 @@ function runSuite() {
     assert(mapped.language_progress === undefined, `Unknown column language_progress not sent to Postgres`)
     assert(mapped.gems === undefined, `Unknown column gems not sent to Postgres profiles update`)
     assert(mapped.active_quests === undefined, `Unknown column active_quests not sent to Postgres profiles update`)
+    assert(mapped.hearts === undefined, `Hearts column removed and not sent to Postgres`)
   }
 
   console.log(`\n========================================`)

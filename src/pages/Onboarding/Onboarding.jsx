@@ -46,18 +46,11 @@ export default function Onboarding() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
   const [currentStep, setCurrentStep] = useState(STEPS.AGE)
-  const [selectedAge, setSelectedAge]               = useState('')
-  const [selectedPreferredLang, setSelectedPreferredLang] = useState('en')
-  const [selectedTargetLang, setSelectedTargetLang] = useState('')
-  const [selectedGoal, setSelectedGoal]             = useState('')
-  const [selectedDailyGoal, setSelectedDailyGoal]   = useState(10)
-
-  // If onboarding was already completed (learningLanguage + goal set), skip straight to dashboard.
-  // This prevents returning users from being asked the same questions every login.
-  if (user && user.learningLanguage && user.goal) {
-    navigate('/dashboard', { replace: true })
-    return null
-  }
+  const [selectedAge, setSelectedAge]               = useState(user?.ageRange || '')
+  const [selectedPreferredLang, setSelectedPreferredLang] = useState(user?.preferredLanguage || 'en')
+  const [selectedTargetLang, setSelectedTargetLang] = useState(user?.learningLanguage || '')
+  const [selectedGoal, setSelectedGoal]             = useState(user?.goal || '')
+  const [selectedDailyGoal, setSelectedDailyGoal]   = useState(user?.dailyGoal || 10)
 
   const handleNext = () => {
     if (currentStep < STEPS.DAILY_GOAL) {
@@ -80,6 +73,9 @@ export default function Onboarding() {
       learningLanguage: selectedTargetLang,
       goal: selectedGoal,
       dailyGoal: selectedDailyGoal,
+      hasCompletedAssessment: false,
+      assessmentScore: null,
+      learningPlan: null,
     })
     navigate('/assessment')
   }

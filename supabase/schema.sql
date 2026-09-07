@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS public.lessons (
   name_native VARCHAR(150) NOT NULL,
   category VARCHAR(100) DEFAULT 'Everyday Essentials',
   xp_reward INTEGER DEFAULT 25,
-  hearts_cost INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -134,7 +133,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   learning_plan JSONB DEFAULT NULL, -- Personalized plan generated after assessment
   xp INTEGER DEFAULT 0,
   streak INTEGER DEFAULT 0,
-  hearts INTEGER DEFAULT 5,
   last_active_date TEXT,
   completed_lessons JSONB DEFAULT '[]'::jsonb,
   vocabulary JSONB DEFAULT '{}'::jsonb,
@@ -171,7 +169,6 @@ CREATE TABLE IF NOT EXISTS public.lesson_attempts (
   xp_earned INTEGER DEFAULT 0,
   accuracy NUMERIC(5,2) DEFAULT 100.00,
   is_perfect BOOLEAN DEFAULT false,
-  hearts_lost INTEGER DEFAULT 0,
   duration_seconds INTEGER DEFAULT 0,
   completed_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -258,17 +255,6 @@ CREATE TABLE IF NOT EXISTS public.user_achievements (
   UNIQUE(user_id, achievement_id)
 );
 
--- ==============================================================================
--- 17. HEARTS LOG & RESTORATION TABLE
--- ==============================================================================
-CREATE TABLE IF NOT EXISTS public.hearts (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE UNIQUE,
-  current_hearts INTEGER DEFAULT 5,
-  max_hearts INTEGER DEFAULT 5,
-  last_lost_at TIMESTAMPTZ,
-  last_restored_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 -- ==============================================================================
 -- 18. LEADERBOARD ENTRIES TABLE
@@ -319,7 +305,6 @@ ALTER TABLE public.streaks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.hearts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leaderboard_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
@@ -408,9 +393,6 @@ CREATE POLICY "Users can read own achievements" ON public.user_achievements FOR 
 DROP POLICY IF EXISTS "Users can insert own achievements" ON public.user_achievements;
 CREATE POLICY "Users can insert own achievements" ON public.user_achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Hearts
-DROP POLICY IF EXISTS "Users can manage own hearts" ON public.hearts;
-CREATE POLICY "Users can manage own hearts" ON public.hearts FOR ALL USING (auth.uid() = user_id);
 
 -- Leaderboard Entries
 DROP POLICY IF EXISTS "Users can update own leaderboard entry" ON public.leaderboard_entries;
@@ -429,7 +411,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (
-    id, name, email, preferred_language, learning_language, goal, level, daily_goal, xp, streak, hearts, completed_lessons, vocabulary, achievements
+    id, name, email, preferred_language, learning_language, goal, level, daily_goal, xp, streak, completed_lessons, vocabulary, achievements
   ) VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
@@ -441,7 +423,6 @@ BEGIN
     10,
     0,
     0,
-    5,
     '[]'::jsonb,
     '{}'::jsonb,
     '[]'::jsonb
@@ -449,10 +430,6 @@ BEGIN
 
   INSERT INTO public.streaks (user_id, current_streak, longest_streak, last_extended_date)
   VALUES (new.id, 0, 0, NULL)
-  ON CONFLICT (user_id) DO NOTHING;
-
-  INSERT INTO public.hearts (user_id, current_hearts, max_hearts)
-  VALUES (new.id, 5, 5)
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;

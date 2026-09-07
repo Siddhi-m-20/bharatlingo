@@ -1,4 +1,4 @@
-// Indian Script & Alphabet Charts (Varnamala / Aksharamala) for 9 Indian Languages
+// Indian Script & Alphabet Charts (Varnamala / Aksharamala) for 8 Supported Languages
 
 export const alphabetDataByLanguage = {
   hi: {
@@ -68,7 +68,8 @@ export const alphabetDataByLanguage = {
       { char: 'ओ', roman: 'o', example: 'ओठ (Lips)' },
       { char: 'औ', roman: 'au', example: 'औषध (Medicine)' },
       { char: 'अं', roman: 'am', example: 'अंगठी (Ring)' },
-      { char: 'ॲ / ऑ', roman: 'ae / aw', example: 'बॅट / बॉल (Bat/Ball)' },
+      { char: 'ॲ', roman: 'ae', example: 'बॅट (Bat)' },
+      { char: 'ऑ', roman: 'aw', example: 'बॉल (Ball)' },
     ],
     consonantsTitle: 'व्यंजन (Consonants)',
     consonants: [

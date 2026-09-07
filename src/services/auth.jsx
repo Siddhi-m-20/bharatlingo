@@ -3,6 +3,24 @@ import { supabase, isSupabaseConfigured } from './supabase'
 
 const AuthContext = createContext(null)
 
+// Helper: Determine next route for authenticated user
+export function getNextAuthRedirect(user) {
+  if (!user) return '/login'
+  // If newcomer has not set learning language or goal -> onboarding
+  if (!user.learningLanguage || !user.goal) {
+    return '/onboarding'
+  }
+  // If newcomer has not completed assessment and has no completed lessons -> assessment
+  if (
+    !user.hasCompletedAssessment &&
+    (user.assessmentScore === null || user.assessmentScore === undefined) &&
+    (!user.completedLessons || user.completedLessons.length === 0)
+  ) {
+    return '/assessment'
+  }
+  return '/dashboard'
+}
+
 // Helper: map DB snake_case profile to App user format
 export function mapProfileToUser(profile, authUser) {
   if (!profile && !authUser) return null
@@ -31,16 +49,15 @@ export function mapProfileToUser(profile, authUser) {
     bio: profile?.bio || '',
     preferredLanguage: profile?.preferred_language || 'en',
     learningLanguage: learningLang,
-    goal: profile?.goal || 'conversation',
+    goal: profile?.goal || null,
     level: profile?.level || 'beginner',
     dailyGoal: profile?.daily_goal || 10,
     ageRange: profile?.age_range || 'adult',
     assessmentScore: profile?.assessment_score ?? null,
-    hasCompletedAssessment: profile?.has_completed_assessment ?? (profile?.assessment_score !== null && profile?.assessment_score !== undefined || existingCompleted.length > 0),
+    hasCompletedAssessment: profile?.has_completed_assessment ?? (Boolean(profile?.assessment_score !== null && profile?.assessment_score !== undefined) || existingCompleted.length > 0),
     learningPlan: profile?.learning_plan || null,
     xp: Number(profile?.xp) || 0,
-    gems: profile?.gems !== undefined ? Number(profile.gems) : 100,
-    hearts: profile?.hearts !== undefined ? Number(profile.hearts) : 5,
+    gems: profile?.gems !== undefined ? Number(profile.gems) : 0,
     streak: Number(profile?.streak) || 0,
     lastActiveDate: profile?.last_active_date || null,
     completedLessons: existingCompleted,
@@ -67,9 +84,9 @@ export function mapUserUpdatesToProfile(updates) {
   if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
   if (updates.ageRange !== undefined) mapped.age_range = updates.ageRange
   if (updates.assessmentScore !== undefined) mapped.assessment_score = updates.assessmentScore
+  if (updates.hasCompletedAssessment !== undefined) mapped.has_completed_assessment = updates.hasCompletedAssessment
   if (updates.learningPlan !== undefined) mapped.learning_plan = updates.learningPlan
   if (updates.xp !== undefined) mapped.xp = Number(updates.xp)
-  if (updates.hearts !== undefined) mapped.hearts = Number(updates.hearts)
   if (updates.streak !== undefined) mapped.streak = Number(updates.streak)
   if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate
   if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
@@ -154,22 +171,13 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
   const localXP = Number(localProfile.xp) || 0
   const mergedXP = Math.max(remoteXP, localXP)
 
-  const remoteGems = remoteProfile.gems !== undefined ? Number(remoteProfile.gems) : 100
-  const localGems = localProfile.gems !== undefined ? Number(localProfile.gems) : 100
+  const remoteGems = remoteProfile.gems !== undefined ? Number(remoteProfile.gems) : 0
+  const localGems = localProfile.gems !== undefined ? Number(localProfile.gems) : 0
   const mergedGems = Math.max(remoteGems, localGems)
 
   const remoteStreak = Number(remoteProfile.streak) || 0
   const localStreak = Number(localProfile.streak) || 0
   const mergedStreak = Math.max(remoteStreak, localStreak)
-
-  // Hearts: Local heart state represents recent session actions.
-  // If local is valid, preserve it; otherwise fallback to remote or 5.
-  let mergedHearts = 5
-  if (localProfile.hearts !== undefined && localProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(localProfile.hearts)))
-  } else if (remoteProfile.hearts !== undefined && remoteProfile.hearts !== null) {
-    mergedHearts = Math.max(0, Math.min(5, Number(remoteProfile.hearts)))
-  }
 
   // Active quests
   const mergedQuests = localProfile.activeQuests || remoteProfile.activeQuests || null
@@ -181,8 +189,8 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
     name: localProfile.name || remoteProfile.name || 'Learner',
     email: remoteProfile.email || localProfile.email,
     preferredLanguage: localProfile.preferredLanguage || remoteProfile.preferredLanguage || 'en',
-    learningLanguage: localProfile.learningLanguage || remoteProfile.learningLanguage || 'hi',
-    goal: localProfile.goal || remoteProfile.goal || 'conversation',
+    learningLanguage: localProfile.learningLanguage || remoteProfile.learningLanguage || null,
+    goal: localProfile.goal || remoteProfile.goal || null,
     level: localProfile.level || remoteProfile.level || 'beginner',
     dailyGoal: localProfile.dailyGoal || remoteProfile.dailyGoal || 10,
     ageRange: localProfile.ageRange || remoteProfile.ageRange || 'adult',
@@ -191,7 +199,6 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
     learningPlan: localProfile.learningPlan || remoteProfile.learningPlan || null,
     xp: mergedXP,
     gems: mergedGems,
-    hearts: mergedHearts,
     streak: mergedStreak,
     lastActiveDate: localProfile.lastActiveDate || remoteProfile.lastActiveDate || null,
     completedLessons: mergedCompleted,
@@ -235,7 +242,6 @@ export function AuthProvider({ children }) {
           console.warn('syncProfileToSupabase fallback:', error.message)
           const coreUpdates = {
             xp: Number(profile.xp) || 0,
-            hearts: profile.hearts !== undefined ? Number(profile.hearts) : 5,
             streak: Number(profile.streak) || 0,
             completed_lessons: profile.completedLessons || [],
           }
@@ -295,7 +301,6 @@ export function AuthProvider({ children }) {
             daily_goal: 10,
             xp: 0,
             streak: 0,
-            hearts: 5,
           },
         ])
         .select()
@@ -481,32 +486,34 @@ export function AuthProvider({ children }) {
       }
       const { password: _, ...userData } = found
       const currentLocal = userRef.current
-      const mergedUser = mergeUserProfiles(userData, currentLocal)
-      setUser(mergedUser)
-      userRef.current = mergedUser
-      localStorage.setItem('bharatlingo_user', JSON.stringify(mergedUser))
-      return mergedUser
+      const isSameUser = currentLocal && (currentLocal.id === userData.id || (currentLocal.email && currentLocal.email.toLowerCase() === normalizedEmail))
+      const resolvedUser = isSameUser ? mergeUserProfiles(userData, currentLocal) : userData
+      setUser(resolvedUser)
+      userRef.current = resolvedUser
+      localStorage.setItem('bharatlingo_user', JSON.stringify(resolvedUser))
+      return resolvedUser
     }
 
-    // If account was not pre-registered locally, create demo profile
-    const existing = userRef.current
+    // If account was not pre-registered locally, create fresh demo profile
     const mockUser = {
       id: Date.now().toString(),
       name: normalizedEmail.split('@')[0],
       email: normalizedEmail,
-      preferredLanguage: existing?.preferredLanguage || 'en',
-      learningLanguage: existing?.learningLanguage || 'hi',
-      goal: existing?.goal || 'conversation',
-      level: existing?.level || 'beginner',
-      dailyGoal: existing?.dailyGoal || 10,
-      xp: Math.max(0, existing?.xp || 0),
-      gems: Math.max(100, existing?.gems || 100),
-      hearts: existing?.hearts !== undefined ? existing.hearts : 5,
-      streak: Math.max(0, existing?.streak || 0),
-      lastActiveDate: existing?.lastActiveDate || null,
-      completedLessons: existing?.completedLessons || [],
-      vocabulary: existing?.vocabulary || {},
-      achievements: existing?.achievements || [],
+      preferredLanguage: 'en',
+      learningLanguage: null,
+      goal: null,
+      level: 'beginner',
+      dailyGoal: 10,
+      ageRange: 'adult',
+      assessmentScore: null,
+      hasCompletedAssessment: false,
+      xp: 0,
+      gems: 100,
+      streak: 0,
+      lastActiveDate: null,
+      completedLessons: [],
+      vocabulary: {},
+      achievements: [],
       createdAt: new Date().toISOString(),
     }
     users.push({ ...mockUser, password })
@@ -541,32 +548,31 @@ export function AuthProvider({ children }) {
 
     // Local / Offline fallback Google profile (preserves any existing local session progress)
     const existing = userRef.current
-    const currentLang = existing?.learningLanguage || 'hi'
+    const currentLang = existing?.learningLanguage || null
     const googleUser = {
       id: existing?.id && existing.id.startsWith('google_') ? existing.id : 'google_' + Date.now().toString(),
       name: existing?.name || 'Google Learner',
       email: existing?.email || 'learner@gmail.com',
       preferredLanguage: existing?.preferredLanguage || 'en',
       learningLanguage: currentLang,
-      goal: existing?.goal || 'conversation',
+      goal: existing?.goal || null,
       level: existing?.level || 'beginner',
       dailyGoal: existing?.dailyGoal || 10,
       ageRange: existing?.ageRange || 'adult',
-      assessmentScore: existing?.assessmentScore ?? 85,
-      hasCompletedAssessment: existing?.hasCompletedAssessment ?? true,
-      xp: Math.max(40, existing?.xp || 0),
-      gems: Math.max(100, existing?.gems || 0),
-      hearts: existing?.hearts !== undefined ? existing.hearts : 5,
-      streak: Math.max(1, existing?.streak || 1),
-      lastActiveDate: existing?.lastActiveDate || new Date().toISOString().split('T')[0],
+      assessmentScore: existing?.assessmentScore ?? null,
+      hasCompletedAssessment: existing?.hasCompletedAssessment || false,
+      xp: Math.max(0, existing?.xp || 0),
+      gems: existing?.gems !== undefined ? Number(existing.gems) : 0,
+      streak: Math.max(0, existing?.streak || 0),
+      lastActiveDate: existing?.lastActiveDate || null,
       completedLessons: existing?.completedLessons || [],
-      languageProgress: existing?.languageProgress || {
+      languageProgress: existing?.languageProgress || (currentLang ? {
         [currentLang]: {
           completedLessons: existing?.completedLessons || [],
-          xp: Math.max(40, existing?.xp || 0),
+          xp: Math.max(0, existing?.xp || 0),
           level: existing?.level || 'beginner',
         },
-      },
+      } : {}),
       legendaryCompleted: existing?.legendaryCompleted || [],
       vocabulary: existing?.vocabulary || {},
       achievements: existing?.achievements || [],
@@ -617,7 +623,6 @@ export function AuthProvider({ children }) {
             console.warn('Failed to update profile in Supabase:', error.message)
             const coreUpdates = {}
             if (dbUpdates.xp !== undefined) coreUpdates.xp = dbUpdates.xp
-            if (dbUpdates.hearts !== undefined) coreUpdates.hearts = dbUpdates.hearts
             if (dbUpdates.streak !== undefined) coreUpdates.streak = dbUpdates.streak
             if (dbUpdates.last_active_date !== undefined) coreUpdates.last_active_date = dbUpdates.last_active_date
             if (dbUpdates.completed_lessons !== undefined) coreUpdates.completed_lessons = dbUpdates.completed_lessons

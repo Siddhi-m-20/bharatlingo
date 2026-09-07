@@ -124,7 +124,7 @@ export default function Profile() {
       <AppSidebar />
 
       {/* 2. CENTER PROFILE CONTENT */}
-      <main className="flex-1 max-w-[640px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[640px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Success Alert Banner */}
         <AnimatePresence>
           {savedSuccess && (

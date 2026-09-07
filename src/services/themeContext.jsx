@@ -114,16 +114,6 @@ export const uiTranslations = {
     pa: 'ਲੜੀਵਾਰ ਦਿਨ',
     gu: 'સળંગ દિવસો',
   },
-  hearts: {
-    en: 'Hearts',
-    hi: 'ऊर्जा',
-    mr: 'ऊर्जा',
-    ta: 'ஆற்றல்',
-    te: 'శక్తి',
-    bn: 'শক্তি',
-    pa: 'ਊਰਜਾ',
-    gu: 'ઉર્જા',
-  },
   gems: {
     en: 'Gems',
     hi: 'रत्न / सिक्के',

@@ -106,50 +106,55 @@ export default function CelebrationModal({
         </motion.div>
       )}
 
-      {/* Rich Interactive Action Grid */}
-      <div className="space-y-2 max-w-md mx-auto pt-1">
-        {/* Primary Continuation */}
+      {/* Action Buttons */}
+      <div className="space-y-3 max-w-md mx-auto pt-2">
+        {/* Next Lesson Primary Button */}
         <Button
           size="large"
-          className="w-full justify-center flex items-center gap-2 font-black py-3.5 bg-gradient-to-r from-[#0B8F62] to-[#10B981] hover:from-[#097b54] hover:to-[#059669] text-white shadow-md shadow-[#0B8F62]/20"
+          className="w-full justify-center flex items-center gap-2 font-bold py-3 text-base sm:text-lg bg-[#0B8F62] hover:bg-[#0FB878] text-white shadow-md shadow-[#0B8F62]/20 rounded-xl"
           onClick={onContinueNext}
         >
-          <Sparkles size={17} />
-          <span>{nextLesson ? 'Continue to Next Lesson' : 'Start Next Personalized Workout'}</span>
-          <ArrowRight size={17} />
+          <span>Continue to Next Lesson</span>
+          <ArrowRight size={18} />
         </Button>
 
-        {/* Secondary Options Grid */}
-        <div className="grid grid-cols-2 gap-2 pt-0.5">
-          {onReplayTopic && (
-            <button
-              onClick={onReplayTopic}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <RotateCcw size={14} className="text-amber-500" />
-              <span>Practice Again</span>
-            </button>
-          )}
-
-          {onPracticeWeak && (
-            <button
-              onClick={onPracticeWeak}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <Target size={14} className="text-blue-500" />
-              <span>Review Words</span>
-            </button>
-          )}
-        </div>
-
-        {/* Back to Home / Dashboard */}
-        <button
+        {/* Return to Dashboard Secondary Button */}
+        <Button
+          variant="outline"
+          size="large"
+          className="w-full justify-center flex items-center gap-2 font-bold py-3 text-base sm:text-lg border-2 border-[#0B8F62] text-[#0B8F62] hover:bg-[#0B8F62] hover:text-white rounded-xl transition-all"
           onClick={onGoDashboard}
-          className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center gap-1.5 transition-colors"
         >
-          <Home size={15} />
+          <Home size={18} />
           <span>Return to Dashboard</span>
-        </button>
+        </Button>
+
+        {/* Quick Practice Alternatives */}
+        {(onReplayTopic || onPracticeWeak) && (
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {onReplayTopic && (
+              <button
+                type="button"
+                onClick={onReplayTopic}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              >
+                <RotateCcw size={14} className="text-amber-500" />
+                <span>Practice Again</span>
+              </button>
+            )}
+
+            {onPracticeWeak && (
+              <button
+                type="button"
+                onClick={onPracticeWeak}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Target size={14} className="text-blue-500" />
+                <span>Review Words</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   )

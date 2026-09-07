@@ -13,12 +13,12 @@ import { triggerConfetti } from '../../utils/confetti'
 import Button from '../../components/Button'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
-import { Volume2, Sparkles, AlertCircle, Heart, Zap, Clock, Trophy, RotateCcw, Brain, Flame } from 'lucide-react'
+import { Volume2, Sparkles, AlertCircle, Zap, Clock, Trophy, RotateCcw, Brain, Flame } from 'lucide-react'
 
 export default function Practice() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { restoreHearts, addXP, addGems, trackQuestProgress, hearts } = useProgress()
+  const { addXP, addGems, trackQuestProgress } = useProgress()
 
   const [vocabulary, setVocabulary] = useState([])
   const [mistakes, setMistakes] = useState([])
@@ -171,7 +171,7 @@ export default function Practice() {
     <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Banner with SM-2 Spaced Repetition Stats */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl">
           <div className="relative z-10">

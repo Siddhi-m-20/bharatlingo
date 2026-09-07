@@ -28,9 +28,6 @@ export default function Lesson() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const {
-    hearts,
-    loseHeart,
-    restoreHearts,
     gems,
     spendGems,
     addXP,
@@ -115,7 +112,7 @@ export default function Lesson() {
   }, [lessonId, user?.learningLanguage, user?.preferredLanguage, user?.goal, navigate])
 
   const handleAnswer = (answer) => {
-    if (showResult || hearts === 0 || !lesson) return
+    if (showResult || !lesson) return
 
     const timeSpentMs = Date.now() - exerciseStartTimeRef.current
     setSelectedAnswer(answer)
@@ -136,7 +133,6 @@ export default function Lesson() {
 
     if (!isCorrect) {
       audioFX.playWrong()
-      loseHeart()
       setPerfectLesson(false)
     } else {
       audioFX.playCorrect()
@@ -165,36 +161,49 @@ export default function Lesson() {
   }
 
   const completeLessonFlow = async () => {
-    audioFX.playVictory()
-    triggerConfetti()
+    try {
+      audioFX.playVictory()
+      triggerConfetti()
+    } catch {}
 
-    const finalStreak = updateStreak()
-    setStreakResult(finalStreak)
+    try {
+      const finalStreak = updateStreak()
+      if (finalStreak) setStreakResult(finalStreak)
+    } catch (err) {
+      console.error('Error updating streak:', err)
+    }
 
     const correctCount = answers.filter((a) => a.isCorrect).length
-    const accuracy = Math.round((correctCount / Math.max(1, lesson.exercises.length)) * 100)
+    const accuracy = Math.round((correctCount / Math.max(1, lesson?.exercises?.length || 1)) * 100)
     const baseBonus = isLegendary ? 40 : 15
     const earnedXP = totalXPEarned + baseBonus
 
-    addXP(baseBonus)
-    setTotalXPEarned((prev) => prev + baseBonus)
+    try {
+      addXP(baseBonus)
+      setTotalXPEarned((prev) => prev + baseBonus)
+    } catch {}
 
-    if (isLegendary) {
-      if (completeLegendaryLesson) {
-        await completeLegendaryLesson(lessonId)
+    try {
+      if (isLegendary) {
+        if (completeLegendaryLesson) {
+          await completeLegendaryLesson(lessonId)
+        }
+      } else {
+        await completeLesson(lessonId, {
+          xpEarned: earnedXP,
+          accuracy,
+          isPerfect: perfectLesson,
+        })
       }
-    } else {
-      await completeLesson(lessonId, {
-        xpEarned: earnedXP,
-        accuracy,
-        isPerfect: perfectLesson,
-        heartsLost: 5 - hearts,
-      })
+    } catch (err) {
+      console.error('Error saving lesson completion:', err)
     }
 
-    if (perfectLesson) {
-      unlockAchievement('perfect_lesson')
-    }
+    try {
+      if (perfectLesson) {
+        unlockAchievement('perfect_lesson')
+      }
+    } catch {}
 
     // Refresh next adaptive recommendation based on completed performance
     try {
@@ -204,7 +213,7 @@ export default function Lesson() {
         level: user.level || 'beginner',
         goal: user.goal || 'conversation',
       })
-      setNextLesson(refreshedNext)
+      if (refreshedNext) setNextLesson(refreshedNext)
     } catch {}
 
     setLessonComplete(true)
@@ -254,7 +263,7 @@ export default function Lesson() {
             correctAnswer={exercise.correctAnswer}
             languageId={user?.learningLanguage || 'hi'}
             onSubmit={handleAnswer}
-            disabled={showResult || hearts === 0}
+            disabled={showResult}
             showResult={showResult}
           />
         )
@@ -268,7 +277,7 @@ export default function Lesson() {
             exercise={exercise}
             languageId={user?.learningLanguage || 'hi'}
             onAnswer={handleAnswer}
-            disabled={showResult || hearts === 0}
+            disabled={showResult}
             showResult={showResult}
             selectedAnswer={selectedAnswer}
           />
@@ -284,7 +293,7 @@ export default function Lesson() {
             correctAnswer={exercise.correctAnswer}
             languageId={user?.learningLanguage || 'hi'}
             onSubmit={handleAnswer}
-            disabled={showResult || hearts === 0}
+            disabled={showResult}
             showResult={showResult}
           />
         )
@@ -310,12 +319,12 @@ export default function Lesson() {
                         : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
                       : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
                     }
-                    ${showResult || hearts === 0 ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
                   `}
-                  onClick={() => !showResult && hearts > 0 && handleAnswer(option)}
-                  disabled={showResult || hearts === 0}
-                  whileHover={!showResult && hearts > 0 ? { scale: 1.02 } : {}}
-                  whileTap={!showResult && hearts > 0 ? { scale: 0.98 } : {}}
+                  onClick={() => !showResult && handleAnswer(option)}
+                  disabled={showResult}
+                  whileHover={!showResult ? { scale: 1.02 } : {}}
+                  whileTap={!showResult ? { scale: 0.98 } : {}}
                 >
                   <span className="font-medium">{option}</span>
                 </motion.button>
@@ -332,7 +341,7 @@ export default function Lesson() {
               wordBank={exercise.wordBank}
               correctAnswer={exercise.correctAnswer}
               onSubmit={handleAnswer}
-              disabled={showResult || hearts === 0}
+              disabled={showResult}
               showResult={showResult}
               isCorrect={answers[answers.length - 1]?.isCorrect}
             />
@@ -349,13 +358,13 @@ export default function Lesson() {
               onChange={(e) => setSelectedAnswer(e.target.value)}
               className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:border-[#0B8F62] dark:bg-slate-900 dark:text-white"
               placeholder="Type your answer..."
-              disabled={showResult || hearts === 0}
+              disabled={showResult}
             />
             {!showResult && (
               <div className="flex justify-end pt-2">
                 <Button
                   onClick={() => handleAnswer(selectedAnswer)}
-                  disabled={!selectedAnswer.trim() || showResult || hearts === 0}
+                  disabled={!selectedAnswer.trim() || showResult}
                 >
                   Check Answer
                 </Button>
@@ -375,7 +384,7 @@ export default function Lesson() {
             selectedAnswer={selectedAnswer}
             onSelectAnswer={handleAnswer}
             showResult={showResult}
-            disabled={hearts === 0}
+            disabled={showResult}
           />
         )
 
@@ -387,7 +396,7 @@ export default function Lesson() {
             pronunciation={exercise.pronunciation}
             languageId={user?.learningLanguage || 'hi'}
             onSubmit={handleAnswer}
-            disabled={showResult || hearts === 0}
+            disabled={showResult}
             showResult={showResult}
           />
         )
@@ -398,7 +407,7 @@ export default function Lesson() {
             prompt={exercise.prompt}
             pairs={exercise.pairs}
             onSubmit={handleAnswer}
-            disabled={showResult || hearts === 0}
+            disabled={showResult}
             showResult={showResult}
           />
         )
@@ -425,12 +434,12 @@ export default function Lesson() {
                           : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
                         : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
                       }
-                      ${showResult || hearts === 0 ? 'cursor-not-allowed' : 'cursor-pointer'}
+                      ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
-                    onClick={() => !showResult && hearts > 0 && handleAnswer(option)}
-                    disabled={showResult || hearts === 0}
-                    whileHover={!showResult && hearts > 0 ? { scale: 1.02 } : {}}
-                    whileTap={!showResult && hearts > 0 ? { scale: 0.98 } : {}}
+                    onClick={() => !showResult && handleAnswer(option)}
+                    disabled={showResult}
+                    whileHover={!showResult ? { scale: 1.02 } : {}}
+                    whileTap={!showResult ? { scale: 0.98 } : {}}
                   >
                     <span className="font-medium">{option}</span>
                   </motion.button>
@@ -444,13 +453,13 @@ export default function Lesson() {
                   onChange={(e) => setSelectedAnswer(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B8F62] dark:bg-slate-900 dark:text-white"
                   placeholder="Type your answer..."
-                  disabled={showResult || hearts === 0}
+                  disabled={showResult}
                 />
                 {!showResult && (
                   <div className="flex justify-end pt-2">
                     <Button
                       onClick={() => handleAnswer(selectedAnswer)}
-                      disabled={!selectedAnswer.trim() || showResult || hearts === 0}
+                      disabled={!selectedAnswer.trim() || showResult}
                     >
                       Check Answer
                     </Button>
@@ -518,73 +527,19 @@ export default function Lesson() {
     )
   }
 
-  if (hearts === 0 && !lessonComplete) {
-    const currentGems = user?.gems !== undefined ? Number(user.gems) : gems
-    const canRefillWithGems = currentGems >= 50
-
-    return (
-      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <QuestionCard>
-            <div className="text-center py-6 px-2 space-y-4">
-              <div className="text-6xl animate-bounce">💔</div>
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white">You're out of hearts!</h2>
-                <p className="text-xs sm:text-sm font-semibold text-[#77736B] dark:text-slate-400 mt-1">
-                  Keep learning by refilling with gems or review words in practice to earn them back.
-                </p>
-              </div>
-
-              <div className="space-y-2.5 pt-2">
-                {canRefillWithGems && (
-                  <Button
-                    size="large"
-                    className="w-full justify-center flex items-center gap-2 font-black py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-md"
-                    onClick={() => {
-                      if (spendGems(50, 'heart_refill')) {
-                        restoreHearts()
-                      }
-                    }}
-                  >
-                    <span>Refill 5 Hearts (50 💎)</span>
-                  </Button>
-                )}
-
-                <Button
-                  variant={canRefillWithGems ? 'outline' : 'primary'}
-                  size="large"
-                  className="w-full justify-center flex items-center gap-2 font-black"
-                  onClick={() => navigate('/practice')}
-                >
-                  <span>Practice Review (Earn Hearts Free)</span>
-                </Button>
-
-                <button
-                  className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  Back to Dashboard
-                </button>
-              </div>
-            </div>
-          </QuestionCard>
-        </div>
-      </div>
-    )
-  }
 
   if (lessonComplete) {
     const correctCount = answers.filter((a) => a.isCorrect).length
-    const accuracy = Math.round((correctCount / Math.max(1, lesson.exercises.length)) * 100)
+    const accuracy = Math.round((correctCount / Math.max(1, lesson?.exercises?.length || 1)) * 100)
 
     return (
-      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <QuestionCard>
+      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4 py-8 overflow-y-auto">
+        <div className="w-full max-w-md my-auto">
+          <QuestionCard className="dark:bg-slate-900 dark:border-slate-800">
             <CelebrationModal
               totalXP={totalXPEarned}
-              streak={streakResult.newStreak}
-              streakIncreased={streakResult.increased}
+              streak={streakResult?.newStreak || 1}
+              streakIncreased={streakResult?.increased ?? false}
               isPerfect={perfectLesson}
               accuracy={accuracy}
               nextLesson={nextLesson}
@@ -627,12 +582,9 @@ export default function Lesson() {
             </span>
           </div>
 
-          <div className="flex items-center gap-1" title={`${hearts} hearts remaining`}>
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-lg">
-                {i < hearts ? '❤️' : '🖤'}
-              </span>
-            ))}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 rounded-xl border border-[#E8E6E0] dark:border-slate-800 text-xs font-black text-cyan-600 dark:text-cyan-400 shadow-xs">
+            <span>💎</span>
+            <span>{user?.gems !== undefined ? Number(user.gems) : gems}</span>
           </div>
         </div>
 

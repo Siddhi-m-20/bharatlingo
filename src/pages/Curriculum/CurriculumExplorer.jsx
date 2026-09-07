@@ -42,7 +42,7 @@ export default function CurriculumExplorer() {
     <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-64 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 md:p-8 text-white shadow-xl mb-8">
           <div className="relative z-10">
@@ -53,7 +53,7 @@ export default function CurriculumExplorer() {
               Curriculum & Syllabus Explorer
             </h1>
             <p className="text-white/90 text-sm md:text-base max-w-xl">
-              Inspect all progressive pedagogical units, vocabulary banks, sentence structures, and exercise matrices across 9 Indian languages.
+              Inspect all progressive pedagogical units, vocabulary banks, sentence structures, and exercise matrices across 8 supported languages.
             </p>
           </div>
           <div className="absolute right-6 -bottom-6 text-8xl md:text-9xl opacity-20 select-none">

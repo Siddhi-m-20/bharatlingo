@@ -1,12 +1,12 @@
 /**
  * Automated Verification Suite for BharatLingo Persistence and Sync Engine
- * Tests monotonic XP, hearts, gems, streak, and lesson completion synchronization
+ * Tests monotonic XP, gems, streak, and lesson completion synchronization (Heart-Free Model)
  */
 
 import { mergeUserProfiles, mapUserUpdatesToProfile, mapProfileToUser } from '../src/services/auth.jsx'
 
 function runTests() {
-  console.log('🧪 Starting BharatLingo Persistence & Sync Verification Suite...\n')
+  console.log('🧪 Starting BharatLingo Persistence & Sync Verification Suite (Heart-Free Model)...\n')
   let passed = 0
   let failed = 0
 
@@ -29,7 +29,6 @@ function runTests() {
       email: 'learner@example.com',
       xp: 40, // Stale DB value
       gems: 100,
-      hearts: 5,
       streak: 1,
       completed_lessons: ['hi-greetings-1'],
       language_progress: {
@@ -43,7 +42,6 @@ function runTests() {
       email: 'learner@example.com',
       xp: 150, // Accumulated in session
       gems: 125,
-      hearts: 3, // Lost 2 hearts during lesson
       streak: 2,
       completedLessons: ['hi-greetings-1', 'hi-greetings-2'],
       languageProgress: {
@@ -56,10 +54,10 @@ function runTests() {
 
     assert(merged.xp === 150, `XP must be 150 (not reset to 40), got: ${merged.xp}`)
     assert(merged.gems === 125, `Gems must be 125 (not reset to 100), got: ${merged.gems}`)
-    assert(merged.hearts === 3, `Hearts must be 3 (recent session hearts preserved), got: ${merged.hearts}`)
     assert(merged.streak === 2, `Streak must be 2 (not reset to 1), got: ${merged.streak}`)
     assert(merged.completedLessons.length === 2, `Completed lessons must contain 2 items, got: ${merged.completedLessons.length}`)
     assert(merged.languageProgress.hi.xp === 150, `Language progress Hindi XP must be 150, got: ${merged.languageProgress.hi.xp}`)
+    assert(merged.hearts === undefined, `Hearts property eliminated from user profile`)
   }
 
   // TEST 2: Remote Profile with Higher Value Merge
@@ -71,7 +69,6 @@ function runTests() {
       email: 'sync@example.com',
       xp: 300,
       gems: 200,
-      hearts: 5,
       streak: 5,
       completed_lessons: ['hi-greetings-1', 'hi-greetings-2', 'hi-basics-1'],
     }
@@ -82,7 +79,6 @@ function runTests() {
       email: 'sync@example.com',
       xp: 100,
       gems: 100,
-      hearts: 4,
       streak: 2,
       completedLessons: ['hi-greetings-1'],
     }
@@ -102,7 +98,6 @@ function runTests() {
     const appUpdates = {
       name: 'Ananya',
       xp: 220,
-      hearts: 4,
       streak: 3,
       avatar: 'https://example.com/avatar.png',
       learningLanguage: 'mr',
@@ -116,7 +111,7 @@ function runTests() {
 
     assert(dbMapped.name === 'Ananya', `Name mapped correctly: ${dbMapped.name}`)
     assert(dbMapped.xp === 220, `XP mapped to number: ${dbMapped.xp}`)
-    assert(dbMapped.hearts === 4, `Hearts mapped to number: ${dbMapped.hearts}`)
+    assert(dbMapped.hearts === undefined, `Hearts column omitted from DB mapping: ${dbMapped.hearts}`)
     assert(dbMapped.streak === 3, `Streak mapped to number: ${dbMapped.streak}`)
     assert(dbMapped.avatar_url === 'https://example.com/avatar.png', `Avatar mapped to avatar_url: ${dbMapped.avatar_url}`)
     assert(dbMapped.learning_language === 'mr', `learningLanguage mapped: ${dbMapped.learning_language}`)
@@ -130,7 +125,6 @@ function runTests() {
       id: 'guest_1',
       name: 'Guest',
       xp: 40,
-      hearts: 5,
       gems: 100,
       streak: 1,
     }
@@ -142,7 +136,6 @@ function runTests() {
       id: 'db_1',
       name: 'DB User',
       xp: 75,
-      hearts: 4,
       gems: 110,
       streak: 2,
     }
