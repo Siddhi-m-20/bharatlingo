@@ -282,6 +282,9 @@ export function ProgressProvider({ children }) {
         xpEarned: attemptData.xpEarned || 25,
         accuracy: attemptData.accuracy || 100,
         isPerfect: attemptData.isPerfect || false,
+        exercisesCompleted: attemptData.exercisesCompleted || 0,
+        durationSeconds: attemptData.durationSeconds || 60,
+        languageId: user.learningLanguage || null,
       })
     }
 

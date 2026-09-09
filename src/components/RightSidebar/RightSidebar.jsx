@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Trophy, Zap, Search, Volume2, Sparkles, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
+import { useTheme } from '../../services/themeContext'
 import { getLanguageById } from '../../data/languages'
 import { translateTextLive } from '../../services/freeLanguageApi'
 import { speakText } from '../../services/aiService'
@@ -11,10 +12,11 @@ import LanguageDropdown from '../LanguageDropdown/LanguageDropdown'
 import StreakBadge from '../StreakBadge'
 import XPBadge from '../XPBadge'
 
-export default function RightSidebar() {
+export default function RightSidebar({ onStreakClick }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { gems, quests, claimQuestReward } = useProgress()
+  const { t } = useTheme()
 
   const [queryText, setQueryText] = useState('')
   const [translatedResult, setTranslatedResult] = useState(null)
@@ -42,7 +44,7 @@ export default function RightSidebar() {
       {/* 1. TOP HEADER STATUS BAR (Flag, Streak, XP, Gems) */}
       <div className="flex items-center justify-between gap-1.5 p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-full min-w-0">
         <LanguageDropdown />
-        <StreakBadge streak={user?.streak || 0} />
+        <StreakBadge streak={user?.streak || 0} onClick={onStreakClick} />
         <XPBadge xp={user?.xp || 0} />
         <div className="flex items-center gap-1 bg-cyan-50 dark:bg-cyan-950/60 px-2.5 py-1 rounded-xl border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 shrink-0 font-black text-xs">
           <span className="text-xs">💎</span>
@@ -55,11 +57,11 @@ export default function RightSidebar() {
         <div className="flex items-center gap-1.5 mb-1.5">
           <Sparkles size={15} className="text-emerald-500" />
           <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Live AI Translator
+            {t('live_translator') || 'Live AI Translator'}
           </h4>
         </div>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
-          Translate into <span className="font-bold text-emerald-600 dark:text-emerald-400">{learningLang.name}</span> instantly
+          Translate into <span className="font-bold text-emerald-600 dark:text-emerald-400">{learningLang.name}</span>
         </p>
 
         <form onSubmit={handleLiveTranslate} className="space-y-2">
@@ -68,7 +70,7 @@ export default function RightSidebar() {
               type="text"
               value={queryText}
               onChange={(e) => setQueryText(e.target.value)}
-              placeholder={`Type in ${preferredLang.name}...`}
+              placeholder={t('translator_placeholder') || `Type in ${preferredLang.name}...`}
               className="w-full text-xs font-medium px-3 py-2 pr-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-emerald-500 dark:text-white"
             />
             <button
@@ -105,7 +107,7 @@ export default function RightSidebar() {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Daily Quests
+            {t('quests') || 'Daily Quests'}
           </h4>
           <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1">
             <Zap size={12} fill="currentColor" />
@@ -134,10 +136,10 @@ export default function RightSidebar() {
                   onClick={() => claimQuestReward(quest.id)}
                   className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] shadow-sm hover:scale-105 active:scale-95 transition-all shrink-0"
                 >
-                  Claim!
+                  {t('claim_reward') || 'Claim!'}
                 </button>
               ) : quest.claimed ? (
-                <span className="text-[10px] font-bold text-emerald-500 shrink-0">Done ✓</span>
+                <span className="text-[10px] font-bold text-emerald-500 shrink-0">{t('claimed') || 'Done ✓'}</span>
               ) : (
                 <span className="font-bold text-amber-500 text-[10px] shrink-0">
                   +{quest.rewardXP} XP
@@ -159,13 +161,13 @@ export default function RightSidebar() {
               <Trophy size={14} fill="currentColor" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Weekly League</p>
-              <p className="text-[10px] text-slate-400">Rank #{user?.rank || 1} • Top 3 Advance</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('leaderboard') || 'Leaderboard'}</p>
+              <p className="text-[10px] text-slate-400">Rank #{user?.rank || 1} • {t('rank_top_3') || 'Top 3 Advance'}</p>
             </div>
           </div>
         </div>
         <div className="w-full py-1.5 mt-1.5 bg-amber-500/10 group-hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs text-center rounded-lg transition-colors">
-          View Leaderboard →
+          {t('view_leaderboard') || 'View Leaderboard →'}
         </div>
       </div>
     </aside>

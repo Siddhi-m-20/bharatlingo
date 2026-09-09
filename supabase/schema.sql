@@ -123,6 +123,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   avatar_url TEXT,
+  bio TEXT DEFAULT '',
   preferred_language VARCHAR(10) DEFAULT 'en',
   learning_language VARCHAR(10) DEFAULT NULL,
   goal VARCHAR(50) DEFAULT NULL,
@@ -130,13 +131,21 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   daily_goal INTEGER DEFAULT 10, -- in minutes or XP
   age_range VARCHAR(20) DEFAULT NULL, -- 'child', 'teen', 'young-adult', 'adult', 'senior'
   assessment_score INTEGER DEFAULT NULL, -- 0-100 from initial placement assessment
+  has_completed_assessment BOOLEAN DEFAULT false,
   learning_plan JSONB DEFAULT NULL, -- Personalized plan generated after assessment
   xp INTEGER DEFAULT 0,
+  gems INTEGER DEFAULT 0,
   streak INTEGER DEFAULT 0,
   last_active_date TEXT,
   completed_lessons JSONB DEFAULT '[]'::jsonb,
   vocabulary JSONB DEFAULT '{}'::jsonb,
   achievements JSONB DEFAULT '[]'::jsonb,
+  language_progress JSONB DEFAULT '{}'::jsonb,
+  legendary_completed JSONB DEFAULT '[]'::jsonb,
+  active_quests JSONB DEFAULT NULL,
+  completed_stories JSONB DEFAULT '[]'::jsonb,
+  learner_stats JSONB DEFAULT '{}'::jsonb,
+  settings JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -228,6 +237,22 @@ CREATE TABLE IF NOT EXISTS public.daily_goals (
 );
 
 -- ==============================================================================
+-- 15. LEARNING ACTIVITY TABLE (one durable daily/session record per user)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.learning_activity (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  activity_date TEXT NOT NULL,
+  exercises_completed INTEGER DEFAULT 0,
+  xp_earned INTEGER DEFAULT 0,
+  session_duration_seconds INTEGER DEFAULT 0,
+  language_id VARCHAR(10),
+  session_type VARCHAR(50) DEFAULT 'lesson',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, activity_date, session_type)
+);
+
+-- ==============================================================================
 -- 15. ACHIEVEMENTS TABLE
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.achievements (
@@ -303,6 +328,7 @@ ALTER TABLE public.exercise_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.xp_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.streaks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_goals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.learning_activity ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leaderboard_entries ENABLE ROW LEVEL SECURITY;
@@ -356,6 +382,12 @@ CREATE POLICY "Users can read own progress" ON public.user_progress FOR SELECT U
 
 DROP POLICY IF EXISTS "Users can upsert own progress" ON public.user_progress;
 CREATE POLICY "Users can upsert own progress" ON public.user_progress FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can read own learning activity" ON public.learning_activity;
+CREATE POLICY "Users can read own learning activity" ON public.learning_activity FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can upsert own learning activity" ON public.learning_activity;
+CREATE POLICY "Users can upsert own learning activity" ON public.learning_activity FOR ALL USING (auth.uid() = user_id);
 
 -- Lesson Attempts
 DROP POLICY IF EXISTS "Users can read own lesson attempts" ON public.lesson_attempts;

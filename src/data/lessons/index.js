@@ -6,18 +6,19 @@ import { bengaliLessons } from './bengali.js'
 import { punjabiLessons } from './punjabi.js'
 import { gujaratiLessons } from './gujarati.js'
 import { englishLessons } from './english.js'
+import { createComprehensiveFoundationLessons } from './comprehensiveFoundation.js'
 import { getPromptText, getTranslation, dictionary, targetNameMap } from '../translations.js'
 import { getLanguageById } from '../languages.js'
 
 export const rawLessonsByLanguage = {
-  hi: hindiLessons,
-  mr: marathiLessons,
-  ta: tamilLessons,
-  te: teluguLessons,
-  bn: bengaliLessons,
-  pa: punjabiLessons,
-  gu: gujaratiLessons,
-  en: englishLessons,
+  hi: [...hindiLessons, ...createComprehensiveFoundationLessons('hi', 'Hindi')],
+  mr: [...marathiLessons, ...createComprehensiveFoundationLessons('mr', 'Marathi')],
+  ta: [...tamilLessons, ...createComprehensiveFoundationLessons('ta', 'Tamil')],
+  te: [...teluguLessons, ...createComprehensiveFoundationLessons('te', 'Telugu')],
+  bn: [...bengaliLessons, ...createComprehensiveFoundationLessons('bn', 'Bengali')],
+  pa: [...punjabiLessons, ...createComprehensiveFoundationLessons('pa', 'Punjabi')],
+  gu: [...gujaratiLessons, ...createComprehensiveFoundationLessons('gu', 'Gujarati')],
+  en: [...englishLessons, ...createComprehensiveFoundationLessons('en', 'English')],
 }
 
 // Find translation of an English meaning into preferred language

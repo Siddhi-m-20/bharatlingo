@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
+import { fetchLearningAnalytics } from '../../services/dbService'
+import { getSkillProficiencies } from '../../services/learnerModel'
 import { achievements } from '../../data/achievements'
 import { languages, getLanguageById } from '../../data/languages'
 import AppSidebar from '../../components/Navigation/AppSidebar'
@@ -56,11 +58,16 @@ function getAvatarUrl(seed, bg = 'b6e3f4,c0aede,d1d4f9') {
   return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed || 'Bharat')}&backgroundColor=${bg}`
 }
 
+function formatMinutes(seconds) {
+  return `${Math.round((Number(seconds) || 0) / 60)} min`
+}
+
 export default function Profile() {
   const navigate = useNavigate()
   const { user, updateUser, logout } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
+  const [analytics, setAnalytics] = useState({ activity: [], lessonAttempts: [], longestStreak: 0 })
 
   // Edit Form State
   const [name, setName] = useState(user?.name || '')
@@ -73,6 +80,49 @@ export default function Profile() {
   const [dailyGoal, setDailyGoal] = useState(user?.dailyGoal || 10)
 
   const activeCourse = getLanguageById(user?.learningLanguage)
+  const fallbackSkills = getSkillProficiencies(user?.learningLanguage || 'hi')
+
+  useEffect(() => {
+    if (!user?.id || !user?.learningLanguage) return
+    fetchLearningAnalytics(user.id, user.learningLanguage).then(setAnalytics)
+  }, [user?.id, user?.learningLanguage])
+
+  const persistedLearnerStats = user?.learnerStats?.[user?.learningLanguage]
+  const persistedSkills = persistedLearnerStats?.skills
+  const displaySkills = persistedSkills
+    ? {
+        listening: Number(persistedSkills.listening?.score) || 0,
+        speaking: Number(persistedSkills.speaking?.score) || 0,
+        overall: Number(persistedLearnerStats.overallAccuracy) || 0,
+      }
+    : fallbackSkills
+  const activitySummary = analytics.activity.reduce((result, item) => ({
+    exercises: result.exercises + (Number(item.exercises_completed) || 0),
+    xp: result.xp + (Number(item.xp_earned) || 0),
+    seconds: result.seconds + (Number(item.session_duration_seconds) || 0),
+  }), { exercises: 0, xp: 0, seconds: 0 })
+  const activityDatesWithDuration = new Set(analytics.activity
+    .filter((item) => Number(item.session_duration_seconds) > 0)
+    .map((item) => item.activity_date))
+  activitySummary.seconds += analytics.lessonAttempts.reduce((total, attempt) => {
+    const dateKey = attempt.completed_at?.slice(0, 10)
+    return total + (dateKey && !activityDatesWithDuration.has(dateKey) ? Number(attempt.duration_seconds) || 0 : 0)
+  }, 0)
+  const masteryTopics = Object.values(persistedLearnerStats?.topics || {}).filter((topic) => topic.attempts > 0)
+  const mastery = masteryTopics.length > 0
+    ? Math.round(masteryTopics.reduce((sum, topic) => sum + (Number(topic.masteryLevel) || 0), 0) / masteryTopics.length / 5 * 100)
+    : 0
+  const statItems = [
+    ['Learning time', formatMinutes(activitySummary.seconds)],
+    ['Exercises completed', activitySummary.exercises],
+    ['XP earned', activitySummary.xp],
+    ['Accuracy', `${displaySkills.overall}%`],
+    ['Current streak', user?.streak || 0],
+    ['Longest streak', Math.max(analytics.longestStreak, user?.streak || 0)],
+    ['Mastery', `${mastery}%`],
+    ['Listening', `${displaySkills.listening}%`],
+    ['Speaking', `${displaySkills.speaking}%`],
+  ]
   const unlockedAchievements = user
     ? achievements.filter((achievement) => achievement.condition(user))
     : []
@@ -226,6 +276,20 @@ export default function Profile() {
                   <p className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase mt-0.5">
                     Mastered
                   </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-[#E8E6E0] dark:border-slate-800 space-y-3">
+                <h2 className="text-xs font-black text-[#25231F] dark:text-white uppercase tracking-wider">
+                  Learner Statistics
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {statItems.map(([label, value]) => (
+                    <div key={label} className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
+                      <p className="text-[10px] font-bold text-[#77736B] dark:text-slate-400">{label}</p>
+                      <p className="text-sm font-black text-[#25231F] dark:text-white">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

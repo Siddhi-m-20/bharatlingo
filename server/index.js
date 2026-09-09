@@ -5,6 +5,8 @@ import translationRoutes from './routes/translation.js'
 import speechRoutes from './routes/speech.js'
 import lessonsRoutes from './routes/lessons.js'
 import ttsRoutes from './routes/tts.js'
+import indicNlpRoutes from './routes/indicNlp.js'
+import { indicNlpCapabilities } from './services/indicNlp.js'
 
 dotenv.config()
 
@@ -15,13 +17,14 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'BharatLingo API is running' })
+  res.json({ status: 'ok', message: 'BharatLingo API is running', indicNlp: indicNlpCapabilities() })
 })
 
 app.use('/api', translationRoutes)
 app.use('/api', speechRoutes)
 app.use('/api', lessonsRoutes)
 app.use('/api', ttsRoutes)
+app.use('/api', indicNlpRoutes)
 
 app.use((err, req, res, next) => {
   console.error(err.stack)

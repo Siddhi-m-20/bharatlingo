@@ -1,7 +1,7 @@
 // Stroke database & parametric path definitions for authentic character tracing
 // Standard ViewBox: 0 0 300 300, Center: (150, 150)
 
-export const STROKE_DATABASE = {
+const DEVANAGARI_STROKE_DATA = {
   // ── ARABIC / URDU (Matches user reference image) ──────────────────────────
   'ت': [
     {
@@ -1916,70 +1916,21 @@ export const STROKE_DATABASE = {
   ],
 }
 
-/**
- * Universal dynamic fallback stroke generator.
- * If a specific character does not yet have explicit manual path points,
- * this decomposes standard character forms into 2-4 authentic guided stroke paths.
- */
 export function getStrokesForCharacter(char, languageId = 'hi') {
-  if (STROKE_DATABASE[char]) {
-    return STROKE_DATABASE[char]
-  }
+  return STROKE_DATA_BY_LANGUAGE[languageId]?.[char] || []
+}
 
-  // Devanagari & Bengali / Punjabi shared style
-  const isShirorekhaScript = ['hi', 'mr', 'bn', 'pa'].includes(languageId)
+const STROKE_DATA_BY_LANGUAGE = {
+  hi: DEVANAGARI_STROKE_DATA,
+  mr: DEVANAGARI_STROKE_DATA,
+  ta: {},
+  te: {},
+  bn: {},
+  pa: {},
+  gu: {},
+  en: {},
+}
 
-  if (isShirorekhaScript) {
-    return [
-      {
-        id: 'main-glyph-body',
-        path: 'M 115,95 C 75,120 75,175 115,195 C 145,210 185,185 185,150 C 185,115 135,115 135,160 L 145,230',
-        direction: 'down-right',
-        arrow: '↷',
-        start: { x: 115, y: 95 },
-        end: { x: 145, y: 230 },
-        type: 'stroke',
-      },
-      {
-        id: 'stem',
-        path: 'M 185,75 L 185,235',
-        direction: 'down',
-        arrow: '↓',
-        start: { x: 185, y: 75 },
-        end: { x: 185, y: 235 },
-        type: 'stroke',
-      },
-      {
-        id: 'top-bar',
-        path: 'M 75,75 L 225,75',
-        direction: 'right',
-        arrow: '→',
-        start: { x: 75, y: 75 },
-        end: { x: 225, y: 75 },
-        type: 'stroke',
-      },
-    ]
-  }
-
-  // Southern & rounded Dravidian / Gujarati script style
-  return [
-    {
-      id: 'primary-curve',
-      path: 'M 90,110 C 90,75 165,75 165,130 C 165,190 85,200 85,150 C 85,110 170,110 190,165',
-      direction: 'loop',
-      arrow: '↺',
-      start: { x: 90, y: 110 },
-      end: { x: 190, y: 165 },
-      type: 'stroke',
-    },
-    {
-      id: 'finishing-tail',
-      path: 'M 185,165 C 215,165 225,205 210,235',
-      direction: 'down',
-      arrow: '↷',
-      start: { x: 185, y: 165 },
-      end: { x: 210, y: 235 },
-      type: 'stroke',
-    },
-  ]
+export function getStrokeDataByLanguage() {
+  return STROKE_DATA_BY_LANGUAGE
 }

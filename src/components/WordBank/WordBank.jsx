@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTheme } from '../../services/themeContext'
 import Button from '../Button'
 
 export default function WordBank({
@@ -11,6 +12,7 @@ export default function WordBank({
   showResult = false,
   isCorrect = false,
 }) {
+  const { t } = useTheme()
   const [selectedWords, setSelectedWords] = useState([])
   const [availableWords, setAvailableWords] = useState([])
 
@@ -43,7 +45,7 @@ export default function WordBank({
       <div className="min-h-[64px] p-4 bg-[#F7F5EF] border-2 border-dashed border-[#D2CFC7] rounded-2xl flex flex-wrap gap-2 items-center">
         {selectedWords.length === 0 && (
           <p className="text-sm text-[#77736B] italic select-none">
-            Tap words below to build the sentence...
+            {t('tap_words_prompt') || 'Tap words below to build the sentence...'}
           </p>
         )}
         <AnimatePresence>
@@ -86,7 +88,7 @@ export default function WordBank({
             onClick={() => onSubmit(currentSentence)}
             disabled={selectedWords.length === 0 || disabled}
           >
-            Check Answer
+            {t('check_answer') || 'Check Answer'}
           </Button>
         </div>
       )}

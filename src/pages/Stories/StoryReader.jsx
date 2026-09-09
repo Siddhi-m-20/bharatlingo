@@ -13,11 +13,12 @@
  * - Audio failure never blocks progression
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
+import { recordLearningActivity } from '../../services/dbService'
 import { getStoryById } from '../../data/stories'
 import { AudioService } from '../../services/audio/AudioService'
 import AudioButton from '../../components/AudioButton/AudioButton'
@@ -107,6 +108,13 @@ export default function StoryReader() {
   const [completed, setCompleted] = useState(false)
   const [showTranslation, setShowTranslation] = useState(true)
   const [xpEarned, setXpEarned] = useState(0)
+  const storyStartTimeRef = useRef(Date.now())
+
+  const playAudio = useCallback((text) => {
+    if (!text || !story) return
+    // Audio failure never blocks story — just attempt silently
+    AudioService.speak(text, story.languageId).catch(() => {})
+  }, [story])
 
   // Determine help level based on user's proficiency
   const learnerLevel = user?.level || 'beginner'
@@ -131,12 +139,6 @@ export default function StoryReader() {
   const isCheckpoint = currentSegment?.isCheckpoint
   const isSpeaking = currentSegment?.isSpeakingPractice
   const progressPercent = Math.round(((currentStepIndex + 1) / story.segments.length) * 100)
-
-  const playAudio = useCallback((text) => {
-    if (!text) return
-    // Audio failure never blocks story — just attempt silently
-    AudioService.speak(text, story.languageId).catch(() => {})
-  }, [story.languageId])
 
   const handleNext = () => {
     if (currentStepIndex + 1 < story.segments.length) {
@@ -185,6 +187,15 @@ export default function StoryReader() {
       if (!existing.includes(story.id)) {
         await updateUser({ completedStories: [...existing, story.id] })
       }
+      await recordLearningActivity({
+        userId: user.id,
+        activityDate: new Date().toISOString().split('T')[0],
+        exercisesCompleted: story.segments.filter((segment) => segment.isCheckpoint || segment.isSpeakingPractice).length,
+        xpEarned: totalXP,
+        sessionDurationSeconds: Math.max(1, Math.round((Date.now() - storyStartTimeRef.current) / 1000)),
+        languageId,
+        sessionType: 'story',
+      })
     }
   }
 

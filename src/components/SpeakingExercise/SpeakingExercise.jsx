@@ -11,7 +11,7 @@
  * - Graceful fallback if ASR unavailable
  * - Microphone permission handling
  * - ASR failure ≠ wrong answer
- * - User can skip without penalty
+ * - Skipping advances the lesson without awarding speaking XP
  * - Microphone released after recording
  */
 
@@ -170,6 +170,7 @@ export default function SpeakingExercise({
   pronunciation,
   languageId = 'hi',
   onSubmit,
+  onSkip,
   disabled = false,
   showResult = false,
 }) {
@@ -269,10 +270,9 @@ export default function SpeakingExercise({
 
   // ── Skip speaking ────────────────────────────────────────────────────────────
   const handleSkip = useCallback(() => {
-    // Skip does NOT penalize: pass targetWord so it's treated as correct
-    // (ASR unavailable/failure never penalizes the learner)
-    onSubmit(targetWord)
-  }, [targetWord, onSubmit])
+    // Keep a skip distinct from a successful pronunciation attempt.
+    onSkip?.()
+  }, [onSkip])
 
   // ── Retry after error ────────────────────────────────────────────────────────
   const handleRetry = useCallback(() => {

@@ -1,7 +1,23 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import bcryptjs from 'bcryptjs'
 import { supabase, isSupabaseConfigured } from './supabase'
+import { fetchUserSpacedRepetition } from './dbService'
+import { hydrateSM2FromCloud, clearSM2Data } from './spacedRepetition'
 
 const AuthContext = createContext(null)
+
+// Helper: Synchronize user's cloud spaced repetition deck into local storage
+async function syncUserSpacedRepetition(userId) {
+  if (!userId || !isSupabaseConfigured() || !supabase) return
+  try {
+    const remoteSM2 = await fetchUserSpacedRepetition(userId)
+    if (remoteSM2?.success && remoteSM2.itemsByLanguage) {
+      await hydrateSM2FromCloud(userId, remoteSM2.itemsByLanguage)
+    }
+  } catch (err) {
+    console.warn('Failed to hydrate SM-2 from cloud:', err)
+  }
+}
 
 // Helper: Determine next route for authenticated user
 export function getNextAuthRedirect(user) {
@@ -65,6 +81,8 @@ export function mapProfileToUser(profile, authUser) {
     legendaryCompleted: profile?.legendary_completed || [],
     vocabulary: profile?.vocabulary || {},
     achievements: profile?.achievements || [],
+    completedStories: profile?.completed_stories || [],
+    learnerStats: profile?.learner_stats || {},
     settings: profile?.settings || { audio: true, soundFx: true, speaking: true },
     activeQuests: profile?.active_quests || null,
     createdAt: profile?.created_at || new Date().toISOString(),
@@ -92,6 +110,14 @@ export function mapUserUpdatesToProfile(updates) {
   if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
   if (updates.vocabulary !== undefined) mapped.vocabulary = updates.vocabulary
   if (updates.achievements !== undefined) mapped.achievements = updates.achievements
+  if (updates.bio !== undefined) mapped.bio = updates.bio
+  if (updates.gems !== undefined) mapped.gems = Number(updates.gems)
+  if (updates.languageProgress !== undefined) mapped.language_progress = updates.languageProgress
+  if (updates.legendaryCompleted !== undefined) mapped.legendary_completed = updates.legendaryCompleted
+  if (updates.activeQuests !== undefined) mapped.active_quests = updates.activeQuests
+  if (updates.completedStories !== undefined) mapped.completed_stories = updates.completedStories
+  if (updates.learnerStats !== undefined) mapped.learner_stats = updates.learnerStats
+  if (updates.settings !== undefined) mapped.settings = updates.settings
   return mapped
 }
 
@@ -181,6 +207,10 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
 
   // Active quests
   const mergedQuests = localProfile.activeQuests || remoteProfile.activeQuests || null
+  const mergedLearnerStats = {
+    ...(remoteProfile.learnerStats || {}),
+    ...(localProfile.learnerStats || {}),
+  }
 
   return {
     ...remoteProfile,
@@ -207,6 +237,7 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
     languageProgress: mergedLangProgress,
     vocabulary: { ...(remoteProfile.vocabulary || {}), ...(localProfile.vocabulary || {}) },
     activeQuests: mergedQuests,
+    learnerStats: mergedLearnerStats,
     settings: { ...(remoteProfile.settings || {}), ...(localProfile.settings || {}) },
   }
 }
@@ -337,12 +368,16 @@ export function AuthProvider({ children }) {
           if (!error && session?.user && isMounted) {
             const remoteProfile = await fetchSupabaseProfile(session.user)
             if (isMounted && remoteProfile) {
+              if (remoteProfile.learnerStats && typeof remoteProfile.learnerStats === 'object') {
+                localStorage.setItem('bharatlingo_learner_stats_v2', JSON.stringify(remoteProfile.learnerStats))
+              }
               const currentLocal = localUser || userRef.current
               const mergedProfile = mergeUserProfiles(remoteProfile, currentLocal)
               setUser(mergedProfile)
               userRef.current = mergedProfile
               localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
               syncProfileToSupabase(mergedProfile)
+              await syncUserSpacedRepetition(session.user.id)
             }
           }
         } catch (err) {
@@ -365,18 +400,24 @@ export function AuthProvider({ children }) {
         if (event === 'SIGNED_IN' && session?.user) {
           const remoteProfile = await fetchSupabaseProfile(session.user)
           if (isMounted && remoteProfile) {
+            if (remoteProfile.learnerStats && typeof remoteProfile.learnerStats === 'object') {
+              localStorage.setItem('bharatlingo_learner_stats_v2', JSON.stringify(remoteProfile.learnerStats))
+            }
             const current = userRef.current
             const mergedProfile = mergeUserProfiles(remoteProfile, current)
             setUser(mergedProfile)
             userRef.current = mergedProfile
             localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
             syncProfileToSupabase(mergedProfile)
+            await syncUserSpacedRepetition(session.user.id)
           }
         } else if (event === 'SIGNED_OUT') {
           if (isMounted) {
+            const currentId = userRef.current?.id
             setUser(null)
             userRef.current = null
             localStorage.removeItem('bharatlingo_user')
+            clearSM2Data(currentId)
           }
         }
       })
@@ -425,11 +466,13 @@ export function AuthProvider({ children }) {
       throw new Error('An account with this email already exists.')
     }
 
+    const hashedPassword = await bcryptjs.hash(password, 10)
+
     const newUser = {
       id: Date.now().toString(),
       name: name.trim(),
       email: normalizedEmail,
-      password: password,
+      password: hashedPassword,
       preferredLanguage: 'en',
       learningLanguage: null,
       goal: null,
@@ -466,12 +509,16 @@ export function AuthProvider({ children }) {
 
       if (data.user) {
         const remoteProfile = await fetchSupabaseProfile(data.user)
+        if (remoteProfile?.learnerStats && typeof remoteProfile.learnerStats === 'object') {
+          localStorage.setItem('bharatlingo_learner_stats_v2', JSON.stringify(remoteProfile.learnerStats))
+        }
         const currentLocal = userRef.current
         const mergedProfile = mergeUserProfiles(remoteProfile, currentLocal)
         setUser(mergedProfile)
         userRef.current = mergedProfile
         localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
         syncProfileToSupabase(mergedProfile)
+        await syncUserSpacedRepetition(data.user.id)
         return mergedProfile
       }
     }
@@ -481,7 +528,15 @@ export function AuthProvider({ children }) {
     const found = users.find((u) => u.email.toLowerCase() === normalizedEmail)
 
     if (found) {
-      if (found.password && found.password !== password) {
+      let isMatch = false
+      if (found.password) {
+        if (found.password.startsWith('$2a$') || found.password.startsWith('$2b$')) {
+          isMatch = await bcryptjs.compare(password, found.password)
+        } else {
+          isMatch = found.password === password
+        }
+      }
+      if (found.password && !isMatch) {
         throw new Error('Incorrect password. Please try again.')
       }
       const { password: _, ...userData } = found
@@ -516,7 +571,8 @@ export function AuthProvider({ children }) {
       achievements: [],
       createdAt: new Date().toISOString(),
     }
-    users.push({ ...mockUser, password })
+    const hashedPassword = await bcryptjs.hash(password, 10)
+    users.push({ ...mockUser, password: hashedPassword })
     saveLocalRegisteredUsers(users)
 
     setUser(mockUser)
@@ -586,6 +642,7 @@ export function AuthProvider({ children }) {
 
   // Logout
   const logout = async () => {
+    const currentId = userRef.current?.id
     if (isSupabaseConfigured() && supabase) {
       try {
         await supabase.auth.signOut()
@@ -596,6 +653,7 @@ export function AuthProvider({ children }) {
     setUser(null)
     userRef.current = null
     localStorage.removeItem('bharatlingo_user')
+    clearSM2Data(currentId)
   }
 
   // Update User profile & progress
@@ -608,6 +666,13 @@ export function AuthProvider({ children }) {
     userRef.current = updatedUser
     setUser(updatedUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
+
+    if (resolvedUpdates.preferredLanguage) {
+      try {
+        localStorage.setItem('bharatlingo_site_lang', resolvedUpdates.preferredLanguage)
+        window.dispatchEvent(new CustomEvent('bharatlingo_site_lang_changed', { detail: { langId: resolvedUpdates.preferredLanguage } }))
+      } catch {}
+    }
 
     // Update in Supabase if active
     if (isSupabaseConfigured() && supabase && currentUser.id) {

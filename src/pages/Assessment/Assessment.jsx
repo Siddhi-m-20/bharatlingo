@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
@@ -6,6 +6,7 @@ import { useProgress } from '../../services/progress'
 import { getLanguageById } from '../../data/languages'
 import { fetchAssessmentQuestions, generatePersonalizedPlan } from '../../services/dynamicLessonService'
 import { recordExerciseAttempt } from '../../services/learnerModel'
+import { persistLearnerStats, recordLearningActivity } from '../../services/dbService'
 import QuestionCard from '../../components/QuestionCard'
 import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
@@ -17,10 +18,10 @@ import AudioButton from '../../components/AudioButton'
 function PersonalizedPlanScreen({ plan, user, onContinue }) {
   const language = getLanguageById(user?.learningLanguage)
   const levelColors = {
-    Beginner:     'text-[#0B8F62] bg-[#0B8F62]/10',
-    Elementary:   'text-[#3B82F6] bg-[#3B82F6]/10',
+    Beginner: 'text-[#0B8F62] bg-[#0B8F62]/10',
+    Elementary: 'text-[#3B82F6] bg-[#3B82F6]/10',
     Intermediate: 'text-[#F39A45] bg-[#F39A45]/10',
-    Advanced:     'text-[#8B5CF6] bg-[#8B5CF6]/10',
+    Advanced: 'text-[#8B5CF6] bg-[#8B5CF6]/10',
   }
   const levelStyle = levelColors[plan?.startingLevel] || levelColors.Beginner
 
@@ -44,7 +45,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
           Your Personalized Learning Plan
         </h2>
         <p className="text-[#77736B] dark:text-slate-400 text-sm">
-          Tailored for you based on your assessment and goals
+          Tailored for you based on your answers and goals
         </p>
       </div>
 
@@ -128,16 +129,17 @@ export default function Assessment() {
   const { user, updateUser } = useAuth()
   const { addXP, addGems } = useProgress()
 
-  const [questions, setQuestions]   = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [loadError, setLoadError]   = useState(null)
+  const [questions, setQuestions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers]       = useState([])
+  const [answers, setAnswers] = useState([])
   const [showResult, setShowResult] = useState(false)
   const [selectedAnswer, setSelectedAnswer] = useState('')
-  const [showPlan, setShowPlan]     = useState(false)
-  const [plan, setPlan]             = useState(null)
+  const [showPlan, setShowPlan] = useState(false)
+  const [plan, setPlan] = useState(null)
   const [generatingPlan, setGeneratingPlan] = useState(false)
+  const assessmentStartTimeRef = useRef(Date.now())
 
   const language = getLanguageById(user?.learningLanguage)
 
@@ -149,6 +151,10 @@ export default function Assessment() {
       navigate('/onboarding')
       return
     }
+    if (user.hasCompletedAssessment || user.assessmentScore !== null && user.assessmentScore !== undefined) {
+      navigate('/dashboard', { replace: true })
+      return
+    }
     let cancelled = false
 
     async function loadQuestions() {
@@ -157,17 +163,19 @@ export default function Assessment() {
       try {
         const qs = await fetchAssessmentQuestions({
           languageId: user.learningLanguage,
+          preferredLanguage: user?.preferredLanguage || 'en',
           ageRange: user.ageRange || 'adult',
           goal: user.goal || 'conversation',
-          count: 6,
+          count: 8,
         })
         if (!cancelled) {
           setQuestions(qs)
+          assessmentStartTimeRef.current = Date.now()
           setLoading(false)
         }
       } catch (err) {
         if (!cancelled) {
-          setLoadError('Could not load assessment questions. Please try again.')
+          setLoadError('Could not load questions. Please try again.')
           setLoading(false)
         }
       }
@@ -187,8 +195,9 @@ export default function Assessment() {
     if (isCorrect) addXP(q.xp || 10)
 
     try {
-      recordExerciseAttempt(user?.learningLanguage || 'hi', q, isCorrect)
-    } catch {}
+      const learnerStats = recordExerciseAttempt(user?.learningLanguage || 'hi', q, isCorrect)
+      if (user?.id && learnerStats) persistLearnerStats(user.id, learnerStats)
+    } catch { }
   }, [showResult, questions, currentQuestion, addXP, user?.learningLanguage])
 
   const handleNext = async () => {
@@ -197,20 +206,23 @@ export default function Assessment() {
       setShowResult(false)
       setSelectedAnswer('')
     } else {
-      await completeAssessment()
+      await completeAssessment([
+        ...answers,
+        { question: currentQuestion, answer: selectedAnswer, isCorrect: selectedAnswer.trim().toLowerCase() === (questions[currentQuestion].correctAnswer || '').trim().toLowerCase() },
+      ])
     }
   }
 
-  const completeAssessment = async () => {
-    const correctCount = answers.filter((a) => a.isCorrect).length
+  const completeAssessment = async (latestAnswers = answers) => {
+    const correctCount = latestAnswers.filter((a) => a.isCorrect).length
     const total = questions.length
     const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0
 
     let level
-    if (percentage <= 30)      level = 'beginner'
+    if (percentage <= 30) level = 'beginner'
     else if (percentage <= 60) level = 'elementary'
     else if (percentage <= 80) level = 'intermediate'
-    else                       level = 'advanced'
+    else level = 'advanced'
 
     // Award initial completion rewards (XP + Diamonds) based on placement
     const completionBonusXP = 20
@@ -225,6 +237,16 @@ export default function Assessment() {
       hasCompletedAssessment: true,
       lastActiveDate: new Date().toISOString().split('T')[0],
       streak: 1,
+    })
+
+    await recordLearningActivity({
+      userId: user.id,
+      activityDate: new Date().toISOString().split('T')[0],
+      exercisesCompleted: total,
+      xpEarned: completionBonusXP + latestAnswers.reduce((sum, answer) => sum + (answer.isCorrect ? 10 : 0), 0),
+      sessionDurationSeconds: Math.max(1, Math.round((Date.now() - assessmentStartTimeRef.current) / 1000)),
+      languageId: user.learningLanguage,
+      sessionType: 'assessment',
     })
 
     // Generate personalized learning plan (server-side — no provider details exposed)
@@ -394,7 +416,7 @@ export default function Assessment() {
             className="w-12 h-12 border-4 border-[#0B8F62] border-t-transparent rounded-full mx-auto"
           />
           <p className="text-[#77736B] dark:text-slate-400 font-medium">
-            Generating your personalized assessment...
+            Finding your starting level...
           </p>
         </div>
       </div>
@@ -446,7 +468,7 @@ export default function Assessment() {
     return (
       <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-[#77736B] dark:text-slate-400">No assessment questions available.</p>
+          <p className="text-[#77736B] dark:text-slate-400">No questions available.</p>
           <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
         </div>
       </div>
@@ -462,7 +484,7 @@ export default function Assessment() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-xl font-black text-[#25231F] dark:text-white">Placement Assessment</h1>
+              <h1 className="text-xl font-black text-[#25231F] dark:text-white">Find Your Starting Level</h1>
               {language && (
                 <p className="text-xs text-[#77736B] dark:text-slate-400 flex items-center gap-1 mt-0.5">
                   <span>{language.flag}</span>

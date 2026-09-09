@@ -56,7 +56,7 @@ export default function Practice() {
 
     setVocabulary(mapped)
     setMistakes(getMistakes(user.learningLanguage))
-    setSm2Stats(getSM2Stats(user.learningLanguage))
+    setSm2Stats(getSM2Stats(user.learningLanguage, user?.id))
   }, [user, navigate])
 
   // Speed Challenge Timer
@@ -126,9 +126,10 @@ export default function Practice() {
       currentCard.translation,
       user.learningLanguage,
       quality,
-      currentCard.category || 'General'
+      currentCard.category || 'General',
+      user?.id
     )
-    setSm2Stats(getSM2Stats(user.learningLanguage))
+    setSm2Stats(getSM2Stats(user.learningLanguage, user?.id))
 
     trackQuestProgress('practice', 1)
     setReviewedCount((prev) => prev + 1)

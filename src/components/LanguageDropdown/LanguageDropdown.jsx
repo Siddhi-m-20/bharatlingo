@@ -5,8 +5,11 @@ import { languages, getLanguageById } from '../../data/languages'
 import { useAuth } from '../../services/auth'
 import LanguageFlag from '../LanguageFlag/LanguageFlag'
 
+import { useTheme } from '../../services/themeContext'
+
 export default function LanguageDropdown() {
   const { user, updateUser } = useAuth()
+  const { setSiteLanguage } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -34,6 +37,7 @@ export default function LanguageDropdown() {
     if (langId !== user?.preferredLanguage) {
       updateUser({ preferredLanguage: langId })
     }
+    setSiteLanguage(langId)
   }
 
   return (

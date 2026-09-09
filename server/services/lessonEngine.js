@@ -8,6 +8,11 @@
  * The client only sees: "Generating your personalized lesson..."
  */
 
+import { getLessonsForLanguage } from '../../src/data/lessons/index.js'
+import { getAssessmentQuestions as getStaticAssessmentQuestions } from '../../src/data/questions/index.js'
+
+const PRODUCT_LANGUAGE_IDS = ['hi', 'en', 'mr', 'ta', 'te', 'bn', 'pa', 'gu']
+
 // ── Vocabulary banks per language ────────────────────────────────────────────
 const VOCABULARY_BANKS = {
   hi: {
@@ -315,12 +320,55 @@ export function getDynamicLesson({ languageId, goal, ageRange, level, lessonInde
 
 // ── Get adaptive lesson ──────────────────────────────────────────────────────
 export function getAdaptiveLesson({ languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null }) {
-  return buildLesson(languageId, goal, ageRange, 0, level)
+  if (!PRODUCT_LANGUAGE_IDS.includes(languageId)) {
+    throw new Error(`Unsupported product language: ${languageId}`)
+  }
+
+  const sourceLessons = getLessonsForLanguage(languageId, 'en')
+  const topicLessons = topicId
+    ? sourceLessons.filter((lesson) => lesson.id.includes(topicId) || lesson.category?.toLowerCase().includes(topicId.toLowerCase()))
+    : sourceLessons
+  const selectedLessons = topicLessons.length > 0 ? topicLessons : sourceLessons
+  const sourceExercises = selectedLessons.flatMap((lesson) => lesson.exercises || [])
+  const exercises = sourceExercises.slice(0, 12)
+
+  if (exercises.length < 10) {
+    throw new Error(`Insufficient exercises for supported language: ${languageId}`)
+  }
+
+  const sourceVocabulary = selectedLessons.flatMap((lesson) => lesson.vocabulary || [])
+  return {
+    id: `${languageId}-adaptive-${topicId || 'personalized'}-${Date.now()}`,
+    name: selectedLessons[0]?.name || 'Personalized Practice',
+    nameNative: selectedLessons[0]?.nameNative || selectedLessons[0]?.name || 'Personalized Practice',
+    topicId: topicId || selectedLessons[0]?.category || 'personalized',
+    unit: selectedLessons[0]?.unit || 'Personalized Practice',
+    order: selectedLessons[0]?.order || 1,
+    isDynamic: true,
+    langId: languageId,
+    level,
+    goal,
+    ageRange,
+    vocabulary: sourceVocabulary.slice(0, 12),
+    exercises,
+    description: `Personalized ${goal} practice in ${languageId}.`,
+    rationale: `Selected for your ${level} ${goal} practice in the target language.`,
+    generatedAt: new Date().toISOString(),
+  }
 }
 
 
 // ── Generate dynamic assessment questions ────────────────────────────────────
 export function generateAssessmentQuestions({ languageId, ageRange, goal, count = 6 }) {
+  if (!PRODUCT_LANGUAGE_IDS.includes(languageId)) {
+    throw new Error(`Unsupported product language: ${languageId}`)
+  }
+
+  const staticQuestions = getStaticAssessmentQuestions(languageId, 'en')
+  if (staticQuestions.length >= count) {
+    return staticQuestions.slice(0, count)
+  }
+
   const ageConfig = AGE_CONFIG[ageRange] || AGE_CONFIG['adult']
   const allVocab = getVocabForGoal(languageId, goal || 'conversation')
   const shuffled = allVocab.sort(() => Math.random() - 0.5)

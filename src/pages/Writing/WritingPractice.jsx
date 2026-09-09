@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
+import { useTheme } from '../../services/themeContext'
 import { alphabetDataByLanguage } from '../../data/alphabets'
 import { getLanguageById, languages } from '../../data/languages'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import LetterWritingCanvas from '../../components/WritingPad/LetterWritingCanvas'
+import Button from '../../components/Button'
 import {
   PenTool,
   Sparkles,
@@ -68,6 +71,76 @@ export default function WritingPractice() {
     } else {
       setSelectedIndex(currentList.length - 1)
     }
+  }
+
+  const navigate = useNavigate()
+  const { t } = useTheme()
+  const isWritingSupported = currentLang === 'hi' || currentLang === 'mr'
+
+  if (!isWritingSupported) {
+    return (
+      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
+        {/* 1. LEFT SIDEBAR */}
+        <AppSidebar />
+
+        {/* 2. CENTER CONTENT */}
+        <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+          {/* Banner */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl">
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider mb-3">
+                <PenTool className="w-3.5 h-3.5" /> {t('writing_practice') || 'Writing Practice'}
+              </div>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
+                {t('writing_practice') || 'Writing Practice'}: {langMeta.name}
+              </h1>
+              <p className="text-white/90 text-sm md:text-base max-w-xl">
+                {scriptData.scriptName}
+              </p>
+            </div>
+            <div className="absolute right-4 -bottom-4 text-8xl md:text-9xl opacity-20 select-none font-bold">
+              ✍️
+            </div>
+          </div>
+
+          {/* Polished Empty / Availability Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-8 sm:p-12 text-center shadow-sm space-y-6">
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-4xl shadow-inner">
+              📝
+            </div>
+
+            <div className="space-y-2 max-w-md mx-auto">
+              <h2 className="text-xl sm:text-2xl font-black text-[#25231F] dark:text-white">
+                {t('writing_unavailable_msg') || 'Interactive writing practice is not yet available for this script.'}
+              </h2>
+              <p className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
+                {t('writing_practice_alt_msg') || 'Practice reading and speaking meanwhile.'}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Button
+                onClick={() => navigate('/letters')}
+                className="w-full sm:w-auto justify-center"
+              >
+                <BookOpen size={16} className="mr-1.5" />
+                {t('explore_alphabet') || 'Explore Alphabet'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/dashboard')}
+                className="w-full sm:w-auto justify-center"
+              >
+                {t('back_to_dashboard') || 'Back to Dashboard'}
+              </Button>
+            </div>
+          </div>
+        </main>
+
+        {/* 3. RIGHT SIDEBAR */}
+        <RightSidebar />
+      </div>
+    )
   }
 
   return (

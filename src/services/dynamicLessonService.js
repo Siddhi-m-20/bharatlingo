@@ -160,19 +160,27 @@ export async function generatePersonalizedPlan({
 /**
  * Fetch assessment questions for initial placement
  */
-export async function fetchAssessmentQuestions({
-  languageId,
-  ageRange = 'adult',
-  goal = 'conversation',
-  count = 6,
-}) {
+export async function fetchAssessmentQuestions(
+  optionsOrLangId,
+  preferredLanguage = 'en',
+  limit = 8
+) {
+  const isObject = typeof optionsOrLangId === 'object' && optionsOrLangId !== null
+  const languageId = isObject ? optionsOrLangId.languageId : optionsOrLangId
+  const prefLang = isObject
+    ? (optionsOrLangId.preferredLanguage || optionsOrLangId.preferredLang || preferredLanguage)
+    : preferredLanguage
+  const ageRange = isObject ? (optionsOrLangId.ageRange || 'adult') : 'adult'
+  const goal = isObject ? (optionsOrLangId.goal || 'conversation') : 'conversation'
+  const count = isObject ? (optionsOrLangId.count || limit) : limit
+
   try {
-    const params = new URLSearchParams({ languageId, ageRange, goal, count })
+    const params = new URLSearchParams({ languageId, preferredLanguage: prefLang, ageRange, goal, count })
     const data = await apiFetch(`/assessment/questions?${params}`)
     if (data.questions && data.questions.length > 0) return data.questions
   } catch {}
 
-  return getStaticAssessmentQuestions(languageId, 'en')
+  return getStaticAssessmentQuestions(languageId, prefLang)
 }
 
 // ── Local plan fallback ────────────────────────────────────────────────────────

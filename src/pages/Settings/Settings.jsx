@@ -154,7 +154,10 @@ export default function Settings() {
                 return (
                   <button
                     key={lang.id}
-                    onClick={() => setSiteLanguage(lang.id)}
+                    onClick={() => {
+                      setSiteLanguage(lang.id)
+                      handleLanguageChange('preferredLanguage', lang.id)
+                    }}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
                         ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'

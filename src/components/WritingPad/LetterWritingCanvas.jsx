@@ -286,6 +286,24 @@ export default function LetterWritingCanvas({
     }
   }
 
+  if (!strokes || strokes.length === 0) {
+    return (
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center p-8 text-center space-y-4 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-200 dark:border-slate-800">
+        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-3xl">
+          ✍️
+        </div>
+        <div className="space-y-1">
+          <p className="text-base font-bold text-slate-800 dark:text-white">
+            Stroke tracing is unavailable for "{character}"
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Interactive stroke order is only available for supported scripts.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-md mx-auto flex flex-col justify-between select-none">
       {/* ── TOP HEADER: Progress Bar & Exit ── */}

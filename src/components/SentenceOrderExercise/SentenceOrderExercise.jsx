@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Volume2, RotateCcw } from 'lucide-react'
 import { AudioService } from '../../services/audio/AudioService'
+import { useTheme } from '../../services/themeContext'
 
 export default function SentenceOrderExercise({
   prompt,
@@ -13,6 +14,7 @@ export default function SentenceOrderExercise({
   disabled,
   showResult,
 }) {
+  const { t } = useTheme()
   const [selectedWords, setSelectedWords] = useState([])
   const [availableWords, setAvailableWords] = useState([])
 
@@ -129,7 +131,7 @@ export default function SentenceOrderExercise({
             disabled={selectedWords.length === 0 || disabled}
             className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
-            Check Answer
+            {t('check_answer') || 'Check Answer'}
           </button>
         </div>
       )}

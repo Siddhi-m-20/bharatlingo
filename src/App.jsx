@@ -119,8 +119,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* /curriculum redirects to dashboard — curriculum concept removed */}
-              <Route path="/curriculum" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/profile"
                 element={

@@ -20,7 +20,7 @@ export default function AppSidebar() {
     { to: '/dashboard', label: t('learn') || 'LEARN', icon: Home },
     { to: '/stories', label: t('stories') || 'STORIES', icon: BookOpen },
     { to: '/tutor', label: t('tutor') || 'AI TUTOR', icon: Bot },
-    { to: '/writing', label: 'WRITING', icon: PenTool },
+    { to: '/writing', label: t('writing') || 'WRITING', icon: PenTool },
     { to: '/letters', label: t('letters') || 'SCRIPT / LETTERS', icon: BookA },
     { to: '/practice', label: t('practice') || 'PRACTICE', icon: Target },
     { to: '/leaderboard', label: t('leaderboard') || 'LEADERBOARDS', icon: Trophy },

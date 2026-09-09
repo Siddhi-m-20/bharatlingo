@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Palette, Globe, Check, Sun, Moon, Sparkles, Leaf, X } from 'lucide-react'
 import { useTheme } from '../../services/themeContext'
+import { useAuth } from '../../services/auth'
 import { languages } from '../../data/languages'
 import LanguageFlag from '../LanguageFlag/LanguageFlag'
 
@@ -14,6 +15,7 @@ const THEMES = [
 
 export default function SiteSettingsBar() {
   const { theme, setTheme, siteLanguage, setSiteLanguage, t } = useTheme()
+  const { user, updateUser } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -109,7 +111,12 @@ export default function SiteSettingsBar() {
                   return (
                     <button
                       key={lang.id}
-                      onClick={() => setSiteLanguage(lang.id)}
+                      onClick={() => {
+                        setSiteLanguage(lang.id)
+                        if (user && updateUser) {
+                          updateUser({ preferredLanguage: lang.id })
+                        }
+                      }}
                       className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-left text-xs transition-all ${
                         isSelected
                           ? 'bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] font-black'

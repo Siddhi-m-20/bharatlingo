@@ -1,343 +1,185 @@
 # BharatLingo
 
-**Learn India. One word at a time.**
+**Learn Indian languages through interactive lessons, audio, speech practice, script tracing, conversational stories, and adaptive spaced review.**
 
-BharatLingo is a complete Indian language-learning application inspired by modern language-learning platforms. Learn Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English through interactive lessons, gamification, and personalized learning paths.
-
-## Features
-
-- **8 Indian Languages**: Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English
-- **Interactive Lessons**: Multiple exercise types including multiple-choice, translation, listening, fill-in-the-blank, and matching
-- **Gamification**: XP system, streaks, hearts, achievements, and leaderboards
-- **Personalized Learning**: Placement assessment, adaptive learning paths, and daily goals
-- **Audio Support**: Browser-based text-to-speech for pronunciation
-- **Offline-First**: Core functionality works without internet connection
-- **Responsive Design**: Works on desktop and mobile devices
-- **Accessibility**: ARIA labels, keyboard navigation, and reduced motion support
-
-## Requirements
-
-- Node.js 18 or higher
-- npm or yarn
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd bharatlingo
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Set up environment variables:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` to configure Supabase and optional AI services:
-```env
-# Supabase Authentication & Database
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
-
-# Optional AI Services
-PORT=5000
-INDICTRANS_URL=http://127.0.0.1:8000
-INDICCONFORMER_URL=http://127.0.0.1:8001
-TTS_URL=http://127.0.0.1:8002
-```
-
-### Supabase Database Setup
-1. Create a project at [supabase.com](https://supabase.com).
-2. Open the **SQL Editor** in your Supabase dashboard.
-3. Paste and run the contents of [`supabase/schema.sql`](supabase/schema.sql).
-4. Copy your project URL and anon public key into `.env`.
-*(If Supabase keys are not set, BharatLingo automatically operates in local offline mode using browser storage).*
-
-## Running the Application
-
-Start both the frontend and backend servers:
-
-```bash
-npm run dev
-```
-
-This will launch:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-
-## Architecture
-
-### Frontend
-- **React** with Vite for fast development
-- **React Router** for navigation
-- **Framer Motion** for animations
-- **Lucide React** for icons
-- **localStorage** for data persistence
-
-### Backend
-- **Express** server with REST API
-- **CORS** enabled for development
-- **Environment-based configuration**
-
-### Data Structure
-```
-src/
-├── components/      # Reusable UI components
-├── pages/          # Route components
-├── data/           # Language content and lessons
-├── services/       # Business logic (auth, progress, speech)
-├── hooks/          # Custom React hooks
-├── utils/          # Utility functions
-└── styles/         # Global styles
-```
-
-## Supported Languages
-
-| Language | Native Name | Script |
-|----------|-------------|--------|
-| Hindi | हिन्दी | Devanagari |
-| Marathi | मराठी | Devanagari |
-| Tamil | தமிழ் | Tamil |
-| Telugu | తెలుగు | Telugu |
-| Bengali | বাংলা | Bengali |
-| Punjabi | ਪੰਜਾਬੀ | Gurmukhi |
-| Gujarati | ગુજરાતી | Gujarati |
-| English | English | Latin |
-
-## Learning Path
-
-1. **Welcome** - Landing page with app introduction
-2. **Signup/Login** - Create account or sign in
-3. **Onboarding** - Select languages, goals, and daily targets
-4. **Assessment** - Placement test to determine starting level
-5. **Dashboard** - Main hub with stats and learning path
-6. **Lessons** - Interactive exercises with XP rewards
-7. **Practice** - Vocabulary review and mastery tracking
-8. **Achievements** - Unlock badges for milestones
-
-## Exercise Types
-
-- **Multiple Choice**: Select the correct answer from options
-- **Translation**: Type or select the translation
-- **Listening**: Identify words from audio
-- **Fill in the Blank**: Complete sentences
-- **Matching**: Pair words with meanings
-
-## Gamification
-
-### XP System
-- Correct answer: +10 XP
-- Perfect lesson: +25 XP bonus
-- Daily goal completion: +20 XP
-- Speaking challenges: +15 XP
-- Review practice: +5 XP
-
-### Streaks
-- Daily activity maintains streak
-- Weekly streak calendar visualization
-- Streak achievements at 7, 30 days
-
-### Hearts
-- Start with 5 hearts
-- Lose 1 heart per incorrect answer
-- Restore through practice review
-- Game over when hearts reach zero
-
-### Achievements
-- First Step: Complete first lesson
-- Word Collector: Learn 50 words
-- 7 Day Flame: 7-day streak
-- Speaking Star: 10 speaking exercises
-- Perfect Lesson: Finish without mistakes
-- Polyglot: Study three languages
-
-## Optional AI Services
-
-### IndicTrans2 (Translation)
-Provides AI-powered translation between Indian languages.
-
-**Setup:**
-1. Install IndicTrans2 following their documentation
-2. Set `INDICTRANS_URL` in `.env`
-3. The app will use AI translation when available, falling back to curated content
-
-### IndicConformer (Speech Recognition)
-Provides speech-to-text for Indian languages.
-
-**Setup:**
-1. Install IndicConformer following their documentation
-2. Set `INDICCONFORMER_URL` in `.env`
-3. The app will use AI speech recognition when available, falling back to browser SpeechRecognition
-
-### Local TTS (Text-to-Speech)
-Provides higher quality text-to-speech.
-
-**Setup:**
-1. Install a local TTS server
-2. Set `TTS_URL` in `.env`
-3. The app will use local TTS when available, falling back to browser SpeechSynthesis
-
-**Note**: All core functionality works without these services using browser-native capabilities and curated content.
-
-## Accessibility
-
-- Semantic HTML structure
-- Keyboard navigation support
-- ARIA labels for dynamic content
-- Focus indicators
-- Screen reader compatible
-- Reduced motion support
-- Sufficient color contrast
-- Text alternatives for audio
-
-## Browser Support
-
-- Chrome/Edge (recommended)
-- Firefox
-- Safari
-- Mobile browsers
-
-## Development
-
-### Project Structure
-```
-bharatlingo/
-├── public/              # Static assets
-├── src/
-│   ├── components/     # Reusable components
-│   ├── pages/          # Page components
-│   ├── data/           # Content data
-│   ├── services/       # Business logic
-│   ├── hooks/          # Custom hooks
-│   ├── utils/          # Utilities
-│   └── styles/         # CSS
-├── server/             # Backend API
-│   ├── routes/        # API endpoints
-│   └── services/      # Backend services
-├── .env.example        # Environment template
-├── package.json        # Dependencies
-├── vite.config.js      # Vite configuration
-└── README.md          # This file
-```
-
-### Adding New Languages
-
-1. Add language to `src/data/languages.js`
-2. Create lesson data in `src/data/lessons/[language].js`
-3. Create assessment questions in `src/data/questions/[language].js`
-4. Update imports in index files
-
-### Adding New Lesson Types
-
-1. Add exercise type to lesson data structure
-2. Implement rendering logic in `src/pages/Lesson/Lesson.jsx`
-3. Add validation/scoring logic
-
-## Data Persistence
-
-User data is stored in localStorage:
-- User profile and preferences
-- Learning progress
-- Vocabulary mastery
-- Achievements
-- Streak data
-
-Future versions may support PostgreSQL, Supabase, or Firebase migration.
-
-## Security
-
-- No API keys in frontend code
-- `.env` file in `.gitignore`
-- Password hashing for production auth
-- Input validation
-- XSS prevention
-
-## Performance
-
-- Lazy loading for large components
-- Optimized animations with Framer Motion
-- Efficient state management
-- Minimal bundle size
-
-## Testing
-
-Test the following flows:
-1. Authentication (signup, login, validation)
-2. Onboarding (language selection, goals)
-3. Assessment (all question types, scoring)
-4. Lessons (all exercise types, XP, hearts)
-5. Dashboard (stats, navigation)
-6. Practice (vocabulary review)
-7. Settings (all controls work)
-8. Mobile responsiveness (320px, 375px, 768px)
-
-## Troubleshooting
-
-**Frontend not loading:**
-- Ensure Node.js 18+ is installed
-- Run `npm install` to install dependencies
-- Check that port 5173 is available
-
-**Backend not starting:**
-- Check that port 5000 is available
-- Verify `.env` file exists
-- Check Node.js version
-
-**Audio not working:**
-- Ensure browser supports Web Speech API
-- Check browser permissions for microphone/speakers
-- Try different browser (Chrome recommended)
-
-**Progress not saving:**
-- Check browser localStorage is enabled
-- Clear browser cache and try again
-- Check browser console for errors
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-- Maintain existing code style
-- Add tests for new features
-- Update documentation
-- Ensure accessibility standards
-
-## License
-
-This project is for educational purposes. Please respect language data and cultural content.
-
-## Support
-
-For issues or questions:
-- Check the troubleshooting section
-- Review code comments
-- Check browser console for errors
-
-## Roadmap
-
-Future enhancements:
-- Real user authentication (Supabase)
-- PostgreSQL database integration
-- Cloud storage for audio
-- Real-time multiplayer features
-- Mobile app (React Native)
-- More Indian languages
-- Advanced AI tutor integration
-- PWA support
-
-## Acknowledgments
-
-- Inspired by modern language-learning platforms
-- Indian language data from linguistic sources
-- AI4Bharat for open-source Indic NLP models
-- Open-source community contributions
+BharatLingo is a full-featured, culturally immersive language-learning platform built with React and Vite for 8 languages: **Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English**. It works locally with zero cloud dependencies by default, with Supabase and Indic NLP microservices available for full cloud synchronization and advanced AI features.
 
 ---
 
-**Made with ❤️ for Indian language learners**
+## 🚀 Recent Progress & Completed Milestones
 
-© 2026 BharatLingo. Learn Indian languages with confidence.
+### 1. Dynamic UI Localization Across 8 Indian Languages
+- **Full UI Localization Engine**: Implemented `themeContext.jsx` covering 8 languages: English (`en`), Hindi (`hi`), Marathi (`mr`), Tamil (`ta`), Telugu (`te`), Bengali (`bn`), Punjabi (`pa`), and Gujarati (`gu`).
+- **Dashboard Dynamic Adaptation**: Course titles, personalized path banners, adaptive recommendations, quick hub shortcuts (Stories, AI Tutor, Writing, Script), spaced review retention drills, and streak milestones adapt dynamically.
+- **Lesson & Exercise Controls**: Action buttons (`Check Answer`, `Continue`, `Complete Lesson`, `✕ Exit`), hints, and real-time exercise feedback alerts (`✓ Excellent!`, `✗ Not quite right`, `Speaking skipped`, `Correct answer:`) respond instantly to site language changes.
+- **Persistent Right Sidebar & Quests**: Live AI Translator, Daily Quests (`Claim Reward` / `Claimed`), and Leaderboard League previews fully localized.
+
+### 2. Unified Two-Way Language Synchronization
+- **Real-Time Sync**: *"Site Language"* (UI interface text) and *"I Speak (Questions In)"* (`preferredLanguage`) are unified in 100% two-way sync.
+- **Permanent Persistence**: Language preferences persist simultaneously across:
+  1. `localStorage` (`bharatlingo_site_lang` & `bharatlingo_user`)
+  2. Supabase database table `profiles.preferred_language`
+  3. Window event bus (`bharatlingo_site_lang_changed`) for instantaneous zero-reload updates across all mounted components.
+
+### 3. Streamlined Onboarding & Level Check
+- **Welcoming Experience**: Replaced clinical "Placement Assessment" phrasing with friendly, motivating terminology: **"Find Your Starting Level"**.
+- **Action Button**: Standardized onboarding CTA to **`Find My Level →`**.
+- **Frictionless Signup**: Streamlined onboarding to 4 core steps (Age, Preferred Language, Target Language, Goal), removing the daily time question and automatically applying an optimal 10-minute daily practice default.
+
+### 4. ACID Compliance & Robust State Persistence
+- **Atomicity & Consistency**: Multi-state operations (XP transactions, Diamond economy, Streaks, Lesson completions, and Profile updates) persist reliably or fail gracefully without desynchronized states.
+- **Isolation & Concurrency**: Input locking and debouncing prevent duplicate submissions during rapid exercise interactions.
+- **Durability**: All learning records and metrics are committed durably to both local client storage and Supabase (`learning_activity`, `profiles`, `user_progress`).
+
+---
+
+## ✨ Features
+
+- **Comprehensive Multi-Language Foundation**: Curated lessons, vocabulary, alphabets, conversation scenarios, and stroke reference data across 8 languages.
+- **Rich Exercise Varieties**:
+  - Multiple choice & vocabulary recognition
+  - Word Bank sentence building
+  - Sentence reordering exercises
+  - Matching pairs drills
+  - Listening comprehension with audio playback
+  - Speaking exercises with browser speech recognition & zero-XP skip fallback
+  - Reading comprehension & picture choice
+- **Adaptive Learning & Spaced Repetition**:
+  - Dynamic lesson engine tailored to user proficiency, goals, and age range.
+  - SM-2 spaced repetition algorithm for reviewing weak words and retention candidates.
+  - Granular skill radar tracking: Vocabulary, Grammar, Listening, and Speaking proficiencies.
+- **Gamification & Habit Building**:
+  - Daily Quests with XP rewards
+  - Streak tracking with milestone celebrations and detailed week heatmaps
+  - Gem/Diamond economy
+  - League Leaderboards (Bronze through Diamond leagues)
+  - Achievement badges
+- **Cultural & Interactive Hubs**:
+  - **Conversational Stories**: Interactive stories with branching comprehension checkpoints.
+  - **AI Conversation Tutor**: Scenario-based dialogue practice with real-time feedback.
+  - **Script & Alphabet Tracing**: Interactive stroke-by-stroke character writing canvas with accuracy scoring.
+  - **Live AI Translator**: Fast translation and pronunciation lookup widget.
+
+---
+
+## 🇮🇳 Supported Languages
+
+| Code | Language | Native Name | Script |
+| --- | --- | --- | --- |
+| `hi` | Hindi | हिन्दी | Devanagari |
+| `mr` | Marathi | मराठी | Devanagari |
+| `ta` | Tamil | தமிழ் | Tamil |
+| `te` | Telugu | తెలుగు | Telugu |
+| `bn` | Bengali | বাংলা | Bengali |
+| `pa` | Punjabi | ਪੰਜਾਬੀ | Gurmukhi |
+| `gu` | Gujarati | ગુજરાતી | Gujarati |
+| `en` | English | English | Latin |
+
+---
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18, React Router v6, Vite, Tailwind CSS, Framer Motion, Lucide Icons.
+- **Audio & Speech**: Browser Web Speech API (Synthesis & Recognition) with AudioFX synth sounds.
+- **Backend API**: Express server (`server/index.js`) providing adaptive lesson dispatch, learning plan generation, transliteration, and Indic NLP routing.
+- **Database & Auth**: Supabase (PostgreSQL, Row Level Security, Auth, Real-time).
+- **Rules & Memory**: `AGENTS.md` persistent instructions for autonomous development and architectural adherence.
+
+---
+
+## 🏁 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Installation & Local Run
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment variables
+Copy-Item .env.example .env    # PowerShell
+# or: cp .env.example .env     # Bash
+
+# 3. Launch Vite client and API server concurrently
+npm run dev
+```
+
+- **Client App**: `http://localhost:5173`
+- **Backend API**: `http://localhost:5000`
+
+### Available Scripts
+
+```bash
+npm run dev           # Concurrently runs client and server
+npm run dev:client    # Vite frontend only
+npm run dev:server    # Express API server only
+npm run build         # Production client build
+npm run preview       # Preview production build locally
+node --test tests/*.test.mjs  # Run test suite
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+Copy `.env.example` to `.env`. The core client functions fully with local storage without requiring external credentials.
+
+```env
+PORT=5000
+
+# Optional Supabase Cloud Sync
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional Indic NLP Microservice Endpoints
+INDICTRANS_URL=http://127.0.0.1:8000
+INDICCONFORMER_URL=http://127.0.0.1:8001
+# INDICXLIT_URL=http://127.0.0.1:8003
+```
+
+---
+
+## 🔌 API Endpoints
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/health` | GET | API status & Indic NLP capability report |
+| `/api/lessons/adaptive` | GET | Dynamically selected next lesson based on learner stats |
+| `/api/lessons/dynamic` | GET | Bounded adaptive lesson set |
+| `/api/assessment/questions` | GET | Starting level check questions |
+| `/api/learning-plan` | POST | Generates personalized learning plan |
+| `/api/translate` | POST | IndicTrans2 translation with curated offline fallbacks |
+| `/api/speech-to-text` | POST | IndicConformer ASR with browser Web Speech guidance |
+| `/api/tts` | GET/POST | High-fidelity Indic text-to-speech audio stream |
+| `/api/transliterate` | POST | IndicXlit roman-to-native script transliteration |
+| `/api/language-identify` | POST | Rule-based Indian script detection |
+
+---
+
+## 📁 Repository Layout
+
+```text
+├── src/
+│   ├── components/       # Reusable UI widgets (AudioButton, WordBank, Navigation, etc.)
+│   ├── data/             # Curated lesson sets, alphabets, stories, questions
+│   ├── pages/            # Page views (Dashboard, Lesson, Assessment, Stories, Tutor, etc.)
+│   ├── services/         # Auth, DB, SM-2 Spaced Repetition, Speech, Themes & Audio
+│   └── utils/            # Confetti, Canvas tracing, Web Audio effects
+├── server/
+│   ├── routes/           # Express endpoint routers (Indic NLP, lessons, health)
+│   └── services/         # Lesson engine, Indic NLP client adapters
+├── supabase/
+│   ├── schema.sql        # Core DB schema with RLS policies
+│   └── migrations/       # Incremental database migrations
+├── tests/                # Verification tests for state, NLP, and stroke data
+└── AGENTS.md             # Persistent project rules & AI memory
+```
+
+---
+
+## 📜 License
+
+This project is created for educational and language preservation purposes. Respect attribution, dataset, and model licenses when using external resources.

@@ -11,7 +11,6 @@ const STEPS = {
   PREFERRED_LANGUAGE: 1,
   TARGET_LANGUAGE:    2,
   GOAL:               3,
-  DAILY_GOAL:         4,
 }
 
 const AGE_RANGES = [
@@ -32,14 +31,6 @@ const GOALS = [
   { id: 'fun',          name: 'Just for fun', icon: '🎮' },
 ]
 
-const DAILY_GOALS = [
-  { id: 5,  name: '5 minutes',  description: 'Casual' },
-  { id: 10, name: '10 minutes', description: 'Regular' },
-  { id: 15, name: '15 minutes', description: 'Serious' },
-  { id: 20, name: '20 minutes', description: 'Intense' },
-  { id: 30, name: '30 minutes', description: 'Hardcore' },
-]
-
 const TOTAL_STEPS = Object.keys(STEPS).length
 
 export default function Onboarding() {
@@ -50,10 +41,9 @@ export default function Onboarding() {
   const [selectedPreferredLang, setSelectedPreferredLang] = useState(user?.preferredLanguage || 'en')
   const [selectedTargetLang, setSelectedTargetLang] = useState(user?.learningLanguage || '')
   const [selectedGoal, setSelectedGoal]             = useState(user?.goal || '')
-  const [selectedDailyGoal, setSelectedDailyGoal]   = useState(user?.dailyGoal || 10)
 
   const handleNext = () => {
-    if (currentStep < STEPS.DAILY_GOAL) {
+    if (currentStep < STEPS.GOAL) {
       setCurrentStep(currentStep + 1)
     } else {
       completeOnboarding()
@@ -72,7 +62,7 @@ export default function Onboarding() {
       preferredLanguage: selectedPreferredLang,
       learningLanguage: selectedTargetLang,
       goal: selectedGoal,
-      dailyGoal: selectedDailyGoal,
+      dailyGoal: user?.dailyGoal || 10,
       hasCompletedAssessment: false,
       assessmentScore: null,
       learningPlan: null,
@@ -86,7 +76,6 @@ export default function Onboarding() {
       case STEPS.PREFERRED_LANGUAGE: return !!selectedPreferredLang
       case STEPS.TARGET_LANGUAGE:   return !!selectedTargetLang && selectedTargetLang !== selectedPreferredLang
       case STEPS.GOAL:              return !!selectedGoal
-      case STEPS.DAILY_GOAL:        return !!selectedDailyGoal
       default:                      return false
     }
   }
@@ -96,7 +85,6 @@ export default function Onboarding() {
     'What\'s your preferred language?',
     'What do you want to learn?',
     'What\'s your goal?',
-    'How much time can you practice?',
   ]
 
   const renderStep = () => {
@@ -242,53 +230,6 @@ export default function Onboarding() {
           </motion.div>
         )
 
-      case STEPS.DAILY_GOAL:
-        return (
-          <motion.div
-            key="daily-goal"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-          >
-            <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
-              How much time do you want to practice?
-            </h2>
-            <p className="text-[#77736B] dark:text-slate-400 mb-6">
-              Set a daily goal that works for you.
-            </p>
-            <div className="space-y-3">
-              {DAILY_GOALS.map((goal) => (
-                <motion.button
-                  key={goal.id}
-                  type="button"
-                  className={`
-                    w-full p-4 rounded-xl border-2 text-left transition-all flex items-center justify-between
-                    ${selectedDailyGoal === goal.id
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
-                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
-                    }
-                  `}
-                  onClick={() => setSelectedDailyGoal(goal.id)}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <div>
-                    <p className="font-semibold text-[#25231F] dark:text-white">{goal.name}</p>
-                    <p className="text-sm text-[#77736B] dark:text-slate-400">{goal.description}</p>
-                  </div>
-                  {selectedDailyGoal === goal.id && (
-                    <div className="w-6 h-6 bg-[#0B8F62] rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        )
-
       default:
         return null
     }
@@ -346,7 +287,7 @@ export default function Onboarding() {
               <div />
             )}
             <Button onClick={handleNext} disabled={!isStepValid()}>
-              {currentStep === STEPS.DAILY_GOAL ? 'Start Assessment →' : 'Continue →'}
+              {currentStep === STEPS.GOAL ? 'Find My Level →' : 'Continue →'}
             </Button>
           </div>
         </div>

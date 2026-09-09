@@ -6,6 +6,7 @@ import { useProgress } from '../../services/progress'
 import { fetchLessonById, fetchNextAdaptiveLesson } from '../../services/dynamicLessonService'
 import { getLanguageById } from '../../data/languages'
 import { recordExerciseAttempt } from '../../services/learnerModel'
+import { persistLearnerStats } from '../../services/dbService'
 import QuestionCard from '../../components/QuestionCard'
 import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
@@ -19,14 +20,16 @@ import { audioFX } from '../../utils/audioFX'
 import SentenceOrderExercise from '../../components/SentenceOrderExercise/SentenceOrderExercise'
 import ReadingExercise from '../../components/ReadingExercise/ReadingExercise'
 import PictureChoiceExercise from '../../components/PictureChoiceExercise/PictureChoiceExercise'
-import { Sparkles, Crown, Brain } from 'lucide-react'
+import { Sparkles, Crown, Brain, Lightbulb } from 'lucide-react'
 import { triggerConfetti } from '../../utils/confetti'
 import { ttsService } from '../../services/audio/AudioService'
+import { useTheme } from '../../services/themeContext'
 
 export default function Lesson() {
   const { lessonId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useTheme()
   const {
     gems,
     spendGems,
@@ -45,12 +48,14 @@ export default function Lesson() {
   const [answers, setAnswers] = useState([])
   const [showResult, setShowResult] = useState(false)
   const [selectedAnswer, setSelectedAnswer] = useState('')
+  const [hintVisible, setHintVisible] = useState(false)
   const [lessonComplete, setLessonComplete] = useState(false)
   const [perfectLesson, setPerfectLesson] = useState(true)
   const [streakResult, setStreakResult] = useState({ increased: false, newStreak: 1 })
   const [totalXPEarned, setTotalXPEarned] = useState(0)
 
   const exerciseStartTimeRef = useRef(Date.now())
+  const lessonStartTimeRef = useRef(Date.now())
 
   // Stop audio when leaving lesson
   useEffect(() => {
@@ -90,9 +95,11 @@ export default function Lesson() {
       setAnswers([])
       setShowResult(false)
       setSelectedAnswer('')
+      setHintVisible(false)
       setLessonComplete(false)
       setPerfectLesson(true)
       exerciseStartTimeRef.current = Date.now()
+      lessonStartTimeRef.current = Date.now()
       ttsService.stop()
 
       // Pre-fetch a following adaptive lesson
@@ -111,7 +118,7 @@ export default function Lesson() {
     return () => { cancelled = true }
   }, [lessonId, user?.learningLanguage, user?.preferredLanguage, user?.goal, navigate])
 
-  const handleAnswer = (answer) => {
+  const handleAnswer = (answer, { skipped = false } = {}) => {
     if (showResult || !lesson) return
 
     const timeSpentMs = Date.now() - exerciseStartTimeRef.current
@@ -120,7 +127,9 @@ export default function Lesson() {
     
     // Check answer correctness
     let isCorrect = false
-    if (currentExerciseData.type === 'matching' || answer === 'matched_all') {
+    if (skipped) {
+      isCorrect = false
+    } else if (currentExerciseData.type === 'matching' || answer === 'matched_all') {
       isCorrect = true
     } else if (currentExerciseData.type === 'speaking') {
       isCorrect = answer === currentExerciseData.correctAnswer || answer === currentExerciseData.targetWord
@@ -129,17 +138,18 @@ export default function Lesson() {
     }
 
     // Record attempt in authoritative Learner Model
-    recordExerciseAttempt(user.learningLanguage, currentExerciseData, isCorrect, { timeSpentMs })
+    const learnerStats = recordExerciseAttempt(user.learningLanguage, currentExerciseData, isCorrect, { timeSpentMs })
+    if (user?.id && learnerStats) persistLearnerStats(user.id, learnerStats)
 
     if (!isCorrect) {
-      audioFX.playWrong()
+      if (!skipped) audioFX.playWrong()
       setPerfectLesson(false)
     } else {
       audioFX.playCorrect()
     }
 
     const xpEarned = isCorrect ? (currentExerciseData.xp || 10) : 0
-    setAnswers((prev) => [...prev, { exercise: currentExercise, answer, isCorrect, xp: xpEarned }])
+    setAnswers((prev) => [...prev, { exercise: currentExercise, answer, isCorrect, skipped, xp: xpEarned }])
     setShowResult(true)
 
     if (isCorrect) {
@@ -154,13 +164,16 @@ export default function Lesson() {
       setCurrentExercise(currentExercise + 1)
       setShowResult(false)
       setSelectedAnswer('')
+      setHintVisible(false)
       exerciseStartTimeRef.current = Date.now()
     } else {
-      completeLessonFlow()
+      // handleAnswer has already recorded the current response in `answers`.
+      // Passing it directly avoids counting the final exercise twice.
+      completeLessonFlow(answers)
     }
   }
 
-  const completeLessonFlow = async () => {
+  const completeLessonFlow = async (latestAnswers = answers) => {
     try {
       audioFX.playVictory()
       triggerConfetti()
@@ -173,10 +186,11 @@ export default function Lesson() {
       console.error('Error updating streak:', err)
     }
 
-    const correctCount = answers.filter((a) => a.isCorrect).length
+    const correctCount = latestAnswers.filter((a) => a.isCorrect).length
     const accuracy = Math.round((correctCount / Math.max(1, lesson?.exercises?.length || 1)) * 100)
     const baseBonus = isLegendary ? 40 : 15
-    const earnedXP = totalXPEarned + baseBonus
+    const earnedXP = latestAnswers.reduce((sum, answer) => sum + (answer.xp || 0), 0) + baseBonus
+    const isPerfect = latestAnswers.length > 0 && latestAnswers.every((answer) => answer.isCorrect)
 
     try {
       addXP(baseBonus)
@@ -192,7 +206,9 @@ export default function Lesson() {
         await completeLesson(lessonId, {
           xpEarned: earnedXP,
           accuracy,
-          isPerfect: perfectLesson,
+          isPerfect,
+          exercisesCompleted: latestAnswers.length,
+          durationSeconds: Math.max(1, Math.round((Date.now() - lessonStartTimeRef.current) / 1000)),
         })
       }
     } catch (err) {
@@ -247,6 +263,18 @@ export default function Lesson() {
 
   const handlePracticeWeak = () => {
     navigate('/practice')
+  }
+
+  const handleShowHint = () => {
+    if (showResult || !lesson) return
+    setHintVisible(true)
+  }
+
+  const handleSkipSpeaking = () => handleAnswer('', { skipped: true })
+
+  const getCorrectAnswerLabel = (exercise) => {
+    if (exercise.type === 'matching') return t('match_words_meanings') || 'Match every word with its meaning'
+    return exercise.targetWord || exercise.correctAnswer
   }
 
   const renderExercise = () => {
@@ -311,11 +339,11 @@ export default function Lesson() {
                   type="button"
                   className={`
                     p-4 rounded-xl border-2 text-left transition-all
-                    ${selectedAnswer === option
-                      ? showResult
-                        ? option === exercise.correctAnswer
-                          ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
-                          : 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
+                    ${showResult && option === exercise.correctAnswer
+                      ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+                      : selectedAnswer === option
+                        ? showResult
+                          ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
                         : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
                       : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
                     }
@@ -357,7 +385,7 @@ export default function Lesson() {
               value={selectedAnswer}
               onChange={(e) => setSelectedAnswer(e.target.value)}
               className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:border-[#0B8F62] dark:bg-slate-900 dark:text-white"
-              placeholder="Type your answer..."
+              placeholder={t('type_answer_placeholder') || 'Type your answer...'}
               disabled={showResult}
             />
             {!showResult && (
@@ -366,7 +394,7 @@ export default function Lesson() {
                   onClick={() => handleAnswer(selectedAnswer)}
                   disabled={!selectedAnswer.trim() || showResult}
                 >
-                  Check Answer
+                  {t('check_answer') || 'Check Answer'}
                 </Button>
               </div>
             )}
@@ -396,6 +424,7 @@ export default function Lesson() {
             pronunciation={exercise.pronunciation}
             languageId={user?.learningLanguage || 'hi'}
             onSubmit={handleAnswer}
+            onSkip={handleSkipSpeaking}
             disabled={showResult}
             showResult={showResult}
           />
@@ -426,11 +455,11 @@ export default function Lesson() {
                     type="button"
                     className={`
                       p-4 rounded-xl border-2 text-left transition-all
-                      ${selectedAnswer === option
-                        ? showResult
-                          ? option === exercise.correctAnswer
-                            ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
-                            : 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
+                      ${showResult && option === exercise.correctAnswer
+                        ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+                        : selectedAnswer === option
+                          ? showResult
+                            ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
                           : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
                         : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
                       }
@@ -452,7 +481,7 @@ export default function Lesson() {
                   value={selectedAnswer}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B8F62] dark:bg-slate-900 dark:text-white"
-                  placeholder="Type your answer..."
+                  placeholder={t('type_answer_placeholder') || 'Type your answer...'}
                   disabled={showResult}
                 />
                 {!showResult && (
@@ -461,7 +490,7 @@ export default function Lesson() {
                       onClick={() => handleAnswer(selectedAnswer)}
                       disabled={!selectedAnswer.trim() || showResult}
                     >
-                      Check Answer
+                      {t('check_answer') || 'Check Answer'}
                     </Button>
                   </div>
                 )}
@@ -473,7 +502,7 @@ export default function Lesson() {
       default: {
         return (
           <div className="text-center py-8 space-y-3">
-            <p className="text-[#D84B42] font-semibold">Unknown exercise type: {exercise.type || 'undefined'}</p>
+            <p className="text-[#D84B42] font-semibold">{t('unknown_exercise_type') || 'Unknown exercise type'}: {exercise.type || 'undefined'}</p>
             <Button onClick={() => handleAnswer(exercise.correctAnswer || 'skip')}>
               Skip
             </Button>
@@ -486,6 +515,7 @@ export default function Lesson() {
   const renderResult = () => {
     const lastAnswer = answers[answers.length - 1]
     const isCorrect = lastAnswer?.isCorrect || false
+    const wasSkipped = lastAnswer?.skipped || false
     const exercise = lesson.exercises[currentExercise]
 
     return (
@@ -494,15 +524,21 @@ export default function Lesson() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className={`text-2xl font-bold ${isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}
+            className={`text-2xl font-bold ${wasSkipped ? 'text-[#77736B]' : isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}
           >
-            {isCorrect ? '✓ Excellent!' : '✗ Not quite right'}
+            {wasSkipped ? (t('speaking_skipped') || 'Speaking skipped') : isCorrect ? (t('excellent') || '✓ Excellent!') : (t('not_quite') || '✗ Not quite right')}
           </motion.div>
         </div>
 
-        {!isCorrect && (
+        {wasSkipped && (
           <p className="text-sm font-medium text-[#77736B] dark:text-slate-400 mt-1">
-            Correct answer: <span className="font-bold text-[#25231F] dark:text-white">{exercise.correctAnswer}</span>
+            No XP earned for this skipped speaking exercise.
+          </p>
+        )}
+
+        {!isCorrect && !wasSkipped && (
+          <p className="text-sm font-medium text-[#77736B] dark:text-slate-400 mt-1">
+            {t('correct_answer_is') || 'Correct answer:'} <span className="font-bold text-[#25231F] dark:text-white">{getCorrectAnswerLabel(exercise)}</span>
           </p>
         )}
 
@@ -562,7 +598,7 @@ export default function Lesson() {
           <div className="mb-3 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-xs flex items-center justify-between shadow-lg shadow-amber-500/20 animate-pulse">
             <div className="flex items-center gap-2">
               <Crown className="w-4 h-4 fill-current" />
-              <span>LEGENDARY CHALLENGE MODE</span>
+              <span>{t('legendary_challenge_mode') || 'LEGENDARY CHALLENGE MODE'}</span>
             </div>
             <span className="bg-white/20 px-2 py-0.5 rounded-full text-[11px]">+40 XP & +20 💎</span>
           </div>
@@ -573,7 +609,7 @@ export default function Lesson() {
             onClick={() => navigate('/dashboard')}
             className="text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
-            ✕ Exit
+            {t('exit') || '✕ Exit'}
           </button>
           
           <div className="flex items-center gap-2">
@@ -614,15 +650,32 @@ export default function Lesson() {
 
       {/* Bottom Footer Controls */}
       <div className="w-full max-w-2xl mx-auto flex justify-between items-center pt-2">
-        <div className="text-xs text-[#77736B] dark:text-slate-400 font-bold">
-          Exercise {currentExercise + 1} of {lesson.exercises.length}
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-[#77736B] dark:text-slate-400 font-bold">
+            {t('exercise_counter') || 'Exercise'} {currentExercise + 1} {t('of_word') || 'of'} {lesson.exercises.length}
+          </div>
+          {!showResult && (
+            <button
+              type="button"
+              onClick={handleShowHint}
+              className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+            >
+              <Lightbulb className="w-3.5 h-3.5" /> {hintVisible ? (t('answer_shown') || 'Answer shown') : (t('need_hint') || 'Need a hint?')}
+            </button>
+          )}
         </div>
         {showResult && (
           <Button onClick={handleNext} size="large">
-            {currentExercise === lesson.exercises.length - 1 ? 'Complete Lesson' : 'Continue'}
+            {currentExercise === lesson.exercises.length - 1 ? (t('complete_lesson') || 'Complete Lesson') : (t('continue') || 'Continue')}
           </Button>
         )}
       </div>
+      {hintVisible && !showResult && (
+        <div className="w-full max-w-2xl mx-auto mt-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+          <span className="font-bold">{t('answer_label') || 'Answer:'} </span>{getCorrectAnswerLabel(lesson.exercises[currentExercise])}
+          <span className="ml-2 text-xs opacity-75">{t('try_it_now') || 'Try it now to earn the exercise XP.'}</span>
+        </div>
+      )}
     </div>
   )
 }
