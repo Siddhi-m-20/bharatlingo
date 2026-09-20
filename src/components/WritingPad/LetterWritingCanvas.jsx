@@ -17,6 +17,7 @@ export default function LetterWritingCanvas({
   showTopBar = true,
 }) {
   const strokes = getStrokesForCharacter(character, languageId)
+  const hasStrokes = Boolean(strokes && strokes.length > 0)
   
   const [activeStrokeIndex, setActiveStrokeIndex] = useState(0)
   const [strokeProgress, setStrokeProgress] = useState(0)
@@ -286,23 +287,6 @@ export default function LetterWritingCanvas({
     }
   }
 
-  if (!strokes || strokes.length === 0) {
-    return (
-      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center p-8 text-center space-y-4 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-200 dark:border-slate-800">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-3xl">
-          ✍️
-        </div>
-        <div className="space-y-1">
-          <p className="text-base font-bold text-slate-800 dark:text-white">
-            Stroke tracing is unavailable for "{character}"
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Interactive stroke order is only available for supported scripts.
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col justify-between select-none">
@@ -341,195 +325,223 @@ export default function LetterWritingCanvas({
         </div>
       )}
 
-      {/* ── TITLE ── */}
-      <div className="text-left mb-3">
-        <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white tracking-tight">
-          Trace the character
-        </h2>
-      </div>
+      {/* ── HEADER ROW: TITLE & CHARACTER PREVIEW ── */}
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="text-left">
+          <h2 className="text-lg sm:text-xl font-black text-[#25231F] dark:text-white tracking-tight leading-tight">
+            Trace the character
+          </h2>
+          {example && (
+            <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium mt-0.5">
+              Example: <span className="font-bold text-[#25231F] dark:text-slate-200">{example}</span>
+            </p>
+          )}
+        </div>
 
-      {/* ── AUDIO BUTTON & CHARACTER PREVIEW ── */}
-      <div className="flex items-center gap-4 mb-4">
-        {/* Cyan Audio Speaker Button */}
-        <button
-          type="button"
-          onClick={handlePlayAudio}
-          className="w-13 h-13 rounded-2xl bg-[#1CB0F6] hover:bg-[#0ea5e9] active:scale-95 text-white flex items-center justify-center shadow-[0_3px_0_#0284c7] transition-all cursor-pointer shrink-0"
-          title="Listen to character pronunciation"
-        >
-          <Volume2 size={24} className="fill-current" />
-        </button>
-
-        {/* Character & Transliteration */}
-        <div className="flex flex-col">
-          <span className="text-3xl font-black text-[#25231F] dark:text-white leading-tight">
-            {character}
-          </span>
-          <span className="text-sm font-bold text-slate-400 dark:text-slate-500">
-            {roman}
-          </span>
+        {/* Compact Character & Audio Speaker Capsule */}
+        <div className="flex items-center gap-2 bg-[#F7F5EF] dark:bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/70 shadow-xs shrink-0">
+          <button
+            type="button"
+            onClick={handlePlayAudio}
+            className="w-8 h-8 rounded-xl bg-[#1CB0F6] hover:bg-[#0ea5e9] active:scale-95 text-white flex items-center justify-center shadow-xs transition-all cursor-pointer shrink-0"
+            title="Listen to character pronunciation"
+          >
+            <Volume2 size={16} className="fill-current" />
+          </button>
+          <div className="flex flex-col text-left pr-1">
+            <span className="text-2xl font-black text-[#25231F] dark:text-white leading-none">
+              {character}
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 mt-0.5 leading-none">
+              {roman}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* ── MAIN DUOLINGO TRACING CANVAS ── */}
-      <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[370px] mx-auto bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-100 dark:border-slate-800/80 shadow-lg p-2 flex items-center justify-center overflow-hidden touch-none">
-        <svg
-          ref={svgRef}
-          viewBox="0 0 300 300"
-          className="w-full h-full cursor-crosshair select-none"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        >
-          {/* Subtle Duolingo Grid Crosshairs */}
-          <line
-            x1="150"
-            y1="25"
-            x2="150"
-            y2="275"
-            stroke="#E2E8F0"
-            className="dark:stroke-slate-800"
-            strokeWidth="2.5"
-            strokeDasharray="6 6"
-          />
-          <line
-            x1="25"
-            y1="150"
-            x2="275"
-            y2="150"
-            stroke="#E2E8F0"
-            className="dark:stroke-slate-800"
-            strokeWidth="2.5"
-            strokeDasharray="6 6"
-          />
-
-          {/* 1. Base Outline of ALL strokes (Faint light gray background) */}
-          {strokes.map((s, idx) => (
-            <path
-              key={`bg-${idx}`}
-              d={s.path}
-              stroke="#E2E8F0"
-              className="dark:stroke-slate-800/90"
-              strokeWidth={s.type === 'dot' ? '28' : '32'}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill={s.type === 'dot' ? '#E2E8F0' : 'none'}
+      {/* ── MAIN DUOLINGO TRACING CANVAS OR UNAVAILABLE NOTICE ── */}
+      <div className="relative w-full aspect-square max-w-[270px] sm:max-w-[290px] mx-auto bg-slate-50 dark:bg-slate-950/70 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-inner p-4 flex flex-col items-center justify-center text-center overflow-hidden touch-none">
+        {!hasStrokes ? (
+          <div className="flex flex-col items-center justify-center p-2">
+            <span className="text-6xl sm:text-7xl font-black text-[#25231F] dark:text-white mb-2 select-none">
+              {character}
+            </span>
+            <span className="text-sm font-bold text-slate-400 dark:text-slate-400 mb-3">
+              {roman}
+            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold mb-2">
+              <span>Tracing unavailable for this character</span>
+            </div>
+            <p className="text-[11px] text-[#77736B] dark:text-slate-400 max-w-[210px] leading-relaxed">
+              Authentic stroke guides are currently active for Hindi, Marathi, and English.
+            </p>
+          </div>
+        ) : (
+          <svg
+            ref={svgRef}
+            viewBox="0 0 300 300"
+            className="w-full h-full cursor-crosshair select-none"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+          >
+            {/* Subtle Duolingo Grid Crosshairs */}
+            <line
+              x1="150"
+              y1="25"
+              x2="150"
+              y2="275"
+              stroke="#CBD5E1"
+              className="dark:stroke-slate-800/80"
+              strokeWidth="2"
+              strokeDasharray="5 5"
             />
-          ))}
+            <line
+              x1="25"
+              y1="150"
+              x2="275"
+              y2="150"
+              stroke="#CBD5E1"
+              className="dark:stroke-slate-800/80"
+              strokeWidth="2"
+              strokeDasharray="5 5"
+            />
 
-          {/* 2. Completed Strokes (Solid Vivid Blue) */}
-          {strokes.map((s, idx) => {
-            if (idx < activeStrokeIndex || isCompleted) {
-              return (
-                <path
-                  key={`done-${idx}`}
-                  d={s.path}
-                  stroke="#1CB0F6"
-                  strokeWidth={s.type === 'dot' ? '28' : '32'}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill={s.type === 'dot' ? '#1CB0F6' : 'none'}
-                />
-              )
-            }
-            return null
-          })}
-
-          {/* 3. Active Stroke Guide (Animated dashed line + Snapped auto-correct fill) */}
-          {activeStroke && !isCompleted && (
-            <g>
-              {/* Invisible reference path for measurement */}
+            {/* 1. Base Outline of ALL strokes (Clearly visible background guide) */}
+            {strokes.map((s, idx) => (
               <path
-                ref={activePathRef}
-                d={activeStroke.path}
-                fill="none"
-                stroke="transparent"
-                strokeWidth="1"
+                key={`bg-${idx}`}
+                d={s.path}
+                stroke="#CBD5E1"
+                className="dark:stroke-white/20"
+                strokeWidth={s.type === 'dot' ? '26' : '30'}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill={s.type === 'dot' ? '#CBD5E1' : 'none'}
               />
+            ))}
 
-              {/* Animated Dashed Guide Line */}
-              {activeStroke.type !== 'dot' && (
+            {/* 2. Completed Strokes (Solid Vivid Blue) */}
+            {strokes.map((s, idx) => {
+              if (idx < activeStrokeIndex || isCompleted) {
+                return (
+                  <path
+                    key={`done-${idx}`}
+                    d={s.path}
+                    stroke="#1CB0F6"
+                    strokeWidth={s.type === 'dot' ? '26' : '30'}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={s.type === 'dot' ? '#1CB0F6' : 'none'}
+                  />
+                )
+              }
+              return null
+            })}
+
+            {/* 3. Active Stroke Guide (Animated dashed line + Snapped auto-correct fill) */}
+            {activeStroke && !isCompleted && (
+              <g>
+                {/* Invisible reference path for measurement */}
+                <path
+                  ref={activePathRef}
+                  d={activeStroke.path}
+                  stroke="transparent"
+                  strokeWidth="40"
+                  fill="none"
+                />
+
+                {/* Pulsing Guide Track */}
                 <path
                   d={activeStroke.path}
                   stroke="#1CB0F6"
-                  strokeWidth="4"
-                  strokeDasharray="8 8"
+                  strokeWidth={activeStroke.type === 'dot' ? '26' : '30'}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  fill="none"
+                  strokeDasharray="14 10"
+                  fill={activeStroke.type === 'dot' ? '#1CB0F6' : 'none'}
+                  opacity={activeStroke.type === 'dot' ? '0.4' : '0.6'}
                   className="animate-pulse"
                 />
-              )}
 
-              {/* Revealed Auto-Corrected Snapped Stroke Fill */}
-              {activeStroke.type !== 'dot' && strokeProgress > 0 && activePathData?.totalLength && (
-                <path
-                  d={activeStroke.path}
-                  stroke="#1CB0F6"
-                  strokeWidth="32"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  strokeDasharray={activePathData.totalLength}
-                  strokeDashoffset={activePathData.totalLength * (1 - strokeProgress)}
-                />
-              )}
+                {/* Progressively filled path while user is dragging */}
+                {strokeProgress > 0 && activeStroke.type !== 'dot' && (
+                  <path
+                    d={activeStroke.path}
+                    stroke="#1CB0F6"
+                    strokeWidth="30"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                    style={{
+                      strokeDasharray: activePathData.totalLength,
+                      strokeDashoffset: activePathData.totalLength * (1 - strokeProgress),
+                    }}
+                  />
+                )}
+              </g>
+            )}
 
-              {/* Dot Stroke Guide */}
-              {activeStroke.type === 'dot' && (
-                <circle
-                  cx={activeStroke.start.x}
-                  cy={activeStroke.start.y}
-                  r="15"
-                  fill="#1CB0F6"
-                  className="animate-ping opacity-75"
-                />
-              )}
-            </g>
-          )}
-
-          {/* 4. Directional Start Indicator Badge (Cyan bubble with white directional arrow) */}
-          {activeStroke && !isCompleted && activeStroke.type !== 'dot' && strokeProgress < 0.85 && (
-            <g transform={`translate(${activeStroke.start.x}, ${activeStroke.start.y})`}>
-              <circle
-                r="18"
-                fill="#1CB0F6"
-                className="shadow-lg filter drop-shadow-md"
-              />
-              <text
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill="white"
-                fontSize="16"
-                fontWeight="900"
-                className="pointer-events-none select-none font-sans"
+            {/* 4. Draggable Origin Arrow Bead */}
+            {activeStroke && !isCompleted && activeStroke.start && (
+              <g
+                transform={`translate(${
+                  activeStroke.type === 'dot'
+                    ? activeStroke.start.x
+                    : activeStrokePos.x
+                }, ${
+                  activeStroke.type === 'dot'
+                    ? activeStroke.start.y
+                    : activeStrokePos.y
+                })`}
+                className="cursor-grab active:cursor-grabbing transition-transform duration-75"
               >
-                {activeStroke.arrow || '↓'}
-              </text>
-            </g>
-          )}
+                <circle
+                  r="24"
+                  fill="#1CB0F6"
+                  opacity="0.25"
+                  className="animate-ping"
+                />
+                <circle
+                  r="18"
+                  fill="#1CB0F6"
+                  className="shadow-lg filter drop-shadow-md"
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="white"
+                  fontSize="16"
+                  fontWeight="900"
+                  className="pointer-events-none select-none font-sans"
+                >
+                  {activeStroke.arrow || '↓'}
+                </text>
+              </g>
+            )}
 
-          {/* 5. Destination End Arrow Marker */}
-          {activeStroke && !isCompleted && activeStroke.type !== 'dot' && activeStroke.end && (
-            <circle
-              cx={activeStroke.end.x}
-              cy={activeStroke.end.y}
-              r="7"
-              fill="#1CB0F6"
-              opacity="0.4"
-            />
-          )}
+            {/* 5. Destination End Arrow Marker */}
+            {activeStroke && !isCompleted && activeStroke.type !== 'dot' && activeStroke.end && (
+              <circle
+                cx={activeStroke.end.x}
+                cy={activeStroke.end.y}
+                r="7"
+                fill="#1CB0F6"
+                opacity="0.4"
+              />
+            )}
 
-          {/* 6. Sparkle particle bursts */}
-          {sparkles.map((sp) => (
-            <g key={sp.id} transform={`translate(${sp.x}, ${sp.y})`}>
-              <circle r="12" fill="#FBBF24" opacity="0.8" className="animate-ping" />
-              <circle r="6" fill="#10B981" />
-            </g>
-          ))}
-        </svg>
+            {/* 6. Sparkle particle bursts */}
+            {sparkles.map((sp) => (
+              <g key={sp.id} transform={`translate(${sp.x}, ${sp.y})`}>
+                <circle r="12" fill="#FBBF24" opacity="0.8" className="animate-ping" />
+                <circle r="6" fill="#10B981" />
+              </g>
+            ))}
+          </svg>
+        )}
 
         {/* Full Letter Complete Glow Overlay */}
         <AnimatePresence>
@@ -554,28 +566,32 @@ export default function LetterWritingCanvas({
         </AnimatePresence>
       </div>
 
-      {/* Example Context Pill */}
-      {example && (
-        <p className="text-center text-xs font-semibold text-slate-400 dark:text-slate-500 mt-3">
-          Example: <span className="font-bold text-slate-700 dark:text-slate-300">{example}</span>
-        </p>
-      )}
-
-      {/* ── BOTTOM DUOLINGO ACTION BAR: CHECK BUTTON ── */}
-      <div className="pt-4 pb-2">
-        <button
-          type="button"
-          onClick={handleCheck}
-          disabled={!isCompleted}
-          className={`w-full py-3.5 sm:py-4 rounded-2xl uppercase tracking-wider font-black text-sm sm:text-base flex items-center justify-center gap-2 transition-all ${
-            isCompleted
-              ? 'bg-[#58CC02] hover:bg-[#61E002] active:translate-y-1 active:shadow-none text-white shadow-[0_4px_0_#46a302] cursor-pointer'
-              : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
-          }`}
-        >
-          <span>{isCompleted ? 'Check' : 'Check'}</span>
-          {isCompleted && <ArrowRight size={18} strokeWidth={3} />}
-        </button>
+      {/* ── BOTTOM DUOLINGO ACTION BAR: CHECK / NEXT BUTTON ── */}
+      <div className="pt-3">
+        {!hasStrokes ? (
+          <button
+            type="button"
+            onClick={onNext || handlePlayAudio}
+            className="w-full py-3 rounded-2xl uppercase tracking-wider font-black text-sm flex items-center justify-center gap-2 bg-[#1CB0F6] hover:bg-[#0ea5e9] active:translate-y-0.5 text-white shadow-[0_3px_0_#0284c7] cursor-pointer transition-all"
+          >
+            <span>Next Letter</span>
+            <ArrowRight size={16} strokeWidth={3} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={!isCompleted}
+            className={`w-full py-3 rounded-2xl uppercase tracking-wider font-black text-sm flex items-center justify-center gap-2 transition-all ${
+              isCompleted
+                ? 'bg-[#58CC02] hover:bg-[#61E002] active:translate-y-0.5 active:shadow-none text-white shadow-[0_3px_0_#46a302] cursor-pointer'
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
+            }`}
+          >
+            <span>{isCompleted ? 'Check' : 'Check'}</span>
+            {isCompleted && <ArrowRight size={16} strokeWidth={3} />}
+          </button>
+        )}
       </div>
     </div>
   )

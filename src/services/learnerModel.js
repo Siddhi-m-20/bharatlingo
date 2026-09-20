@@ -384,5 +384,6 @@ export function getSkillProficiencies(languageId = 'hi') {
     reading:    getSkillScore(SKILL_TYPES.READING),
     overall:    profile.totalAttempts > 0 ? profile.overallAccuracy : 0,
     difficulty: profile.currentDifficultyLevel || 1,
+    totalAttempts: profile.totalAttempts || 0,
   }
 }

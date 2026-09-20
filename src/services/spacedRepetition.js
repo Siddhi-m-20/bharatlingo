@@ -5,7 +5,7 @@
  * and review scheduling for vocabulary items.
  */
 
-import { syncSpacedRepetitionItem, syncSpacedRepetitionBatch } from './dbService'
+import { syncSpacedRepetitionItem, syncSpacedRepetitionBatch, fetchUserSpacedRepetition } from './dbService.js'
 
 const LEGACY_STORAGE_KEY = 'bharatlingo_sm2_items'
 
@@ -56,17 +56,11 @@ export function createInitialItem(word, translation, languageId, category = 'Gen
  * Get all SM-2 items from persistent storage (user-scoped)
  */
 export function getAllSM2Items(userId = null) {
+  if (typeof localStorage === 'undefined') return {}
   try {
     const key = getSM2StorageKey(userId)
     const raw = localStorage.getItem(key)
     if (raw) return JSON.parse(raw)
-
-    // Only fallback to legacy storage key for unauthenticated guest session
-    if (key === LEGACY_STORAGE_KEY) {
-      const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY)
-      if (legacyRaw) return JSON.parse(legacyRaw)
-    }
-
     return {}
   } catch (e) {
     console.error('Failed to load SM-2 items:', e)
@@ -207,15 +201,9 @@ export function mergeSM2Decks(remoteByLang = {}, localByLang = {}) {
           // Local review is more recent -> local wins, upload to cloud
           wordMap.set(key, { item: lItem, isLocalOnly: false })
           dirtyLocalItems.push(lItem)
-        } else if (remoteTime > localTime) {
-          // Remote review is more recent -> remote wins
-          wordMap.set(key, { item: existingRemote, isLocalOnly: false })
         } else {
-          // Same timestamp or both null -> atomically choose the record with higher repetition (or remote if tied)
-          const chosen = (Number(lItem.repetition) || 0) > (Number(existingRemote.repetition) || 0)
-            ? lItem
-            : existingRemote
-          wordMap.set(key, { item: chosen, isLocalOnly: false })
+          // Remote review is more recent, or timestamps are equal / missing -> choose complete record atomically (prefer remote)
+          wordMap.set(key, { item: existingRemote, isLocalOnly: false })
         }
       }
     }
@@ -301,13 +289,52 @@ export async function hydrateSM2FromCloud(userId, remoteItemsByLanguage = {}) {
  */
 export function clearSM2Data(userId = null) {
   try {
-    if (userId) {
-      localStorage.removeItem(`bharatlingo_sm2_items_${userId}`)
+    const effectiveId = userId || getActiveUserId()
+    if (effectiveId) {
+      localStorage.removeItem(`bharatlingo_sm2_items_${effectiveId}`)
     }
     localStorage.removeItem(LEGACY_STORAGE_KEY)
   } catch (e) {
     console.warn('Failed to clear SM-2 data:', e)
   }
+}
+
+/**
+ * In-session reconnect: Flush pending or newer local SM-2 items to Supabase
+ * when network connectivity returns.
+ */
+export async function flushPendingSM2Items(userId = null) {
+  const effectiveUserId = userId || getActiveUserId()
+  if (!effectiveUserId) return { success: false, count: 0 }
+
+  try {
+    const remoteRes = await fetchUserSpacedRepetition(effectiveUserId)
+    if (!remoteRes?.success) return { success: false, count: 0 }
+
+    const localItems = getAllSM2Items(effectiveUserId)
+    const { merged, dirtyLocalItems } = mergeSM2Decks(remoteRes.itemsByLanguage, localItems)
+
+    const storageKey = getSM2StorageKey(effectiveUserId)
+    localStorage.setItem(storageKey, JSON.stringify(merged))
+
+    if (dirtyLocalItems.length > 0) {
+      await syncSpacedRepetitionBatch(effectiveUserId, dirtyLocalItems)
+    }
+    return { success: true, count: dirtyLocalItems.length }
+  } catch (err) {
+    console.warn('In-session reconnect sync failed:', err)
+    return { success: false, error: err }
+  }
+}
+
+// Minimal in-session reconnect listener (no polling)
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    const activeUserId = getActiveUserId()
+    if (activeUserId) {
+      flushPendingSM2Items(activeUserId).catch(() => {})
+    }
+  })
 }
 
 /**

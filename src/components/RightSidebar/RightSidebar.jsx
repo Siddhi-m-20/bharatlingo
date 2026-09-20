@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Trophy, Zap, Search, Volume2, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Trophy, Zap, Search, Volume2, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { useTheme } from '../../services/themeContext'
 import { getLanguageById } from '../../data/languages'
 import { translateTextLive } from '../../services/freeLanguageApi'
 import { speakText } from '../../services/aiService'
+import { checkIsAdmin } from '../../services/adminService'
 import LanguageDropdown from '../LanguageDropdown/LanguageDropdown'
 import StreakBadge from '../StreakBadge'
 import XPBadge from '../XPBadge'
@@ -162,7 +163,9 @@ export default function RightSidebar({ onStreakClick }) {
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('leaderboard') || 'Leaderboard'}</p>
-              <p className="text-[10px] text-slate-400">Rank #{user?.rank || 1} • {t('rank_top_3') || 'Top 3 Advance'}</p>
+              <p className="text-[10px] text-slate-400">
+                {user?.rank ? `Rank #${user.rank}` : `${user?.xp || 0} XP`} • {t('rank_top_3') || 'Top 3 Advance'}
+              </p>
             </div>
           </div>
         </div>
@@ -170,6 +173,27 @@ export default function RightSidebar({ onStreakClick }) {
           {t('view_leaderboard') || 'View Leaderboard →'}
         </div>
       </div>
+
+      {/* 5. ADMIN CONSOLE ACCESS (Admins Only) */}
+      {checkIsAdmin(user) && (
+        <div
+          onClick={() => navigate('/admin')}
+          className="bg-gradient-to-br from-emerald-600/15 via-teal-900/10 to-slate-900/80 rounded-2xl border border-emerald-500/30 p-3.5 shadow-sm cursor-pointer hover:border-emerald-400 transition-all group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+              <ShieldCheck size={14} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Admin Console</p>
+              <p className="text-[10px] text-slate-400">System Telemetry & Content Health</p>
+            </div>
+          </div>
+          <div className="w-full py-1 mt-2 bg-emerald-500/10 group-hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] text-center rounded-lg transition-colors">
+            Open Admin Dashboard →
+          </div>
+        </div>
+      )}
     </aside>
   )
 }

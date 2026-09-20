@@ -20,6 +20,8 @@ import StoryReader from './pages/Stories/StoryReader'
 import ConversationTutor from './pages/Tutor/ConversationTutor'
 import Alphabet from './pages/Alphabet/Alphabet'
 import WritingPractice from './pages/Writing/WritingPractice'
+import AdminRoute from './components/AdminRoute'
+import AdminDashboard from './pages/Admin'
 
 function App() {
   return (
@@ -133,6 +135,14 @@ function App() {
                   <ProtectedRoute>
                     <Settings />
                   </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
                 }
               />
               <Route path="*" element={<Navigate to="/" replace />} />

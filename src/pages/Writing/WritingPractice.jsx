@@ -75,7 +75,7 @@ export default function WritingPractice() {
 
   const navigate = useNavigate()
   const { t } = useTheme()
-  const isWritingSupported = currentLang === 'hi' || currentLang === 'mr'
+  const isWritingSupported = Boolean(scriptData && (scriptData.vowels?.length || scriptData.consonants?.length))
 
   if (!isWritingSupported) {
     return (
@@ -149,101 +149,89 @@ export default function WritingPractice() {
       <AppSidebar />
 
       {/* 2. CENTER CONTENT */}
-      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
-        {/* Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl">
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider mb-3">
-              <PenTool className="w-3.5 h-3.5" /> Interactive Script & Calligraphy Studio
+      <main className="flex-1 max-w-[640px] md:ml-72 px-4 py-4 md:py-5 space-y-3.5">
+        {/* Compact Banner */}
+        <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 sm:px-5 py-3 rounded-2xl text-white shadow-md">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-base font-bold shadow-inner shrink-0">
+              ✍️
             </div>
-            <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
-              Writing Practice: {scriptData.scriptName}
-            </h1>
-            <p className="text-white/90 text-sm md:text-base max-w-xl">
-              Trace and write authentic native letters for {langMeta.name}. Get instant stroke accuracy feedback and audio pronunciation.
-            </p>
-          </div>
-          <div className="absolute right-4 -bottom-4 text-8xl md:text-9xl opacity-20 select-none font-bold">
-            ✍️
-          </div>
-        </div>
-
-        {/* ── Category & Stats Switcher ── */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                setActiveCategory('vowels')
-                setSelectedIndex(0)
-              }}
-              className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                activeCategory === 'vowels'
-                  ? 'bg-[#0B8F62] text-white shadow-md shadow-[#0B8F62]/20'
-                  : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800'
-              }`}
-            >
-              स्वर (Vowels) • {scriptData.vowels?.length || 0}
-            </button>
-            <button
-              onClick={() => {
-                setActiveCategory('consonants')
-                setSelectedIndex(0)
-              }}
-              className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                activeCategory === 'consonants'
-                  ? 'bg-[#0B8F62] text-white shadow-md shadow-[#0B8F62]/20'
-                  : 'text-[#77736B] dark:text-slate-400 hover:bg-[#F7F5EF] dark:hover:bg-slate-800'
-              }`}
-            >
-              व्यंजन (Consonants) • {scriptData.consonants?.length || 0}
-            </button>
-          </div>
-
-          {/* Mastered Counter & Progress */}
-          <div className="flex items-center gap-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2 rounded-2xl">
-            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <div className="flex flex-col text-left">
-              <span className="text-xs font-black text-emerald-800 dark:text-emerald-300">
-                {masteredLetters.length} of {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} Mastered
-              </span>
-              <span className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-400/80">
-                {Math.round((masteredLetters.length / Math.max(1, (scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0))) * 100)}% Complete
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Letter Horizontal Scroll Selector ── */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-2 mb-3 px-1">
             <div>
-              <h3 className="text-xs sm:text-sm font-black text-[#25231F] dark:text-white uppercase tracking-wider">
-                Select Character ({selectedIndex + 1} of {currentList.length})
-              </h3>
-              <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
-                Tap any letter to trace with guided stroke auto-correction
+              <h1 className="text-sm sm:text-base font-black tracking-tight leading-tight">
+                {t('writing_practice') || 'Writing Practice'}: {scriptData.scriptName}
+              </h1>
+              <p className="text-white/80 text-[11px] hidden sm:block">
+                Trace authentic letters for {langMeta.name} with guided auto-correction
               </p>
             </div>
-            <div className="flex items-center gap-1.5">
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md px-2.5 py-1 rounded-xl shrink-0">
+            <CheckCircle2 size={13} className="text-emerald-300 shrink-0" />
+            <span className="text-xs font-black text-white">
+              {masteredLetters.length} / {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Integrated Category & Character Carousel Card ── */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 p-3.5 shadow-sm space-y-2.5">
+          {/* Top Controls Row */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Category Tabs */}
+            <div className="flex items-center gap-1.5 bg-[#F7F5EF] dark:bg-slate-800/80 p-1 rounded-xl">
+              <button
+                onClick={() => {
+                  setActiveCategory('vowels')
+                  setSelectedIndex(0)
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  activeCategory === 'vowels'
+                    ? 'bg-[#0B8F62] text-white shadow-xs'
+                    : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
+                }`}
+              >
+                स्वर (Vowels) • {scriptData.vowels?.length || 0}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveCategory('consonants')
+                  setSelectedIndex(0)
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  activeCategory === 'consonants'
+                    ? 'bg-[#0B8F62] text-white shadow-xs'
+                    : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
+                }`}
+              >
+                व्यंजन (Consonants) • {scriptData.consonants?.length || 0}
+              </button>
+            </div>
+
+            {/* Carousel Navigation Arrows */}
+            <div className="flex items-center gap-1">
+              <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 hidden sm:inline mr-1">
+                {selectedIndex + 1} of {currentList.length}
+              </span>
               <button
                 onClick={handlePrevLetter}
-                className="p-2 rounded-xl border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                className="p-1.5 rounded-lg border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
                 title="Previous letter"
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={16} />
               </button>
               <button
                 onClick={handleNextLetter}
-                className="p-2 rounded-xl border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                className="p-1.5 rounded-lg border border-[#E8E6E0] dark:border-slate-800 text-[#77736B] hover:text-[#25231F] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer transition-colors"
                 title="Next letter"
               >
-                <ChevronRight size={18} />
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+          {/* Character Carousel (Scrollbar hidden) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {currentList.map((item, idx) => {
               const isSelected = selectedIndex === idx
               const isMastered = masteredLetters.includes(item.char)
@@ -251,29 +239,29 @@ export default function WritingPractice() {
                 <button
                   key={idx}
                   onClick={() => setSelectedIndex(idx)}
-                  className={`relative flex-shrink-0 w-14 h-16 rounded-2xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
+                  className={`relative flex-shrink-0 w-11 h-13 sm:w-12 sm:h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/15 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-md scale-105'
+                      ? 'border-[#0B8F62] bg-[#0B8F62]/15 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/40 shadow-xs scale-102'
                       : isMastered
                       ? 'border-emerald-400/60 bg-emerald-50/50 dark:bg-emerald-950/20 text-[#25231F] dark:text-white hover:border-[#0B8F62]'
                       : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/60 dark:bg-slate-800/60 text-[#77736B] dark:text-slate-300 hover:border-[#0B8F62]/40'
                   }`}
                 >
                   {isMastered && (
-                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#0B8F62] text-white flex items-center justify-center text-[9px] font-black shadow-xs">
+                    <span className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full bg-[#0B8F62] text-white flex items-center justify-center text-[8px] font-black">
                       ✓
                     </span>
                   )}
-                  <span className="text-xl font-black leading-none">{item.char}</span>
-                  <span className="text-[10px] font-bold mt-0.5 opacity-80">{item.roman}</span>
+                  <span className="text-lg font-black leading-none">{item.char}</span>
+                  <span className="text-[9px] font-bold mt-0.5 opacity-80 leading-none">{item.roman}</span>
                 </button>
               )
             })}
           </div>
         </div>
 
-        {/* ── Main Canvas Drawing Suite (Duolingo Style) ── */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm">
+        {/* ── Main Canvas Drawing Suite ── */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 p-4 sm:p-5 shadow-sm">
           <LetterWritingCanvas
             key={`${currentLang}-${currentChar.char}`}
             character={currentChar.char}

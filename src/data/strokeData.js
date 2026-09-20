@@ -1914,23 +1914,240 @@ const DEVANAGARI_STROKE_DATA = {
       type: 'stroke',
     },
   ],
+  'अः': [
+    {
+      id: 'top-curve',
+      path: 'M 90,90 C 135,75 145,115 120,140 C 108,150 95,148 95,148',
+      direction: 'right-down',
+      arrow: '↷',
+      start: { x: 90, y: 90 },
+      end: { x: 95, y: 148 },
+      type: 'stroke',
+    },
+    {
+      id: 'bottom-curve',
+      path: 'M 95,148 C 145,150 155,200 120,225 C 95,240 70,225 65,210',
+      direction: 'down-right',
+      arrow: '↷',
+      start: { x: 95, y: 148 },
+      end: { x: 65, y: 210 },
+      type: 'stroke',
+    },
+    {
+      id: 'middle-bar',
+      path: 'M 115,152 L 180,152',
+      direction: 'right',
+      arrow: '→',
+      start: { x: 115, y: 152 },
+      end: { x: 180, y: 152 },
+      type: 'stroke',
+    },
+    {
+      id: 'vertical-stem',
+      path: 'M 180,75 L 180,225',
+      direction: 'down',
+      arrow: '↓',
+      start: { x: 180, y: 75 },
+      end: { x: 180, y: 225 },
+      type: 'stroke',
+    },
+    {
+      id: 'top-bar',
+      path: 'M 85,75 L 215,75',
+      direction: 'right',
+      arrow: '→',
+      start: { x: 85, y: 75 },
+      end: { x: 215, y: 75 },
+      type: 'stroke',
+    },
+    {
+      id: 'visarga-dot1',
+      path: 'M 215,125 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0',
+      direction: 'dot',
+      arrow: '●',
+      start: { x: 215, y: 125 },
+      end: { x: 215, y: 125 },
+      type: 'dot',
+    },
+    {
+      id: 'visarga-dot2',
+      path: 'M 215,175 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0',
+      direction: 'dot',
+      arrow: '●',
+      start: { x: 215, y: 175 },
+      end: { x: 215, y: 175 },
+      type: 'dot',
+    },
+  ],
+  'ऋ': [
+    {
+      id: 'left-upper-arm',
+      path: 'M 140,135 L 95,95',
+      direction: 'up-left',
+      arrow: '↖',
+      start: { x: 140, y: 135 },
+      end: { x: 95, y: 95 },
+      type: 'stroke',
+    },
+    {
+      id: 'left-lower-arm',
+      path: 'M 140,135 L 95,185',
+      direction: 'down-left',
+      arrow: '↙',
+      start: { x: 140, y: 135 },
+      end: { x: 95, y: 185 },
+      type: 'stroke',
+    },
+    {
+      id: 'vertical-stem',
+      path: 'M 140,75 L 140,225',
+      direction: 'down',
+      arrow: '↓',
+      start: { x: 140, y: 75 },
+      end: { x: 140, y: 225 },
+      type: 'stroke',
+    },
+    {
+      id: 'right-curl',
+      path: 'M 140,130 C 175,115 190,145 165,170 C 145,190 175,225 190,215',
+      direction: 'right-down',
+      arrow: '↷',
+      start: { x: 140, y: 130 },
+      end: { x: 190, y: 215 },
+      type: 'stroke',
+    },
+    {
+      id: 'top-bar',
+      path: 'M 80,75 L 205,75',
+      direction: 'right',
+      arrow: '→',
+      start: { x: 80, y: 75 },
+      end: { x: 205, y: 75 },
+      type: 'stroke',
+    },
+  ],
+}
+
+const ENGLISH_STROKE_DATA = {
+  'A': [
+    { id: 'left-diag', path: 'M 150,75 L 85,225', direction: 'down-left', arrow: '↙', start: { x: 150, y: 75 }, end: { x: 85, y: 225 }, type: 'stroke' },
+    { id: 'right-diag', path: 'M 150,75 L 215,225', direction: 'down-right', arrow: '↘', start: { x: 150, y: 75 }, end: { x: 215, y: 225 }, type: 'stroke' },
+    { id: 'crossbar', path: 'M 105,170 L 195,170', direction: 'right', arrow: '→', start: { x: 105, y: 170 }, end: { x: 195, y: 170 }, type: 'stroke' },
+  ],
+  'B': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'top-lobe', path: 'M 100,75 C 185,75 185,150 100,150', direction: 'curve', arrow: '↷', start: { x: 100, y: 75 }, end: { x: 100, y: 150 }, type: 'stroke' },
+    { id: 'bottom-lobe', path: 'M 100,150 C 195,150 195,225 100,225', direction: 'curve', arrow: '↷', start: { x: 100, y: 150 }, end: { x: 100, y: 225 }, type: 'stroke' },
+  ],
+  'C': [
+    { id: 'arc', path: 'M 200,95 C 120,70 85,115 85,150 C 85,185 120,230 200,205', direction: 'curve', arrow: '↺', start: { x: 200, y: 95 }, end: { x: 200, y: 205 }, type: 'stroke' },
+  ],
+  'D': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'curve', path: 'M 100,75 C 215,75 215,225 100,225', direction: 'curve', arrow: '↷', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+  ],
+  'E': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'top-bar', path: 'M 100,75 L 195,75', direction: 'right', arrow: '→', start: { x: 100, y: 75 }, end: { x: 195, y: 75 }, type: 'stroke' },
+    { id: 'mid-bar', path: 'M 100,150 L 175,150', direction: 'right', arrow: '→', start: { x: 100, y: 150 }, end: { x: 175, y: 150 }, type: 'stroke' },
+    { id: 'bot-bar', path: 'M 100,225 L 195,225', direction: 'right', arrow: '→', start: { x: 100, y: 225 }, end: { x: 195, y: 225 }, type: 'stroke' },
+  ],
+  'F': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'top-bar', path: 'M 100,75 L 195,75', direction: 'right', arrow: '→', start: { x: 100, y: 75 }, end: { x: 195, y: 75 }, type: 'stroke' },
+    { id: 'mid-bar', path: 'M 100,150 L 175,150', direction: 'right', arrow: '→', start: { x: 100, y: 150 }, end: { x: 175, y: 150 }, type: 'stroke' },
+  ],
+  'G': [
+    { id: 'arc', path: 'M 200,95 C 120,70 85,115 85,150 C 85,185 120,230 195,215', direction: 'curve', arrow: '↺', start: { x: 200, y: 95 }, end: { x: 195, y: 215 }, type: 'stroke' },
+    { id: 'bar', path: 'M 195,215 L 195,155 L 155,155', direction: 'left', arrow: '←', start: { x: 195, y: 215 }, end: { x: 155, y: 155 }, type: 'stroke' },
+  ],
+  'H': [
+    { id: 'left-stem', path: 'M 95,75 L 95,225', direction: 'down', arrow: '↓', start: { x: 95, y: 75 }, end: { x: 95, y: 225 }, type: 'stroke' },
+    { id: 'right-stem', path: 'M 205,75 L 205,225', direction: 'down', arrow: '↓', start: { x: 205, y: 75 }, end: { x: 205, y: 225 }, type: 'stroke' },
+    { id: 'crossbar', path: 'M 95,150 L 205,150', direction: 'right', arrow: '→', start: { x: 95, y: 150 }, end: { x: 205, y: 150 }, type: 'stroke' },
+  ],
+  'I': [
+    { id: 'top-serif', path: 'M 115,75 L 185,75', direction: 'right', arrow: '→', start: { x: 115, y: 75 }, end: { x: 185, y: 75 }, type: 'stroke' },
+    { id: 'vertical-stem', path: 'M 150,75 L 150,225', direction: 'down', arrow: '↓', start: { x: 150, y: 75 }, end: { x: 150, y: 225 }, type: 'stroke' },
+    { id: 'bot-serif', path: 'M 115,225 L 185,225', direction: 'right', arrow: '→', start: { x: 115, y: 225 }, end: { x: 185, y: 225 }, type: 'stroke' },
+  ],
+  'K': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'top-diag', path: 'M 190,85 L 100,155', direction: 'down-left', arrow: '↙', start: { x: 190, y: 85 }, end: { x: 100, y: 155 }, type: 'stroke' },
+    { id: 'bot-diag', path: 'M 115,145 L 195,225', direction: 'down-right', arrow: '↘', start: { x: 115, y: 145 }, end: { x: 195, y: 225 }, type: 'stroke' },
+  ],
+  'L': [
+    { id: 'spine', path: 'M 105,75 L 105,225', direction: 'down', arrow: '↓', start: { x: 105, y: 75 }, end: { x: 105, y: 225 }, type: 'stroke' },
+    { id: 'base', path: 'M 105,225 L 195,225', direction: 'right', arrow: '→', start: { x: 105, y: 225 }, end: { x: 195, y: 225 }, type: 'stroke' },
+  ],
+  'M': [
+    { id: 'left-stem', path: 'M 85,225 L 85,75', direction: 'up', arrow: '↑', start: { x: 85, y: 225 }, end: { x: 85, y: 75 }, type: 'stroke' },
+    { id: 'diag1', path: 'M 85,75 L 150,175', direction: 'down-right', arrow: '↘', start: { x: 85, y: 75 }, end: { x: 150, y: 175 }, type: 'stroke' },
+    { id: 'diag2', path: 'M 150,175 L 215,75', direction: 'up-right', arrow: '↗', start: { x: 150, y: 175 }, end: { x: 215, y: 75 }, type: 'stroke' },
+    { id: 'right-stem', path: 'M 215,75 L 215,225', direction: 'down', arrow: '↓', start: { x: 215, y: 75 }, end: { x: 215, y: 225 }, type: 'stroke' },
+  ],
+  'O': [
+    { id: 'oval', path: 'M 150,75 C 90,75 80,125 80,150 C 80,175 90,225 150,225 C 210,225 220,175 220,150 C 220,125 210,75 150,75', direction: 'curve', arrow: '↺', start: { x: 150, y: 75 }, end: { x: 150, y: 75 }, type: 'stroke' },
+  ],
+  'P': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'lobe', path: 'M 100,75 C 190,75 190,155 100,155', direction: 'curve', arrow: '↷', start: { x: 100, y: 75 }, end: { x: 100, y: 155 }, type: 'stroke' },
+  ],
+  'R': [
+    { id: 'spine', path: 'M 100,75 L 100,225', direction: 'down', arrow: '↓', start: { x: 100, y: 75 }, end: { x: 100, y: 225 }, type: 'stroke' },
+    { id: 'lobe', path: 'M 100,75 C 185,75 185,150 100,150', direction: 'curve', arrow: '↷', start: { x: 100, y: 75 }, end: { x: 100, y: 150 }, type: 'stroke' },
+    { id: 'leg', path: 'M 140,150 L 200,225', direction: 'down-right', arrow: '↘', start: { x: 140, y: 150 }, end: { x: 200, y: 225 }, type: 'stroke' },
+  ],
+  'S': [
+    { id: 's-curve', path: 'M 195,100 C 185,75 115,75 115,115 C 115,145 185,155 185,185 C 185,225 105,225 95,200', direction: 'curve', arrow: '↷', start: { x: 195, y: 100 }, end: { x: 95, y: 200 }, type: 'stroke' },
+  ],
+  'T': [
+    { id: 'top-bar', path: 'M 85,75 L 215,75', direction: 'right', arrow: '→', start: { x: 85, y: 75 }, end: { x: 215, y: 75 }, type: 'stroke' },
+    { id: 'vertical-stem', path: 'M 150,75 L 150,225', direction: 'down', arrow: '↓', start: { x: 150, y: 75 }, end: { x: 150, y: 225 }, type: 'stroke' },
+  ],
+  'U': [
+    { id: 'u-loop', path: 'M 95,75 L 95,175 C 95,225 205,225 205,175 L 205,75', direction: 'down-up', arrow: '↷', start: { x: 95, y: 75 }, end: { x: 205, y: 75 }, type: 'stroke' },
+  ],
+  'W': [
+    { id: 'stem1', path: 'M 75,75 L 105,225', direction: 'down-right', arrow: '↘', start: { x: 75, y: 75 }, end: { x: 105, y: 225 }, type: 'stroke' },
+    { id: 'stem2', path: 'M 105,225 L 150,135', direction: 'up-right', arrow: '↗', start: { x: 105, y: 225 }, end: { x: 150, y: 135 }, type: 'stroke' },
+    { id: 'stem3', path: 'M 150,135 L 195,225', direction: 'down-right', arrow: '↘', start: { x: 150, y: 135 }, end: { x: 195, y: 225 }, type: 'stroke' },
+    { id: 'stem4', path: 'M 195,225 L 225,75', direction: 'up-right', arrow: '↗', start: { x: 195, y: 225 }, end: { x: 225, y: 75 }, type: 'stroke' },
+  ],
+}
+
+export const STROKE_DATA_BY_LANGUAGE = {
+  hi: DEVANAGARI_STROKE_DATA,
+  mr: DEVANAGARI_STROKE_DATA,
+  en: ENGLISH_STROKE_DATA,
+  gu: {},
+  bn: {},
+  pa: {},
+  ta: {},
+  te: {},
 }
 
 export function getStrokesForCharacter(char, languageId = 'hi') {
-  return STROKE_DATA_BY_LANGUAGE[languageId]?.[char] || []
-}
-
-const STROKE_DATA_BY_LANGUAGE = {
-  hi: DEVANAGARI_STROKE_DATA,
-  mr: DEVANAGARI_STROKE_DATA,
-  ta: {},
-  te: {},
-  bn: {},
-  pa: {},
-  gu: {},
-  en: {},
+  if (!char) return []
+  // 1. Check language-specific authentic dictionary
+  const langDict = STROKE_DATA_BY_LANGUAGE[languageId]
+  if (langDict && langDict[char] && langDict[char].length > 0) {
+    return langDict[char]
+  }
+  // 2. Check authentic Devanagari dictionary fallback for Hindi/Marathi
+  if ((languageId === 'hi' || languageId === 'mr') && DEVANAGARI_STROKE_DATA[char]) {
+    return DEVANAGARI_STROKE_DATA[char]
+  }
+  // 3. Check authentic English dictionary
+  if (languageId === 'en' && ENGLISH_STROKE_DATA[char]) {
+    return ENGLISH_STROKE_DATA[char]
+  }
+  // 4. Return empty array - NO procedural, fake, or geometric fallback generation
+  return []
 }
 
 export function getStrokeDataByLanguage() {
   return STROKE_DATA_BY_LANGUAGE
 }
+
+

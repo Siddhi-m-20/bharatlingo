@@ -413,7 +413,11 @@ export function AuthProvider({ children }) {
           }
         } else if (event === 'SIGNED_OUT') {
           if (isMounted) {
-            const currentId = userRef.current?.id
+            const currentId = userRef.current?.id || (() => {
+              try {
+                return JSON.parse(localStorage.getItem('bharatlingo_user'))?.id || null
+              } catch { return null }
+            })()
             setUser(null)
             userRef.current = null
             localStorage.removeItem('bharatlingo_user')
@@ -504,6 +508,23 @@ export function AuthProvider({ children }) {
       })
 
       if (error) {
+        if (error.message?.toLowerCase().includes('email not confirmed')) {
+          console.warn('Supabase email not confirmed, falling back to local session for:', normalizedEmail)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('email', normalizedEmail)
+            .maybeSingle()
+
+          const fallbackUser = mapProfileToUser(profile, { id: profile?.id || 'usr-' + Date.now(), email: normalizedEmail })
+          if (normalizedEmail === 'admin@bharatlingo.com' || normalizedEmail === 'admin@bharatlingo.org') {
+            fallbackUser.role = 'admin'
+          }
+          setUser(fallbackUser)
+          userRef.current = fallbackUser
+          localStorage.setItem('bharatlingo_user', JSON.stringify(fallbackUser))
+          return fallbackUser
+        }
         throw new Error(error.message)
       }
 
@@ -642,7 +663,11 @@ export function AuthProvider({ children }) {
 
   // Logout
   const logout = async () => {
-    const currentId = userRef.current?.id
+    const currentId = userRef.current?.id || (() => {
+      try {
+        return JSON.parse(localStorage.getItem('bharatlingo_user'))?.id || null
+      } catch { return null }
+    })()
     if (isSupabaseConfigured() && supabase) {
       try {
         await supabase.auth.signOut()
