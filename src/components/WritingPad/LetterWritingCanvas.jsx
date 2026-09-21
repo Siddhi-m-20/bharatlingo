@@ -68,6 +68,24 @@ export default function LetterWritingCanvas({
     }
   }, [activeStroke])
 
+  // Current position of the guided arrow bead along the active stroke
+  const activeStrokePos = useMemo(() => {
+    if (!activeStroke?.start) return { x: 150, y: 150 }
+    if (
+      activeStroke.type === 'dot' ||
+      strokeProgress === 0 ||
+      !activePathData?.samples ||
+      activePathData.samples.length === 0
+    ) {
+      return activeStroke.start
+    }
+    const sampleIdx = Math.min(
+      Math.max(0, Math.floor(strokeProgress * (activePathData.samples.length - 1))),
+      activePathData.samples.length - 1
+    )
+    return activePathData.samples[sampleIdx] || activeStroke.start
+  }, [activeStroke, strokeProgress, activePathData])
+
   // Play audio pronunciation
   const handlePlayAudio = useCallback(() => {
     AudioService.speak(character, languageId)

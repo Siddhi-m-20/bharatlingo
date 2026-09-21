@@ -10,6 +10,7 @@
 
 import { getLessonsForLanguage } from '../../src/data/lessons/index.js'
 import { getAssessmentQuestions as getStaticAssessmentQuestions } from '../../src/data/questions/index.js'
+import { generateAssessmentSuite } from '../../src/services/exercisePool.js'
 
 const PRODUCT_LANGUAGE_IDS = ['hi', 'en', 'mr', 'ta', 'te', 'bn', 'pa', 'gu']
 
@@ -359,74 +360,16 @@ export function getAdaptiveLesson({ languageId = 'hi', goal = 'conversation', ag
 
 
 // ── Generate dynamic assessment questions ────────────────────────────────────
-export function generateAssessmentQuestions({ languageId, ageRange, goal, count = 6 }) {
+export function generateAssessmentQuestions({ languageId, preferredLanguage = 'en', ageRange, goal, count = 15 }) {
   if (!PRODUCT_LANGUAGE_IDS.includes(languageId)) {
     throw new Error(`Unsupported product language: ${languageId}`)
   }
 
-  const staticQuestions = getStaticAssessmentQuestions(languageId, 'en')
-  if (staticQuestions.length >= count) {
-    return staticQuestions.slice(0, count)
+  // Generate complete progressive 15-question suite covering beginner, intermediate, advanced tiers
+  const assessmentQuestions = generateAssessmentSuite(languageId, preferredLanguage, { ageRange, goal, count })
+  if (assessmentQuestions && assessmentQuestions.length >= count) {
+    return assessmentQuestions.slice(0, count)
   }
 
-  const ageConfig = AGE_CONFIG[ageRange] || AGE_CONFIG['adult']
-  const allVocab = getVocabForGoal(languageId, goal || 'conversation')
-  const shuffled = allVocab.sort(() => Math.random() - 0.5)
-  const questions = []
-
-  // Q1: Multiple choice vocabulary
-  if (shuffled.length >= 1) {
-    const target = shuffled[0]
-    const distractors = shuffled.filter((v) => v.word !== target.word).map((v) => v.translation).slice(0, 3)
-    questions.push({
-      type: 'multiple-choice',
-      prompt: `What does "${target.word}" mean?`,
-      options: [...distractors, target.translation].sort(() => Math.random() - 0.5),
-      correctAnswer: target.translation,
-      xp: 10,
-    })
-  }
-
-  // Q2: Listening (TTS) question
-  if (shuffled.length >= 2) {
-    const target = shuffled[1]
-    const distractors = shuffled.filter((v) => v.word !== target.word).map((v) => v.word).slice(0, 3)
-    questions.push({
-      type: 'listening',
-      prompt: 'Listen to the audio and select what you hear',
-      audioText: target.word,
-      options: [...distractors, target.word].sort(() => Math.random() - 0.5),
-      correctAnswer: target.word,
-      xp: 15,
-    })
-  }
-
-  // Q3: Speaking (STT) question
-  if (shuffled.length >= 3) {
-    const target = shuffled[2]
-    questions.push({
-      type: 'speaking',
-      prompt: `Say this word aloud:`,
-      targetWord: target.word,
-      pronunciation: target.pronunciation,
-      correctAnswer: target.word,
-      xp: 15,
-    })
-  }
-
-  // Q4–Q6: More multiple choice
-  for (let i = 3; i < Math.min(shuffled.length, count); i++) {
-    const target = shuffled[i]
-    const distractors = shuffled.filter((v) => v.word !== target.word).map((v) => v.translation).slice(0, 3)
-    questions.push({
-      type: 'multiple-choice',
-      prompt: `What does "${target.word}" mean?`,
-      options: [...distractors, target.translation].sort(() => Math.random() - 0.5),
-      correctAnswer: target.translation,
-      xp: 10,
-    })
-    if (questions.length >= count) break
-  }
-
-  return questions
+  return assessmentQuestions
 }

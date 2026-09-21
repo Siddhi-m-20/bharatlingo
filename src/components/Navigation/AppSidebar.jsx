@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, BookA, Target, Trophy, User, Settings, BookOpen, Bot, PenTool } from 'lucide-react'
+import { Home, BookA, Target, Trophy, User, Settings, BookOpen, Bot, PenTool, Gamepad2 } from 'lucide-react'
 import BharatLingoLogo from '../Logo/BharatLingoLogo'
 import AlphabetModal from '../AlphabetModal/AlphabetModal'
 import { useAuth } from '../../services/auth'
@@ -18,6 +18,7 @@ export default function AppSidebar() {
 
   const navItems = [
     { to: '/dashboard', label: t('learn') || 'LEARN', icon: Home },
+    { to: '/games', label: t('games') || 'GAMES', icon: Gamepad2 },
     { to: '/stories', label: t('stories') || 'STORIES', icon: BookOpen },
     { to: '/tutor', label: t('tutor') || 'AI TUTOR', icon: Bot },
     { to: '/writing', label: t('writing') || 'WRITING', icon: PenTool },

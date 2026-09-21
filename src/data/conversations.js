@@ -439,14 +439,282 @@ export const CONVERSATION_SCENARIOS = [
           grammarNote: '"लवकर" means quickly/fast.',
         },
       ],
+      gu: [
+        {
+          id: 1,
+          tutorMessage: 'હા ભાઈ, ક્યાં જવું છે તમારે?',
+          pronunciation: 'Haa bhai, kyaan javu chhe tamaare?',
+          englishMeaning: 'Yes brother, where do you want to go?',
+          expectedKeywords: ['સ્ટેશન', 'બજાર', 'જવું', 'ચાલશો', 'રેલવે'],
+          suggestedReplies: [
+            'મને રેલવે સ્ટેશન જવું છે. ચાલશો?',
+            'સેન્ટ્રલ માર્કેટ જવું છે, કેટલા લેશો?',
+          ],
+          culturalTip: 'In Gujarat, rickshaws are essential daily transit and drivers are warmly addressed as "ભાઈ" (Bhai).',
+          grammarNote: '"જવું છે" (javu chhe) expresses destination or desire to go.',
+        },
+        {
+          id: 2,
+          tutorMessage: 'સ્ટેશનના એંસી રૂપિયા થશે. મીટરથી નહીં જાઉં.',
+          pronunciation: 'Stationna aensi rupiya thashe. Meterthi nahin jau.',
+          englishMeaning: 'It will be 80 rupees for the station. I won\'t go by meter.',
+          expectedKeywords: ['મીટર', 'વધારે', 'સાઠ', 'ઓછા', 'ચાલો'],
+          suggestedReplies: [
+            'આ બહુ વધારે છે, કૃપા કરીને મીટરથી ચાલો.',
+            'સાઠ રૂપિયા બરાબર છે, ચાલવું હોય તો બોલો.',
+          ],
+          culturalTip: 'Bargaining is polite and customary when auto drivers decline running the meter.',
+          grammarNote: '"બહુ વધારે છે" means "it is too much / too expensive".',
+        },
+        {
+          id: 3,
+          tutorMessage: 'ચાલો ભલે, સિત્તેર રૂપિયા આપી દેજો. બેસો!',
+          pronunciation: 'Chaalo bhale, sitteer rupiya aapi dejo. Beso!',
+          englishMeaning: 'Alright fine, give 70 rupees. Please get in!',
+          expectedKeywords: ['આભાર', 'બેસું', 'ચાલો', 'જલ્દી', 'રોડ'],
+          suggestedReplies: [
+            'ભલે, આભાર! જરા જલ્દી ચલાવજો.',
+            'આભાર! કૃપા કરીને મેઈન રોડથી લેજો.',
+          ],
+          culturalTip: '"બેસો" (Beso) is a hospitable invitation to sit down / board.',
+          grammarNote: '"ચલાવજો" is the polite imperative request for driving.',
+        },
+      ],
+      ta: [
+        {
+          id: 1,
+          tutorMessage: 'சொல்லுங்க சார், எங்க போகணும்?',
+          pronunciation: 'Sollunga sir, enga poganum?',
+          englishMeaning: 'Tell me sir, where do you need to go?',
+          expectedKeywords: ['ஸ்டேஷன்', 'போகணும்', 'வருவீங்களா', 'மார்க்கெட்', 'ரயில்வே'],
+          suggestedReplies: [
+            'எனக்கு ரயில்வே ஸ்டேஷன் போகணும். வருவீங்களா?',
+            'சென்ட்ரல் மார்க்கெட் போகணும், எவ்வளவு ஆகும்?',
+          ],
+          culturalTip: 'In Tamil Nadu, "சொல்லுங்க" (Sollunga) is a polite, welcoming greeting.',
+          grammarNote: '"போகணும்" (poganum) is the modal verb meaning "need/want to go".',
+        },
+        {
+          id: 2,
+          tutorMessage: 'ஸ்டேஷனுக்கு எண்பது ரூபாய் ஆகும். மீட்டர் போட மாட்டேன்.',
+          pronunciation: 'Station-ukku enbadhu roobai aagum. Meter poda maatten.',
+          englishMeaning: 'It will be 80 rupees to the station. I will not turn on the meter.',
+          expectedKeywords: ['மீட்டர்', 'அதிகம்', 'அறுபது', 'குறைத்து', 'சரி'],
+          suggestedReplies: [
+            'ரொம்ப அதிகம், மீட்டர் போட்டு வாங்க.',
+            'அறுபது ரூபாய் தர்றேன், வரீங்களா?',
+          ],
+          culturalTip: 'Courteous price negotiation before boarding is standard in Chennai and other cities.',
+          grammarNote: '"ரொம்ப அதிகம்" means "too much / very expensive".',
+        },
+        {
+          id: 3,
+          tutorMessage: 'சரி வாங்க, எழுபது ரூபாய் கொடுங்க. ஏறுங்க!',
+          pronunciation: 'Sari vaanga, ezhubadhu roobai kodunga. Aerunga!',
+          englishMeaning: 'Alright, give 70 rupees. Please get in!',
+          expectedKeywords: ['நன்றி', 'சீக்கிரம்', 'ஏறுகிறேன்', 'மெயின்', 'ரோடு'],
+          suggestedReplies: [
+            'சரி, நன்றி! கொஞ்சம் சீக்கிரம் போங்க.',
+            'நன்றி! மெயின் ரோடு வழியா போங்க.',
+          ],
+          culturalTip: '"ஏறுங்க" (Aerunga) means please climb in / board.',
+          grammarNote: '"சீக்கிரம்" means quickly / soon.',
+        },
+      ],
+      te: [
+        {
+          id: 1,
+          tutorMessage: 'చెప్పండి సార్, ఎక్కడికి వెళ్ళాలి?',
+          pronunciation: 'Cheppandi sir, ekkadiki vellaali?',
+          englishMeaning: 'Tell me sir, where do you need to go?',
+          expectedKeywords: ['స్టేషన్', 'వెళ్ళాలి', 'వస్తారా', 'మార్కెట్', 'రైల్వే'],
+          suggestedReplies: [
+            'నాకు రైల్వే స్టేషన్‌కు వెళ్ళాలి. వస్తారా?',
+            'సెంట్రల్ మార్కెట్ వెళ్ళాలి, ఎంత తీసుకుంటారు?',
+          ],
+          culturalTip: 'Auto drivers in Telugu regions customarily welcome passengers with "చెప్పండి" (Cheppandi).',
+          grammarNote: '"వెళ్ళాలి" (vellaali) expresses "need/want to go".',
+        },
+        {
+          id: 2,
+          tutorMessage: 'స్టేషన్‌కి ఎనభై రూపాయలు అవుతుంది. మీటర్ వేయను.',
+          pronunciation: 'Station-ki enabhai roopaayalu avuthundi. Meter veyanu.',
+          englishMeaning: 'It will cost 80 rupees to the station. I won\'t put the meter.',
+          expectedKeywords: ['మీటర్', 'ఎక్కువ', 'అరవై', 'తక్కువ', 'సరే'],
+          suggestedReplies: [
+            'చాలా ఎక్కువ, దయచేసి మీటర్ వేయండి.',
+            'అరవై రూపాయలు ఇస్తాను, వస్తారా?',
+          ],
+          culturalTip: 'Negotiating a mutually fair fare is common when meters are not running.',
+          grammarNote: '"చాలా ఎక్కువ" means "very high / too much".',
+        },
+        {
+          id: 3,
+          tutorMessage: 'సరే రండి, డెబ్బై రూపాయలు ఇవ్వండి. కూర్చోండి!',
+          pronunciation: 'Sare randi, debbai roopaayalu ivvandi. Kurchondi!',
+          englishMeaning: 'Alright come, give 70 rupees. Please sit in!',
+          expectedKeywords: ['ధన్యవాదాలు', 'త్వరగా', 'కూర్చుంటాను', 'రోడ్డు'],
+          suggestedReplies: [
+            'సరే, ధన్యవాదాలు! కొంచెం త్వరగా వెళ్ళండి.',
+            'ధన్యవాదాలు! మెయిన్ రోడ్డు గుండా వెళ్ళండి.',
+          ],
+          culturalTip: '"రండి" (Randi) and "కూర్చోండి" (Kurchondi) are respectful welcoming imperatives.',
+          grammarNote: '"త్వరగా" (twaraga) means quickly.',
+        },
+      ],
+      bn: [
+        {
+          id: 1,
+          tutorMessage: 'বলুন দাদা, কোথায় যাবেন?',
+          pronunciation: 'Bolun dada, kothay jaaben?',
+          englishMeaning: 'Tell me brother, where will you go?',
+          expectedKeywords: ['স্টেশন', 'যাব', 'যাবেন', 'মার্কেট', 'রেলওয়ে'],
+          suggestedReplies: [
+            'আমাকে রেলওয়ে স্টেশন যেতে হবে। যাবেন?',
+            'সেন্ট্রাল মার্কেট যাব, কত নেবেন?',
+          ],
+          culturalTip: 'In Bengal, addressing drivers as "দাদা" (Dada - elder brother) establishes immediate rapport.',
+          grammarNote: '"যাবেন?" is the polite future interrogative "will you go?".',
+        },
+        {
+          id: 2,
+          tutorMessage: 'স্টেশনের জন্য আশি টাকা লাগবে। মিটারে যাব না।',
+          pronunciation: 'Stationer jonno aashi taka laagbe. Meatere jaabo na.',
+          englishMeaning: 'It will cost 80 rupees (taka) for the station. Won\'t go by meter.',
+          expectedKeywords: ['মিটার', 'বেশি', 'ষাট', 'কম', 'ঠিক'],
+          suggestedReplies: [
+            'এটা খুব বেশি, দয়া করে মিটারে চলুন।',
+            'ষাট টাকা ঠিক আছে, চললে বলুন।',
+          ],
+          culturalTip: 'In Kolkata and suburbs, reserved rides often involve gentle fare alignment.',
+          grammarNote: '"খুব বেশি" means "too much".',
+        },
+        {
+          id: 3,
+          tutorMessage: 'আচ্ছা ঠিক আছে, সত্তর টাকা দেবেন। উঠে বসুন!',
+          pronunciation: 'Aachha theek aachhe, sottor taka deben. Uthe boshun!',
+          englishMeaning: 'Alright fine, give 70 rupees. Please get in!',
+          expectedKeywords: ['ধন্যবাদ', 'চলুন', 'তাড়াতাড়ি', 'রোড'],
+          suggestedReplies: [
+            'ঠিক আছে, ধন্যবাদ! একটু তাড়াতাড়ি চলুন।',
+            'ধন্যবাদ! মেন রোড দিয়ে যাবেন।',
+          ],
+          culturalTip: '"উঠে বসুন" (Uthe boshun) is the customary hospitable phrase to invite passengers inside.',
+          grammarNote: '"তাড়াতাড়ি" means quickly/hurriedly.',
+        },
+      ],
+      pa: [
+        {
+          id: 1,
+          tutorMessage: 'ਹਾਂਜੀ ਭਾਊ, ਕਿੱਥੇ ਜਾਣਾ ਏ?',
+          pronunciation: 'Haanji bhaau, kitthe jaana ae?',
+          englishMeaning: 'Yes brother, where do you want to go?',
+          expectedKeywords: ['ਸਟੇਸ਼ਨ', 'ਜਾਣਾ', 'ਚੱਲੋਗੇ', 'ਮਾਰਕੀਟ', 'ਰੇਲਵੇ'],
+          suggestedReplies: [
+            'ਮੈਂ ਰੇਲਵੇ ਸਟੇਸ਼ਨ ਜਾਣਾ ਏ। ਚੱਲੋਗੇ?',
+            'ਸੈਂਟਰਲ ਮਾਰਕੀਟ ਚੱਲਣਾ, ਕਿੰਨੇ ਪੈਸੇ ਲਓਗੇ?',
+          ],
+          culturalTip: 'In Punjab, drivers are addressed affectionately with "ਭਾਊ" (Bhaau) or "ਵੀਰ ਜੀ" (Veer ji).',
+          grammarNote: '"ਕਿੱਥੇ ਜਾਣਾ ਏ?" is the natural colloquial Punjabi phrasing for "where to go?".',
+        },
+        {
+          id: 2,
+          tutorMessage: 'ਸਟੇਸ਼ਨ ਦੇ ਅੱਸੀ ਰੁਪਏ ਲੱਗਣਗੇ। ਮੀਟਰ ਨਾਲ ਨਹੀਂ ਜਾਣਾ।',
+          pronunciation: 'Station de assi rupaye lagange. Meter naal nahin jaana.',
+          englishMeaning: 'It will cost 80 rupees for the station. Won\'t go by meter.',
+          expectedKeywords: ['ਮੀਟਰ', 'ਬਹੁਤ', 'ਸੱਠ', 'ਜ਼ਿਆਦਾ', 'ਘੱਟ', 'ਠੀਕ'],
+          suggestedReplies: [
+            'ਇਹ ਬਹੁਤ ਜ਼ਿਆਦਾ ਏ, ਮੀਟਰ ਨਾਲ ਚੱਲੋ ਜੀ।',
+            'ਸੱਠ ਰੁਪਏ ਠੀਕ ਨੇ, ਚੱਲਣਾ ਤਾਂ ਦੱਸੋ।',
+          ],
+          culturalTip: 'Bargaining is done with good humor and respectful phrasing.',
+          grammarNote: '"ਬਹੁਤ ਜ਼ਿਆਦਾ ਏ" means "it is too much".',
+        },
+        {
+          id: 3,
+          tutorMessage: 'ਚਲੋ ਠੀਕ ਏ, ਸੱਤਰ ਰੁਪਏ ਦੇ ਦੇਣਾ। ਬੈਠੋ ਜੀ!',
+          pronunciation: 'Chalo theek ae, sattar rupaye de dena. Baitho ji!',
+          englishMeaning: 'Alright fine, give 70 rupees. Please sit in!',
+          expectedKeywords: ['ਧੰਨਵਾਦ', 'ਬੈਠਦਾ', 'ਚਲੋ', 'ਜਲਦੀ', 'ਰੋਡ'],
+          suggestedReplies: [
+            'ਠੀਕ ਏ ਜੀ, ਧੰਨਵਾਦ! ਥੋੜ੍ਹਾ ਜਲਦੀ ਚੱਲਿਓ।',
+            'ਧੰਨਵਾਦ! ਮੇਨ ਰੋਡ ਰਾਹੀਂ ਚੱਲਣਾ।',
+          ],
+          culturalTip: '"ਬੈਠੋ ਜੀ" (Baitho ji) invites the passenger to board with Punjabi warmth.',
+          grammarNote: '"ਚੱਲਿਓ" is a polite imperative request.',
+        },
+      ],
+      en: [
+        {
+          id: 1,
+          tutorMessage: 'Yes sir, where do you want to go?',
+          pronunciation: 'Yes sir, where do you want to go?',
+          englishMeaning: 'Driver asks for your destination.',
+          expectedKeywords: ['station', 'market', 'go', 'railway', 'take', 'want'],
+          suggestedReplies: [
+            'I want to go to the railway station. Will you go?',
+            'Central Market, please. How much will it cost?',
+          ],
+          culturalTip: 'Auto-rickshaws are the most common last-mile transport across Indian cities.',
+          grammarNote: 'Using "Will you go?" is the standard conversational inquiry.',
+        },
+        {
+          id: 2,
+          tutorMessage: 'It will be eighty rupees for the station. I will not go by the meter.',
+          pronunciation: 'It will be eighty rupees...',
+          englishMeaning: 'Driver states fixed fare and declines meter.',
+          expectedKeywords: ['meter', 'too much', 'sixty', 'high', 'less', 'fair'],
+          suggestedReplies: [
+            'That is too much, please go by the meter.',
+            'Sixty rupees is fair. Let us go.',
+          ],
+          culturalTip: 'Negotiating fares when drivers decline the meter is common practice.',
+          grammarNote: '"Too much" expresses an excessive price.',
+        },
+        {
+          id: 3,
+          tutorMessage: 'Alright fine, give seventy rupees. Please hop in!',
+          pronunciation: 'Alright fine, give seventy rupees...',
+          englishMeaning: 'Driver agrees on 70 rupees and invites you in.',
+          expectedKeywords: ['thank', 'thanks', 'hurry', 'main road', 'let us go'],
+          suggestedReplies: [
+            'Thank you. Please drive quickly.',
+            'Thank you! Please take the main road.',
+          ],
+          culturalTip: 'Taking the main road often avoids narrow alleyway traffic jams.',
+          grammarNote: '"Hop in" is a colloquial idiom for boarding a cab or auto.',
+        },
+      ],
     },
   },
 ]
 
 /**
- * Helper to get scenarios for a target learning language
+ * 8 Supported Indian Languages for Conversation Roleplay
+ */
+export const SUPPORTED_TUTOR_LANGUAGES = ['hi', 'en', 'mr', 'ta', 'te', 'bn', 'pa', 'gu']
+
+/**
+ * Helper to check if a language is supported by the Conversation Tutor
+ */
+export function isSupportedTutorLanguage(languageId) {
+  if (!languageId || typeof languageId !== 'string') return false
+  return SUPPORTED_TUTOR_LANGUAGES.includes(languageId.toLowerCase().trim())
+}
+
+/**
+ * Helper to get scenarios for a target learning language.
+ * STRICT POLICY:
+ * - A requested target language NEVER silently falls back to Hindi or another language.
+ * - If the language is unsupported, returns an empty list.
  */
 export function getScenariosForLanguage(languageId) {
+  if (!isSupportedTutorLanguage(languageId)) {
+    return []
+  }
+
+  const cleanLang = languageId.toLowerCase().trim()
+
   return CONVERSATION_SCENARIOS.map((sc) => ({
     id: sc.id,
     title: sc.title,
@@ -454,6 +722,6 @@ export function getScenariosForLanguage(languageId) {
     difficulty: sc.difficulty,
     description: sc.description,
     category: sc.category,
-    turns: sc.turns[languageId] || sc.turns['hi'] || sc.turns['en'] || [],
+    turns: Array.isArray(sc.turns?.[cleanLang]) ? sc.turns[cleanLang] : [],
   }))
 }

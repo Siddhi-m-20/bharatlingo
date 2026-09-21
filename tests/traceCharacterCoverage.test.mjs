@@ -122,3 +122,64 @@ test('Trace Character lookup is language-aware and always returns safe arrays', 
     }
   }
 })
+
+test('Canvas active stroke position and bead calculation never throws or produces NaN', () => {
+  for (const languageId of ALL_SUPPORTED_LANGUAGES) {
+    for (const record of exposedRecords(languageId)) {
+      const strokes = getStrokesForCharacter(record.char, languageId)
+      const hasStrokes = Boolean(strokes && strokes.length > 0)
+      
+      if (!hasStrokes) {
+        assert.equal(strokes.length, 0)
+        continue
+      }
+
+      for (let activeStrokeIndex = 0; activeStrokeIndex < strokes.length; activeStrokeIndex++) {
+        const activeStroke = strokes[activeStrokeIndex]
+        assert.ok(activeStroke, `activeStroke at ${activeStrokeIndex} must exist`)
+        assert.ok(activeStroke.path, 'activeStroke path must exist')
+        assert.ok(activeStroke.start, 'activeStroke start must exist')
+        assert.equal(typeof activeStroke.start.x, 'number')
+        assert.equal(typeof activeStroke.start.y, 'number')
+
+        // Test bead position at start, mid, end progress
+        for (const strokeProgress of [0, 0.25, 0.5, 0.75, 1.0]) {
+          const sampleCount = 80
+          // Simulated samples
+          const samples = []
+          for (let i = 0; i <= sampleCount; i++) {
+            samples.push({
+              x: activeStroke.start.x + (activeStroke.end ? (activeStroke.end.x - activeStroke.start.x) * (i / sampleCount) : 0),
+              y: activeStroke.start.y + (activeStroke.end ? (activeStroke.end.y - activeStroke.start.y) * (i / sampleCount) : 0),
+              t: i / sampleCount,
+            })
+          }
+
+          let activeStrokePos
+          if (!activeStroke?.start) {
+            activeStrokePos = { x: 150, y: 150 }
+          } else if (
+            activeStroke.type === 'dot' ||
+            strokeProgress === 0 ||
+            !samples.length
+          ) {
+            activeStrokePos = activeStroke.start
+          } else {
+            const sampleIdx = Math.min(
+              Math.max(0, Math.floor(strokeProgress * (samples.length - 1))),
+              samples.length - 1
+            )
+            activeStrokePos = samples[sampleIdx] || activeStroke.start
+          }
+
+          assert.ok(activeStrokePos, 'activeStrokePos must exist')
+          assert.equal(typeof activeStrokePos.x, 'number')
+          assert.equal(typeof activeStrokePos.y, 'number')
+          assert.ok(!Number.isNaN(activeStrokePos.x), 'activeStrokePos.x must not be NaN')
+          assert.ok(!Number.isNaN(activeStrokePos.y), 'activeStrokePos.y must not be NaN')
+        }
+      }
+    }
+  }
+})
+

@@ -41,7 +41,7 @@ export default function RightSidebar({ onStreakClick }) {
   }
 
   return (
-    <aside className="w-80 hidden lg:flex flex-col space-y-4 shrink-0 py-6 pr-4">
+    <aside className="w-80 hidden xl:flex flex-col space-y-4 shrink-0 py-6 pr-4">
       {/* 1. TOP HEADER STATUS BAR (Flag, Streak, XP, Gems) */}
       <div className="flex items-center justify-between gap-1.5 p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-full min-w-0">
         <LanguageDropdown />

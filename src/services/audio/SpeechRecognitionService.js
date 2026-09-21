@@ -8,7 +8,7 @@
  * Recording states: idle | requesting | recording | processing | result | error | unsupported
  */
 
-import { voiceLocales } from './AudioService'
+import { voiceLocales } from './AudioService.js'
 
 export const REC_STATE = {
   IDLE:        'idle',
@@ -75,7 +75,7 @@ function charSimilarity(s1, s2) {
   return Math.max(0, Math.round(((maxLen - dist) / maxLen) * 100))
 }
 
-import { evaluatePronunciation } from './PronunciationScorer'
+import { evaluatePronunciation } from './PronunciationScorer.js'
 
 // ── Combined similarity score & Detailed Pronunciation Scorer ────────────────
 export function calculateSpeakingScore(recognized, expected) {
@@ -109,7 +109,7 @@ export function calculateSpeakingScore(recognized, expected) {
 }
 
 // ── SpeechRecognitionService ──────────────────────────────────────────────────
-class SpeechRecognitionService {
+export class SpeechRecognitionService {
   constructor() {
     const SR = typeof window !== 'undefined'
       ? (window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -170,7 +170,7 @@ class SpeechRecognitionService {
       recognition.interimResults = false
       recognition.maxAlternatives = 3
 
-      if (import.meta.env.DEV) {
+      if (import.meta.env?.DEV) {
         console.log(`[ASR] Starting recognition | lang: ${locale} | target: "${targetText}"`)
       }
 
@@ -188,7 +188,7 @@ class SpeechRecognitionService {
 
         const scoring = calculateSpeakingScore(transcript, targetText)
 
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           console.log(`[ASR] Recognized: "${transcript}" | score: ${scoring.score}% | match: ${scoring.isMatch}`)
         }
 
@@ -201,7 +201,7 @@ class SpeechRecognitionService {
         this._cleanup()
         const errorType = event.error
 
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           console.error(`[ASR ERROR] ${errorType}`)
         }
 

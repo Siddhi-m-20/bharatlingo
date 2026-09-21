@@ -22,6 +22,8 @@ import Alphabet from './pages/Alphabet/Alphabet'
 import WritingPractice from './pages/Writing/WritingPractice'
 import AdminRoute from './components/AdminRoute'
 import AdminDashboard from './pages/Admin'
+import GamesHub from './pages/Games/GamesHub'
+import GameArena from './pages/Games/GameArena'
 
 function App() {
   return (
@@ -110,6 +112,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Practice />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/games"
+                element={
+                  <ProtectedRoute>
+                    <GamesHub />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/games/:gameId"
+                element={
+                  <ProtectedRoute>
+                    <GameArena />
                   </ProtectedRoute>
                 }
               />

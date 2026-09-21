@@ -13,6 +13,7 @@ import {
   generateLessonSequence,
 } from './lessonEngine.js'
 import { getLearnerProfile, getSkillProficiencies } from './learnerModel.js'
+import { generateAssessmentSuite } from './exercisePool.js'
 
 
 const API_BASE = '/api'
@@ -163,7 +164,7 @@ export async function generatePersonalizedPlan({
 export async function fetchAssessmentQuestions(
   optionsOrLangId,
   preferredLanguage = 'en',
-  limit = 8
+  limit = 15
 ) {
   const isObject = typeof optionsOrLangId === 'object' && optionsOrLangId !== null
   const languageId = isObject ? optionsOrLangId.languageId : optionsOrLangId
@@ -177,10 +178,11 @@ export async function fetchAssessmentQuestions(
   try {
     const params = new URLSearchParams({ languageId, preferredLanguage: prefLang, ageRange, goal, count })
     const data = await apiFetch(`/assessment/questions?${params}`)
-    if (data.questions && data.questions.length > 0) return data.questions
+    if (data.questions && data.questions.length >= count) return data.questions
   } catch {}
 
-  return getStaticAssessmentQuestions(languageId, prefLang)
+  // Fallback to client-side progressive 15-question assessment suite
+  return generateAssessmentSuite(languageId, prefLang, { ageRange, goal, count })
 }
 
 // ── Local plan fallback ────────────────────────────────────────────────────────

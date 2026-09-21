@@ -22,7 +22,7 @@ export const rawLessonsByLanguage = {
 }
 
 // Find translation of an English meaning into preferred language
-function translateMeaning(meaning, preferredLang) {
+export function translateMeaning(meaning, preferredLang) {
   if (!meaning || preferredLang === 'en') return meaning
   const cleanMeaning = meaning.split('/')[0].trim().toLowerCase()
   const entry = dictionary.find((d) => {

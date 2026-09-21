@@ -8,7 +8,10 @@
  * - Produces constructive pedagogical feedback in the learner's chosen interface language
  */
 
-import { calculateStringSimilarity, normalizeIndicSpeechText } from './audio/PronunciationScorer'
+import { calculateStringSimilarity, normalizeIndicSpeechText } from './audio/PronunciationScorer.js'
+import { isSupportedTutorLanguage, SUPPORTED_TUTOR_LANGUAGES } from '../data/conversations.js'
+
+export { isSupportedTutorLanguage, SUPPORTED_TUTOR_LANGUAGES }
 
 /**
  * Evaluate a single conversational turn from the user
@@ -69,7 +72,8 @@ export function evaluateTutorResponse(userUtterance, turnData, learningLanguage 
     feedback = turnData.grammarNote || `You were understood! A more natural phrasing is: "${closestReply}".`
   } else {
     praise = interfaceLanguage === 'hi' ? 'पुनः प्रयास करें' : 'Try phrasing it closer to the context'
-    feedback = `The vendor is asking for: ${turnData.englishMeaning}. Try replying with: "${closestReply}".`
+    const contextPrompt = turnData.englishMeaning ? `Expected: ${turnData.englishMeaning}. ` : ''
+    feedback = `${contextPrompt}Try replying with: "${closestReply}".`
   }
 
   return {

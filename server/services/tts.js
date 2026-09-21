@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 
 // In-memory bounded LRU cache (Keeps audio snappy in memory without creating files on disk)
-class ServerAudioCache {
+export class ServerAudioCache {
   constructor(maxSize = 250) {
     this._map = new Map()
     this._max = maxSize

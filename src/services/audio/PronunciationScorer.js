@@ -80,13 +80,15 @@ export function evaluatePronunciation(targetSentence, spokenTranscript, confiden
   const targetWords = normalizeIndicSpeechText(targetSentence).split(' ').filter(Boolean)
   const spokenWords = normalizeIndicSpeechText(spokenTranscript).split(' ').filter(Boolean)
 
-  if (targetWords.length === 0) {
+  if (!targetSentence || !targetSentence.trim() || targetWords.length === 0) {
     return {
-      score: 100,
-      isMatch: true,
+      score: 0,
+      isMatch: false,
       wordResults: [],
       wordsToImprove: [],
-      feedbackMessage: 'Great job!',
+      feedbackMessage: 'No target phrase provided.',
+      transcript: spokenTranscript || '',
+      targetSentence: targetSentence || '',
     }
   }
 
@@ -166,3 +168,13 @@ export function evaluatePronunciation(targetSentence, spokenTranscript, confiden
     targetSentence,
   }
 }
+
+export const PronunciationScorer = {
+  scorePronunciation: evaluatePronunciation,
+  evaluatePronunciation,
+  normalizeIndicSpeechText,
+  calculateStringSimilarity,
+  calculateLevenshteinDistance,
+}
+
+export default PronunciationScorer

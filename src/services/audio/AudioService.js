@@ -40,7 +40,7 @@ export const AUDIO_STATE = {
 }
 
 // ── Client-side LRU Audio Cache (Blob URLs & Metadata) ───────────────────────
-class ClientAudioCache {
+export class ClientAudioCache {
   constructor(maxSize = 100) {
     this._urls = new Map()
     this._max = maxSize
@@ -90,7 +90,7 @@ class ClientAudioCache {
 export const audioCache = new ClientAudioCache(150)
 
 // ── Central Audio State Machine Engine ────────────────────────────────────────
-class CentralAudioService {
+export class CentralAudioService {
   constructor() {
     this._currentState = AUDIO_STATE.IDLE
     this._activeId = null
@@ -264,10 +264,7 @@ class CentralAudioService {
       window.__bharatlingo_active_utterance = null
     }
 
-    if (
-      this._currentState === AUDIO_STATE.PLAYING ||
-      this._currentState === AUDIO_STATE.LOADING
-    ) {
+    if (this._currentState !== AUDIO_STATE.IDLE) {
       this._setState(AUDIO_STATE.IDLE)
     }
   }
@@ -502,7 +499,7 @@ class CentralAudioService {
       const result = await this._playViaIndicTts(cleanText, cleanLang, rate, trackId, onEnd)
       return { success: true, provider: result.provider }
     } catch (indicErr) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env?.DEV) {
         console.warn(`[TTS] Backend /api/tts failed (${indicErr.message}). Attempting Direct Indic Cloud Audio...`)
       }
 
@@ -511,7 +508,7 @@ class CentralAudioService {
         const directResult = await this._playViaDirectIndicAudio(cleanText, cleanLang, rate, trackId, onEnd)
         return { success: true, provider: directResult.provider }
       } catch (directErr) {
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           console.warn(`[TTS] Direct Indic stream failed (${directErr.message}). Attempting Browser Speech fallback...`)
         }
 
@@ -520,7 +517,7 @@ class CentralAudioService {
           const fallbackResult = await this._playViaBrowserSpeech(cleanText, cleanLang, rate, pitch, trackId, onEnd)
           return { success: true, provider: fallbackResult.provider, voice: fallbackResult.voice }
         } catch (browserErr) {
-          if (import.meta.env.DEV) {
+          if (import.meta.env?.DEV) {
             console.error('[TTS] All TTS tiers failed:', browserErr.message)
           }
 

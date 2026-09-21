@@ -96,12 +96,13 @@ router.post('/learning-plan', (req, res) => {
  */
 router.get('/assessment/questions', (req, res) => {
   try {
-    const { languageId = 'hi', ageRange = 'adult', goal = 'conversation', count = '6' } = req.query
+    const { languageId = 'hi', preferredLanguage = 'en', ageRange = 'adult', goal = 'conversation', count = '15' } = req.query
     const questions = generateAssessmentQuestions({
       languageId,
+      preferredLanguage,
       ageRange,
       goal,
-      count: Math.min(parseInt(count, 10) || 6, 12),
+      count: parseInt(count, 10) || 15,
     })
     res.json({ questions })
   } catch (err) {

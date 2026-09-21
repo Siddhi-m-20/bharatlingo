@@ -27,7 +27,7 @@ export default function WritingPractice() {
   const { user, updateUser } = useAuth()
   const { addXP, addGems } = useProgress()
 
-  const currentLang = user?.learningLanguage || 'hi'
+  const currentLang = (user?.learningLanguage || 'hi').toLowerCase()
   const langMeta = getLanguageById(currentLang) || { name: 'Hindi', nativeName: 'हिन्दी' }
   const scriptData = alphabetDataByLanguage[currentLang] || alphabetDataByLanguage['hi']
 
@@ -95,7 +95,7 @@ export default function WritingPractice() {
                 {t('writing_practice') || 'Writing Practice'}: {langMeta.name}
               </h1>
               <p className="text-white/90 text-sm md:text-base max-w-xl">
-                {scriptData.scriptName}
+                {scriptData?.scriptName || langMeta.name}
               </p>
             </div>
             <div className="absolute right-4 -bottom-4 text-8xl md:text-9xl opacity-20 select-none font-bold">
@@ -158,7 +158,7 @@ export default function WritingPractice() {
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-black tracking-tight leading-tight">
-                {t('writing_practice') || 'Writing Practice'}: {scriptData.scriptName}
+                {t('writing_practice') || 'Writing Practice'}: {scriptData?.scriptName || langMeta.name}
               </h1>
               <p className="text-white/80 text-[11px] hidden sm:block">
                 Trace authentic letters for {langMeta.name} with guided auto-correction
@@ -191,7 +191,7 @@ export default function WritingPractice() {
                     : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
                 }`}
               >
-                स्वर (Vowels) • {scriptData.vowels?.length || 0}
+                {scriptData?.vowelsTitle || 'Vowels'} • {scriptData?.vowels?.length || 0}
               </button>
               <button
                 onClick={() => {
@@ -204,7 +204,7 @@ export default function WritingPractice() {
                     : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
                 }`}
               >
-                व्यंजन (Consonants) • {scriptData.consonants?.length || 0}
+                {scriptData?.consonantsTitle || 'Consonants'} • {scriptData?.consonants?.length || 0}
               </button>
             </div>
 

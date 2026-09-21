@@ -1,2 +1,2 @@
-export { ttsService, speakText, audioCache, voiceLocales, AUDIO_STATE } from './AudioService'
-export { speechRecognitionService, calculateSpeakingScore, normalizeText, REC_STATE } from './SpeechRecognitionService'
+export { ttsService, speakText, audioCache, voiceLocales, AUDIO_STATE, ClientAudioCache, CentralAudioService } from './AudioService.js'
+export { speechRecognitionService, calculateSpeakingScore, normalizeText, REC_STATE, SpeechRecognitionService } from './SpeechRecognitionService.js'

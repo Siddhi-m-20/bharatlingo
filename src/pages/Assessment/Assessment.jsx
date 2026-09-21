@@ -12,6 +12,9 @@ import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
 import ListeningExercise from '../../components/ListeningExercise/ListeningExercise'
 import SpeakingExercise from '../../components/SpeakingExercise/SpeakingExercise'
+import SentenceOrderExercise from '../../components/SentenceOrderExercise/SentenceOrderExercise'
+import MatchingExercise from '../../components/MatchingExercise/MatchingExercise'
+import PictureChoiceExercise from '../../components/PictureChoiceExercise/PictureChoiceExercise'
 import AudioButton from '../../components/AudioButton'
 
 // ── Personalized Plan Screen ─────────────────────────────────────────────────
@@ -166,7 +169,7 @@ export default function Assessment() {
           preferredLanguage: user?.preferredLanguage || 'en',
           ageRange: user.ageRange || 'adult',
           goal: user.goal || 'conversation',
-          count: 8,
+          count: 15,
         })
         if (!cancelled) {
           setQuestions(qs)
@@ -290,6 +293,45 @@ export default function Assessment() {
     if (!q) return null
 
     switch (q.type) {
+      case 'picture-choice':
+      case 'picture_choice':
+        return (
+          <PictureChoiceExercise
+            prompt={q.prompt}
+            options={q.options || []}
+            correctAnswer={q.correctAnswer}
+            selectedAnswer={selectedAnswer}
+            onSelectAnswer={(ans) => !showResult && handleAnswer(ans)}
+            showResult={showResult}
+            disabled={showResult}
+          />
+        )
+
+      case 'sentence-order':
+      case 'sentence_order':
+        return (
+          <SentenceOrderExercise
+            prompt={q.prompt}
+            words={q.words || []}
+            sentence={q.sentence || q.correctAnswer}
+            correctAnswer={q.correctAnswer}
+            languageId={user?.learningLanguage || 'hi'}
+            onSubmit={handleAnswer}
+            disabled={showResult}
+            showResult={showResult}
+          />
+        )
+
+      case 'matching':
+        return (
+          <MatchingExercise
+            pairs={q.pairs || []}
+            onComplete={() => handleAnswer('matched_all')}
+            disabled={showResult}
+            languageId={user?.learningLanguage || 'hi'}
+          />
+        )
+
       case 'multiple-choice':
       case 'fill-blank':
         return (
@@ -331,7 +373,7 @@ export default function Assessment() {
       case 'translation':
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-[#25231F] dark:text-white mb-4">
+            <h3 className="text-xl font-semibold text-[#25231F] dark:text-white mb-2">
               {q.prompt}
             </h3>
             <input
@@ -340,9 +382,36 @@ export default function Assessment() {
               onChange={(e) => setSelectedAnswer(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && selectedAnswer && !showResult && handleAnswer(selectedAnswer)}
               className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-[#25231F] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:border-[#0B8F62]"
-              placeholder="Type your answer..."
+              placeholder="Type or select words below..."
               disabled={showResult}
             />
+            {q.wordBank && q.wordBank.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {q.wordBank.map((word, wIdx) => (
+                  <button
+                    key={wIdx}
+                    type="button"
+                    disabled={showResult}
+                    onClick={() => {
+                      if (showResult) return
+                      setSelectedAnswer((prev) => (prev ? `${prev} ${word}`.trim() : word))
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-[#0B8F62] hover:bg-[#0B8F62]/5 active:scale-95 transition-all shadow-xs cursor-pointer"
+                  >
+                    {word}
+                  </button>
+                ))}
+                {selectedAnswer && !showResult && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAnswer('')}
+                    className="px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
             <Button onClick={() => handleAnswer(selectedAnswer)} disabled={!selectedAnswer || showResult}>
               Check Answer
             </Button>
@@ -377,6 +446,32 @@ export default function Assessment() {
           />
         )
 
+      case 'challenge':
+        if (q.sentence || (q.words && q.words.length > 0)) {
+          return (
+            <SentenceOrderExercise
+              prompt={q.prompt}
+              words={q.words || []}
+              sentence={q.sentence || q.correctAnswer}
+              correctAnswer={q.correctAnswer}
+              languageId={user?.learningLanguage || 'hi'}
+              onSubmit={handleAnswer}
+              disabled={showResult}
+              showResult={showResult}
+            />
+          )
+        }
+        return (
+          <SpeakingExercise
+            prompt={q.prompt}
+            targetWord={q.targetWord || q.correctAnswer}
+            pronunciation={q.pronunciation}
+            languageId={user?.learningLanguage || 'hi'}
+            showResult={showResult}
+            onSubmit={(answer) => !showResult && handleAnswer(answer)}
+          />
+        )
+
       default:
         return null
     }
@@ -388,15 +483,15 @@ export default function Assessment() {
     const q = questions[currentQuestion]
     if (!q) return null
 
-    // For speaking exercises, don't show duplicate feedback (SpeakingExercise handles it)
-    if (q.type === 'speaking') return null
+    // For speaking, matching, and sentence-order, don't show duplicate feedback
+    if (['speaking', 'matching', 'sentence-order', 'sentence_order'].includes(q.type)) return null
 
     return (
       <div className={`mt-4 p-4 rounded-xl border-2 text-center ${last.isCorrect ? 'border-[#2F9E69] bg-[#2F9E69]/10' : 'border-[#D84B42] bg-[#D84B42]/10'}`}>
         <p className={`text-lg font-bold ${last.isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}>
           {last.isCorrect ? '✓ Correct!' : '✗ Not quite'}
         </p>
-        {!last.isCorrect && (
+        {!last.isCorrect && q.correctAnswer && q.correctAnswer !== 'matched_all' && (
           <p className="text-sm text-[#77736B] dark:text-slate-400 mt-1">
             Correct answer: <span className="font-bold text-[#25231F] dark:text-white">{q.correctAnswer}</span>
           </p>
@@ -498,26 +593,62 @@ export default function Assessment() {
           </div>
           <ProgressBar progress={((currentQuestion + 1) / questions.length) * 100} />
 
-          {/* Exercise type badge */}
-          <div className="mt-2 flex items-center gap-2">
+          {/* Progressive Stage & Skill Badges */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {/* Stage Indicator Badge */}
+            <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+              (currentQuestion < 5)
+                ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                : (currentQuestion < 10)
+                ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800'
+                : 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-800'
+            }`}>
+              {currentQuestion < 5
+                ? '🌱 Stage 1: Fundamentals'
+                : currentQuestion < 10
+                ? '⚡ Stage 2: Applied Language'
+                : '⭐ Stage 3: Fluency & Syntax'}
+            </span>
+
+            {/* Exercise type badge */}
             {q?.type === 'listening' && (
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 🎧 Listening
               </span>
             )}
             {q?.type === 'speaking' && (
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                 🎤 Speaking
               </span>
             )}
+            {(q?.type === 'sentence-order' || q?.type === 'sentence_order') && (
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                🧩 Sentence Order
+              </span>
+            )}
+            {q?.type === 'matching' && (
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                🔄 Matching
+              </span>
+            )}
+            {(q?.type === 'picture_choice' || q?.type === 'picture-choice') && (
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                🖼️ Visual Recognition
+              </span>
+            )}
             {(q?.type === 'multiple-choice' || q?.type === 'fill-blank') && (
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
-                ✏️ Vocabulary
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                ✏️ {q?.type === 'fill-blank' ? 'Grammar Cloze' : 'Vocabulary'}
               </span>
             )}
             {q?.type === 'translation' && (
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
                 🔤 Translation
+              </span>
+            )}
+            {q?.type === 'challenge' && (
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                🏆 Mastery Challenge
               </span>
             )}
           </div>
