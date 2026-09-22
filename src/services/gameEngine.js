@@ -144,7 +144,7 @@ export const GAME_MODES = [
 
 // ── Extract authentic language vocabulary safely ─────────────────────────────
 function getLanguageVocabPool(langId, preferredLangId = 'en') {
-  const lessons = rawLessonsByLanguage[langId] || rawLessonsByLanguage['hi'] || []
+  const lessons = rawLessonsByLanguage[langId] || []
   const pool = []
   const seen = new Set()
 
@@ -229,10 +229,17 @@ function buildWordMatchSession(vocabPool, roundsCount = 4) {
       right: v.nativeTranslation || v.translation,
       pronunciation: v.pronunciation || v.roman,
     }))
+
+    // Left and Right items MUST be shuffled independently to prevent 1-to-1 row alignment
+    const leftItems = shuffle(pairs.map((p) => ({ id: p.id, text: p.left, pronunciation: p.pronunciation })))
+    const rightItems = shuffle(pairs.map((p) => ({ id: p.id, text: p.right })))
+
     rounds.push({
       roundNumber: i + 1,
       type: 'word_match',
       pairs,
+      leftItems,
+      rightItems,
     })
   }
   return rounds
@@ -250,23 +257,33 @@ function buildSentenceBuilderSession(vocabPool, langId, preferredLangId, roundsC
       ? v.example
       : `${v.word}`
 
-    const tokens = rawSentence
+    const rawTokens = rawSentence
       .replace(/[।\.?!,]/g, '')
       .trim()
       .split(/\s+/)
       .filter(Boolean)
 
-    // Pick 1 distractor token from other vocabulary
-    const distractorCandidates = vocabPool.filter((item) => item.word && !tokens.includes(item.word))
-    const distractor = distractorCandidates[0]?.word
+    // Assign unique token IDs to handle duplicate words (e.g. "धीरे धीरे") cleanly
+    const tokenObjects = rawTokens.map((tok, tIdx) => ({
+      id: `tok-${idx}-${tIdx}-${tok}`,
+      word: tok,
+    }))
 
-    const scrambled = shuffle(distractor ? [...tokens, distractor] : tokens)
+    // Pick 1 distractor token from other vocabulary
+    const distractorCandidates = vocabPool.filter((item) => item.word && !rawTokens.includes(item.word))
+    const distractor = distractorCandidates[0]?.word
+    const distractorObj = distractor
+      ? { id: `distractor-${idx}-${distractor}`, word: distractor }
+      : null
+
+    const allTokens = distractorObj ? [...tokenObjects, distractorObj] : tokenObjects
+    const scrambled = shuffle(allTokens)
 
     return {
       roundNumber: idx + 1,
       type: 'sentence_builder',
       targetSentence: rawSentence,
-      correctTokens: tokens,
+      correctTokens: rawTokens,
       scrambledTokens: scrambled,
       prompt: v.exampleMeaning
         ? translateMeaning(v.exampleMeaning, preferredLangId)
@@ -375,62 +392,74 @@ function buildPictureMatchSession(vocabPool, roundsCount = 5) {
  * 6. Odd One Out Session
  */
 function buildOddOneOutSession(vocabPool, preferredLangId, roundsCount = 5) {
-  // Categorize vocabulary by semantic domain
+  // Comprehensive semantic categories to guarantee authentic semantic contrast
   const semanticCategories = {
-    food: ['water', 'tea', 'apple', 'mango', 'food', 'milk', 'bread', 'rice'],
-    nature: ['sun', 'moon', 'flower', 'tree', 'rain', 'water'],
-    animals: ['elephant', 'peacock', 'tiger', 'dog', 'cat', 'bird'],
-    greetings: ['hello', 'yes', 'no', 'friend', 'school', 'book'],
+    food_drinks: ['water', 'tea', 'apple', 'mango', 'food', 'milk', 'bread', 'rice', 'fruit', 'drink', 'sweet'],
+    nature: ['sun', 'moon', 'flower', 'tree', 'rain', 'water', 'sky', 'river', 'star', 'mountain'],
+    animals: ['elephant', 'peacock', 'tiger', 'dog', 'cat', 'bird', 'cow', 'horse', 'lion', 'fish'],
+    people_family: ['father', 'mother', 'brother', 'sister', 'friend', 'teacher', 'family', 'boy', 'girl'],
+    greetings_civility: ['hello', 'yes', 'no', 'thank', 'welcome', 'please', 'goodbye'],
+    learning_objects: ['book', 'pen', 'school', 'house', 'table', 'chair', 'paper'],
   }
 
   const rounds = []
   const categoryKeys = Object.keys(semanticCategories)
 
+  // Map items to categories
+  const categorized = {}
+  categoryKeys.forEach((k) => { categorized[k] = [] })
+
+  vocabPool.forEach((v) => {
+    const text = `${v.originalTranslation || v.translation || ''} ${v.exampleMeaning || ''}`.toLowerCase()
+    for (const catKey of categoryKeys) {
+      if (semanticCategories[catKey].some((kw) => text.includes(kw))) {
+        categorized[catKey].push(v)
+        break
+      }
+    }
+  })
+
+  const validTargetCats = categoryKeys.filter((k) => categorized[k].length >= 3)
+
   for (let i = 0; i < roundsCount; i++) {
-    const targetCatKey = categoryKeys[i % categoryKeys.length]
-    const intruderCatKey = categoryKeys[(i + 1) % categoryKeys.length]
+    const targetCatKey = validTargetCats.length > 0 ? validTargetCats[i % validTargetCats.length] : null
+    const otherCats = targetCatKey
+      ? categoryKeys.filter((k) => k !== targetCatKey && categorized[k].length >= 1)
+      : []
 
-    const targetKeywords = semanticCategories[targetCatKey]
-    const intruderKeywords = semanticCategories[intruderCatKey]
-
-    // Find vocab matching target category
-    const mainItems = vocabPool.filter((v) =>
-      targetKeywords.some((k) => (v.originalTranslation || v.translation || '').toLowerCase().includes(k))
-    )
-
-    // Find vocab matching intruder category
-    const intruderItems = vocabPool.filter((v) =>
-      intruderKeywords.some((k) => (v.originalTranslation || v.translation || '').toLowerCase().includes(k))
-    )
-
-    if (mainItems.length >= 3 && intruderItems.length >= 1) {
-      const pickedMain = pickRandom(mainItems, 3)
-      const intruder = pickRandom(intruderItems, 1)[0]
+    if (targetCatKey && otherCats.length > 0) {
+      const intruderCatKey = otherCats[i % otherCats.length]
+      const pickedMain = pickRandom(categorized[targetCatKey], 3)
+      const intruder = pickRandom(categorized[intruderCatKey], 1)[0]
       const options = shuffle([
         ...pickedMain.map((item) => ({ word: item.word, meaning: item.nativeTranslation || item.translation, isIntruder: false })),
         { word: intruder.word, meaning: intruder.nativeTranslation || intruder.translation, isIntruder: true },
       ])
 
+      const cleanCategoryName = targetCatKey.replace('_', ' & ').toUpperCase()
       rounds.push({
         roundNumber: i + 1,
         type: 'odd_one_out',
-        targetCategory: targetCatKey.toUpperCase(),
+        targetCategory: cleanCategoryName,
         options,
         correctAnswer: intruder.word,
         intruderMeaning: intruder.nativeTranslation || intruder.translation,
       })
     } else {
-      // Fallback: pick 4 items and define 1 as distinct
+      // Contrast by distinct semantic meaning using authentic item translations
       const sample = pickRandom(vocabPool, 4)
-      const intruder = sample[3]
+      const main3 = sample.slice(0, 3)
+      const intruder = sample[3] || vocabPool[0]
+
       const options = shuffle([
-        ...sample.slice(0, 3).map((item) => ({ word: item.word, meaning: item.nativeTranslation || item.translation, isIntruder: false })),
+        ...main3.map((item) => ({ word: item.word, meaning: item.nativeTranslation || item.translation, isIntruder: false })),
         { word: intruder.word, meaning: intruder.nativeTranslation || intruder.translation, isIntruder: true },
       ])
+
       rounds.push({
         roundNumber: i + 1,
         type: 'odd_one_out',
-        targetCategory: 'VOCABULARY',
+        targetCategory: 'DISTINCT THEME',
         options,
         correctAnswer: intruder.word,
         intruderMeaning: intruder.nativeTranslation || intruder.translation,

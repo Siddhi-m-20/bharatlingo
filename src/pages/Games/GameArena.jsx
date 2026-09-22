@@ -165,7 +165,7 @@ export default function GameArena() {
     } else {
       // Game Complete!
       const totalRounds = session.totalRounds
-      const finalScore = score + (feedback?.isCorrect ? 1 : 0)
+      const finalScore = score
       const earned = calculateGameRewards(session.gameId, finalScore, totalRounds)
       setRewards(earned)
       setIsCompleted(true)
@@ -303,21 +303,21 @@ export default function GameArena() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
-                    {/* Left Target Words */}
+                    {/* Left Target Words (Independently shuffled) */}
                     <div className="space-y-2">
-                      {currentRound.pairs.map((p) => {
-                        const isMatched = matchedPairs.has(p.id)
-                        const isSelected = selectedLeft === p.id
+                      {(currentRound.leftItems || currentRound.pairs.map((p) => ({ id: p.id, text: p.left, pronunciation: p.pronunciation }))).map((item) => {
+                        const isMatched = matchedPairs.has(item.id)
+                        const isSelected = selectedLeft === item.id
                         return (
                           <button
-                            key={`left-${p.id}`}
+                            key={`left-${item.id}`}
                             type="button"
                             disabled={isMatched || Boolean(feedback)}
                             onClick={() => {
-                              setSelectedLeft(p.id)
+                              setSelectedLeft(item.id)
                               if (selectedRight) {
-                                if (selectedRight === p.id) {
-                                  const nextMatched = new Set([...matchedPairs, p.id])
+                                if (selectedRight === item.id) {
+                                  const nextMatched = new Set([...matchedPairs, item.id])
                                   setMatchedPairs(nextMatched)
                                   setSelectedLeft(null)
                                   setSelectedRight(null)
@@ -325,7 +325,8 @@ export default function GameArena() {
                                     handleAnswer(true, 'All pairs matched flawlessly!')
                                   }
                                 } else {
-                                  handleAnswer(false, 'Not a match, try again!')
+                                  setSelectedLeft(null)
+                                  setSelectedRight(null)
                                 }
                               }
                             }}
@@ -338,12 +339,12 @@ export default function GameArena() {
                             }`}
                           >
                             <div className="flex items-center justify-between">
-                              <span>{p.left}</span>
+                              <span>{item.text}</span>
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  handlePlayAudio(p.left)
+                                  handlePlayAudio(item.text)
                                 }}
                                 className="text-slate-400 hover:text-[#0B8F62]"
                               >
@@ -355,21 +356,21 @@ export default function GameArena() {
                       })}
                     </div>
 
-                    {/* Right Translated Meanings */}
+                    {/* Right Translated Meanings (Independently shuffled) */}
                     <div className="space-y-2">
-                      {currentRound.pairs.map((p) => {
-                        const isMatched = matchedPairs.has(p.id)
-                        const isSelected = selectedRight === p.id
+                      {(currentRound.rightItems || currentRound.pairs.map((p) => ({ id: p.id, text: p.right }))).map((item) => {
+                        const isMatched = matchedPairs.has(item.id)
+                        const isSelected = selectedRight === item.id
                         return (
                           <button
-                            key={`right-${p.id}`}
+                            key={`right-${item.id}`}
                             type="button"
                             disabled={isMatched || Boolean(feedback)}
                             onClick={() => {
-                              setSelectedRight(p.id)
+                              setSelectedRight(item.id)
                               if (selectedLeft) {
-                                if (selectedLeft === p.id) {
-                                  const nextMatched = new Set([...matchedPairs, p.id])
+                                if (selectedLeft === item.id) {
+                                  const nextMatched = new Set([...matchedPairs, item.id])
                                   setMatchedPairs(nextMatched)
                                   setSelectedLeft(null)
                                   setSelectedRight(null)
@@ -377,7 +378,8 @@ export default function GameArena() {
                                     handleAnswer(true, 'All pairs matched flawlessly!')
                                   }
                                 } else {
-                                  handleAnswer(false, 'Not a match, try again!')
+                                  setSelectedLeft(null)
+                                  setSelectedRight(null)
                                 }
                               }
                             }}
@@ -389,7 +391,7 @@ export default function GameArena() {
                                 : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white hover:border-[#0B8F62]/40'
                             }`}
                           >
-                            {p.right}
+                            {item.text}
                           </button>
                         )
                       })}
@@ -417,9 +419,9 @@ export default function GameArena() {
                     {constructedSentence.length === 0 ? (
                       <span className="text-xs text-slate-400 italic">Tap words below in order...</span>
                     ) : (
-                      constructedSentence.map((token, tIdx) => (
+                      constructedSentence.map((tokenObj, tIdx) => (
                         <button
-                          key={tIdx}
+                          key={tokenObj.id || tIdx}
                           type="button"
                           disabled={Boolean(feedback)}
                           onClick={() => {
@@ -427,7 +429,7 @@ export default function GameArena() {
                           }}
                           className="px-3.5 py-2 bg-[#0B8F62] text-white font-black text-sm rounded-xl shadow-sm hover:bg-rose-600 transition-colors cursor-pointer"
                         >
-                          {token}
+                          {tokenObj.word || tokenObj}
                         </button>
                       ))
                     )}
@@ -435,21 +437,22 @@ export default function GameArena() {
 
                   {/* Shuffled Word Bank */}
                   <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                    {currentRound.scrambledTokens.map((token, idx) => {
-                      const isUsed = constructedSentence.includes(token)
+                    {currentRound.scrambledTokens.map((rawToken, idx) => {
+                      const tokenObj = typeof rawToken === 'string' ? { id: `legacy-${idx}-${rawToken}`, word: rawToken } : rawToken
+                      const isUsed = constructedSentence.some((item) => (item.id || item) === tokenObj.id)
                       return (
                         <button
-                          key={idx}
+                          key={tokenObj.id || idx}
                           type="button"
                           disabled={isUsed || Boolean(feedback)}
-                          onClick={() => setConstructedSentence((prev) => [...prev, token])}
+                          onClick={() => setConstructedSentence((prev) => [...prev, tokenObj])}
                           className={`px-4 py-2.5 rounded-xl border-2 font-bold text-sm transition-all cursor-pointer ${
                             isUsed
                               ? 'opacity-30 border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800'
                               : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white hover:border-[#0B8F62]'
                           }`}
                         >
-                          {token}
+                          {tokenObj.word}
                         </button>
                       )
                     })}
@@ -461,7 +464,7 @@ export default function GameArena() {
                       type="button"
                       disabled={constructedSentence.length === 0 || Boolean(feedback)}
                       onClick={() => {
-                        const built = constructedSentence.join(' ')
+                        const built = constructedSentence.map((t) => t.word || t).join(' ')
                         const expected = currentRound.correctTokens.join(' ')
                         const isCorrect = built.trim() === expected.trim()
                         handleAnswer(isCorrect, isCorrect ? 'Perfect sentence structure!' : `Correct: ${expected}`)
@@ -662,6 +665,7 @@ export default function GameArena() {
                               setFlippedCards([card.id])
                             } else if (flippedCards.length === 1) {
                               const firstCardId = flippedCards[0]
+                              if (card.id === firstCardId) return
                               const firstCard = currentRound.cards.find((c) => c.id === firstCardId)
                               setFlippedCards([firstCardId, card.id])
 

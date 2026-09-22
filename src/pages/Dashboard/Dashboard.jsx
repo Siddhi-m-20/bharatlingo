@@ -21,6 +21,7 @@ import { useProgress } from '../../services/progress'
 import { fetchNextAdaptiveLesson } from '../../services/dynamicLessonService'
 import { fetchLearningAnalytics } from '../../services/dbService'
 import { getLanguageById } from '../../data/languages'
+import { getLessonsForLanguage } from '../../data/lessons/index'
 import {
   getSkillProficiencies,
   getWeakAreas,
@@ -364,17 +365,30 @@ export default function Dashboard() {
   const persistedTopics = persistedLearnerStats?.topics || {}
   const practicedTopicsList = Object.values(persistedTopics).filter((t) => (t.attempts || 0) > 0)
 
+  const [showAllLessons, setShowAllLessons] = useState(false)
+
   // ── 5. Continue Learning Navigation ───────────────────────────────────────
-  const handleStartLesson = (topicId = null) => {
-    if (topicId) {
-      navigate(`/lesson/${learningLang.id}-adaptive-${topicId}-${Date.now()}`)
+  const handleStartLesson = (topicId = null, lessonId = null) => {
+    if (lessonId) {
+      navigate(`/lesson/${lessonId}`)
+    } else if (topicId) {
+      navigate(`/lesson/${learningLang.id}-adaptive-${topicId}`)
     } else if (nextLesson?.id) {
       navigate(`/lesson/${nextLesson.id}`)
     } else {
       const targetGoal = user?.goal || 'greetings'
-      navigate(`/lesson/${learningLang.id}-adaptive-${targetGoal}-${Date.now()}`)
+      navigate(`/lesson/${learningLang.id}-adaptive-${targetGoal}`)
     }
   }
+
+  // All authentic curriculum lessons for current target language
+  const allCurriculumLessons = useMemo(() => {
+    return getLessonsForLanguage(learningLang.id, preferredLang.id)
+  }, [learningLang.id, preferredLang.id])
+
+  const completedLessonsSet = useMemo(() => {
+    return new Set(completedLessonsList)
+  }, [completedLessonsList])
 
   // Dynamic exercise count & duration
   const exerciseCount = nextLesson?.exercises?.length || 10
@@ -692,7 +706,94 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* 4. Subordinated Quick Tools */}
+              {/* 4. Authentic Lessons Library */}
+              {allCurriculumLessons.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0]/70 dark:border-slate-800">
+                    <div>
+                      <h2 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
+                        <BookOpen size={16} className="text-[#0B8F62]" />
+                        <span>{learningLang.name} Lessons Library</span>
+                      </h2>
+                      <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
+                        All foundational & conversational units are unlocked and replayable
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
+                      {allCurriculumLessons.filter((l) => completedLessonsSet.has(l.id)).length}/{allCurriculumLessons.length} Completed
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {(showAllLessons ? allCurriculumLessons : allCurriculumLessons.slice(0, 6)).map((lesson, idx) => {
+                      const isCompleted = completedLessonsSet.has(lesson.id)
+                      const exCount = lesson.exercises?.length || 5
+                      return (
+                        <div
+                          key={lesson.id || idx}
+                          className="p-3.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800/40 flex flex-col justify-between space-y-2.5 hover:border-[#0B8F62]/60 transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[9px] font-black uppercase tracking-wider text-[#77736B] dark:text-slate-400 block truncate">
+                                {lesson.unit || `Lesson ${idx + 1}`}
+                              </span>
+                              <h3 className="font-black text-xs text-[#25231F] dark:text-white truncate mt-0.5">
+                                {lesson.name}
+                              </h3>
+                              {lesson.nameNative && (
+                                <p className="text-[10px] text-[#0B8F62] dark:text-[#34D399] font-bold truncate">
+                                  {lesson.nameNative}
+                                </p>
+                              )}
+                            </div>
+                            {isCompleted ? (
+                              <span className="shrink-0 flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                                <CheckCircle2 size={12} />
+                                <span>Done</span>
+                              </span>
+                            ) : (
+                              <span className="shrink-0 text-[10px] text-slate-400 font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                {exCount} exs
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                            <span className="text-[10px] text-[#77736B] dark:text-slate-400">
+                              {lesson.vocabulary?.length ? `${lesson.vocabulary.length} vocab words` : `${exCount} exercises`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleStartLesson(null, lesson.id)}
+                              className={`px-3 py-1 rounded-xl text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
+                                isCompleted
+                                  ? 'bg-slate-200/70 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200'
+                                  : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-xs'
+                              }`}
+                            >
+                              <span>{isCompleted ? 'Review' : 'Start'}</span>
+                              <Play size={10} className="fill-current" />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {allCurriculumLessons.length > 6 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllLessons((prev) => !prev)}
+                      className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black transition-colors cursor-pointer text-center"
+                    >
+                      {showAllLessons ? 'Show Fewer Lessons' : `View All ${allCurriculumLessons.length} Lessons →`}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* 5. Subordinated Quick Tools */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <button
                   type="button"

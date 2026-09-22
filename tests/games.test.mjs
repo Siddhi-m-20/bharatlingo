@@ -122,3 +122,67 @@ test('Game Engine: Rewards and scoring calculations', () => {
   assert.ok(zero.xpEarned >= 10, 'Base consolation XP awarded')
   assert.ok(zero.gemsEarned >= 3, 'Base consolation Gems awarded')
 })
+
+test('Game Engine: Word Match columns are independently shuffled and structured', () => {
+  const session = generateGameSession('word_match', 'hi', 'en')
+  for (const round of session.rounds) {
+    assert.ok(Array.isArray(round.leftItems), 'leftItems must be an array')
+    assert.ok(Array.isArray(round.rightItems), 'rightItems must be an array')
+    assert.equal(round.leftItems.length, round.pairs.length)
+    assert.equal(round.rightItems.length, round.pairs.length)
+
+    // Every item in leftItems has id and text
+    round.leftItems.forEach((item) => {
+      assert.ok(item.id, 'Left item must have an id')
+      assert.ok(item.text, 'Left item must have text')
+    })
+    // Every item in rightItems has id and text
+    round.rightItems.forEach((item) => {
+      assert.ok(item.id, 'Right item must have an id')
+      assert.ok(item.text, 'Right item must have text')
+    })
+
+    // Both columns reference the exact same pair IDs
+    const leftIds = round.leftItems.map((item) => item.id).sort()
+    const rightIds = round.rightItems.map((item) => item.id).sort()
+    assert.deepEqual(leftIds, rightIds, 'Left and right columns must contain the same pair IDs')
+  }
+})
+
+test('Game Engine: Sentence Builder tokens have unique IDs supporting duplicate words', () => {
+  const session = generateGameSession('sentence_builder', 'hi', 'en')
+  for (const round of session.rounds) {
+    assert.ok(Array.isArray(round.correctTokens), 'correctTokens must be an array')
+    assert.ok(Array.isArray(round.scrambledTokens), 'scrambledTokens must be an array')
+
+    const tokenIds = new Set()
+    for (const tok of round.scrambledTokens) {
+      assert.ok(tok.id, 'Every scrambled token must have a unique ID')
+      assert.ok(tok.word, 'Every scrambled token must have a word property')
+      assert.equal(tokenIds.has(tok.id), false, `Duplicate token ID detected: ${tok.id}`)
+      tokenIds.add(tok.id)
+    }
+  }
+})
+
+test('Game Engine: Memory cards have unique IDs and balanced pairs', () => {
+  const session = generateGameSession('memory_cards', 'ta', 'en')
+  for (const round of session.rounds) {
+    const cardIds = new Set()
+    const pairCounts = {}
+
+    for (const card of round.cards) {
+      assert.ok(card.id, 'Card must have unique ID')
+      assert.ok(card.pairId, 'Card must have pairId')
+      assert.equal(cardIds.has(card.id), false, `Card ID duplicated: ${card.id}`)
+      cardIds.add(card.id)
+
+      pairCounts[card.pairId] = (pairCounts[card.pairId] || 0) + 1
+    }
+
+    // Every pairId must appear exactly twice (target word + translation)
+    Object.entries(pairCounts).forEach(([pairId, count]) => {
+      assert.equal(count, 2, `Pair ${pairId} must have exactly 2 cards, got ${count}`)
+    })
+  }
+})

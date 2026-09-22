@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
-import bcryptjs from 'bcryptjs'
 import { supabase, isSupabaseConfigured } from './supabase'
 import { fetchUserSpacedRepetition } from './dbService'
 import { hydrateSM2FromCloud, clearSM2Data } from './spacedRepetition'

@@ -14,14 +14,16 @@ test('Admin Authorization: Enforces strict admin security checks without bypass'
   assert.equal(checkIsAdmin({ email: 'random.learner@example.com' }), false)
   assert.equal(checkIsAdmin({ email: 'learner@gmail.com', role: 'learner' }), false)
 
-  // Designated admin emails
-  assert.equal(checkIsAdmin({ email: 'admin@bharatlingo.com' }), true)
-  assert.equal(checkIsAdmin({ email: 'ADMIN@BHARATLINGO.COM' }), true)
-  assert.equal(checkIsAdmin({ email: 'admin@bharatlingo.org' }), true)
+  // Plain emails without verified admin role are REJECTED (no client hardcoded email bypass)
+  assert.equal(checkIsAdmin({ email: 'admin@bharatlingo.com' }), false)
+  assert.equal(checkIsAdmin({ email: 'ADMIN@BHARATLINGO.COM' }), false)
+  assert.equal(checkIsAdmin({ email: 'admin@bharatlingo.org' }), false)
 
-  // Role-based admin flag
+  // Verified Role-based admin flags & JWT claims
   assert.equal(checkIsAdmin({ email: 'custom@org.in', role: 'admin' }), true)
   assert.equal(checkIsAdmin({ email: 'custom2@org.in', is_admin: true }), true)
+  assert.equal(checkIsAdmin({ email: 'custom3@org.in', app_metadata: { role: 'admin' } }), true)
+  assert.equal(checkIsAdmin({ email: 'custom4@org.in', user_metadata: { role: 'admin' } }), true)
 })
 
 test('Admin Metrics Aggregation: Handles completely empty database state without mocking', () => {

@@ -96,8 +96,8 @@ export async function fetchLessonById({
     return fetchNextAdaptiveLesson({ languageId, preferredLang: preferredLangId, level, goal })
   }
 
-  // Match adaptive session pattern: {lang}-adaptive-{topic}-{timestamp}
-  const adaptiveMatch = lessonId.match(/^(\w+)-adaptive-(\w+)-(.+)$/)
+  // Match adaptive session pattern: {lang}-adaptive-{topic}(?:-{timestamp})?
+  const adaptiveMatch = lessonId.match(/^(\w+)-adaptive-([a-zA-Z0-9_]+)(?:-(.+))?$/)
   if (adaptiveMatch) {
     const topicId = adaptiveMatch[2]
     return generateAdaptiveLesson({

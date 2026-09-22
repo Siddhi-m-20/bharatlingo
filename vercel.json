@@ -1,8 +1,14 @@
 {
   "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/tts", "destination": "/api/tts.js" },
+    { "source": "/api/push/:path*", "destination": "/api/push.js" },
+    { "source": "/api/push", "destination": "/api/push.js" },
+    { "source": "/api/lessons/:path*", "destination": "/api/lessons.js" },
+    { "source": "/api/lessons", "destination": "/api/lessons.js" },
+    { "source": "/api/translate", "destination": "/api/translate.js" },
+    { "source": "/api/speech-to-text", "destination": "/api/speech-to-text.js" },
+    { "source": "/api/learning-plan", "destination": "/api/learning-plan.js" },
+    { "source": "/api/assessment/questions", "destination": "/api/assessment-questions.js" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

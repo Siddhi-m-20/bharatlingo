@@ -1,29 +1,45 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './services/auth'
 import { ProgressProvider } from './services/progress'
 import { ThemeProvider } from './services/themeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import SiteSettingsBar from './components/SiteSettingsBar/SiteSettingsBar'
+
+// Eagerly loaded entry pages
 import Welcome from './pages/Welcome'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
-import Onboarding from './pages/Onboarding'
-import Assessment from './pages/Assessment'
-import Dashboard from './pages/Dashboard'
-import Lesson from './pages/Lesson'
-import Practice from './pages/Practice'
-import Leaderboard from './pages/Leaderboard'
-import Profile from './pages/Profile'
-import Settings from './pages/Settings'
-import Stories from './pages/Stories/Stories'
-import StoryReader from './pages/Stories/StoryReader'
-import ConversationTutor from './pages/Tutor/ConversationTutor'
-import Alphabet from './pages/Alphabet/Alphabet'
-import WritingPractice from './pages/Writing/WritingPractice'
-import AdminRoute from './components/AdminRoute'
-import AdminDashboard from './pages/Admin'
-import GamesHub from './pages/Games/GamesHub'
-import GameArena from './pages/Games/GameArena'
+
+// Lazy-loaded feature routes
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Assessment = lazy(() => import('./pages/Assessment'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Lesson = lazy(() => import('./pages/Lesson'))
+const Practice = lazy(() => import('./pages/Practice'))
+const Leaderboard = lazy(() => import('./pages/Leaderboard'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Settings = lazy(() => import('./pages/Settings'))
+const Stories = lazy(() => import('./pages/Stories/Stories'))
+const StoryReader = lazy(() => import('./pages/Stories/StoryReader'))
+const ConversationTutor = lazy(() => import('./pages/Tutor/ConversationTutor'))
+const Alphabet = lazy(() => import('./pages/Alphabet/Alphabet'))
+const WritingPractice = lazy(() => import('./pages/Writing/WritingPractice'))
+const AdminRoute = lazy(() => import('./components/AdminRoute'))
+const AdminDashboard = lazy(() => import('./pages/Admin'))
+const GamesHub = lazy(() => import('./pages/Games/GamesHub'))
+const GameArena = lazy(() => import('./pages/Games/GameArena'))
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-3 border-[#0B8F62] border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-black text-[#77736B] dark:text-slate-400">BharatLingo</span>
+      </div>
+    </div>
+  )
+}
 
 function App() {
   return (
@@ -31,10 +47,11 @@ function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <ProgressProvider>
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
               <Route
                 path="/onboarding"
                 element={
@@ -165,6 +182,7 @@ function App() {
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+          </Suspense>
 
             {/* Persistent Global Site Language & Theme Control Bar */}
             <SiteSettingsBar />

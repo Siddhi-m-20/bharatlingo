@@ -4,36 +4,38 @@ import { rawLessonsByLanguage } from '../data/lessons/index.js'
 import { alphabetDataByLanguage } from '../data/alphabets.js'
 import { STROKE_DATA_BY_LANGUAGE } from '../data/strokeData.js'
 
-// Configurable admin email list or environment configuration
-const DEFAULT_ADMIN_EMAILS = ['admin@bharatlingo.com', 'admin@bharatlingo.org']
-
 /**
- * Check if the provided user has administrator privileges.
+ * Check if the provided user has verified administrator privileges.
  * Rules:
- * 1. Checks profile flag `role === 'admin'` or `is_admin === true`
- * 2. Checks if email matches configured admin list or VITE_ADMIN_EMAIL
- * Never relies on unauthenticated local tokens.
+ * 1. Checks explicit verified role in JWT / user metadata / profile (`role === 'admin'` or `is_admin === true`)
+ * 2. Optionally checks explicit VITE_ADMIN_EMAIL environment configuration for designated owner
+ * Never relies on hardcoded email strings or unauthenticated localStorage tokens.
  */
 export function checkIsAdmin(user) {
   if (!user || !user.email) return false
 
-  const normalizedEmail = user.email.trim().toLowerCase()
-
-  // 1. Check explicit admin role in user profile
-  if (user.role === 'admin' || user.is_admin === true) {
+  // 1. Check explicit admin role in verified user claims or profile
+  if (
+    user.role === 'admin' ||
+    user.is_admin === true ||
+    user.app_metadata?.role === 'admin' ||
+    user.user_metadata?.role === 'admin'
+  ) {
     return true
   }
 
-  // 2. Check environment variable if configured
-  const envAdminEmail = typeof process !== 'undefined' && process.env?.VITE_ADMIN_EMAIL
-    ? process.env.VITE_ADMIN_EMAIL.toLowerCase()
-    : null
+  // 2. Check designated environment variable owner if configured
+  const normalizedEmail = user.email.trim().toLowerCase()
+  const envAdminEmail =
+    typeof process !== 'undefined' && process.env?.VITE_ADMIN_EMAIL
+      ? process.env.VITE_ADMIN_EMAIL.trim().toLowerCase()
+      : null
+
   if (envAdminEmail && normalizedEmail === envAdminEmail) {
     return true
   }
 
-  // 3. Check default admin emails
-  return DEFAULT_ADMIN_EMAILS.includes(normalizedEmail)
+  return false
 }
 
 /**
