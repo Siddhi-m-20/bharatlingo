@@ -6,6 +6,7 @@ import { useProgress } from '../../services/progress'
 import { alphabetDataByLanguage } from '../../data/alphabets'
 import { getLanguageById } from '../../data/languages'
 import { AudioService } from '../../services/audio/AudioService'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LetterWritingCanvas from '../../components/WritingPad/LetterWritingCanvas'
@@ -130,10 +131,13 @@ export default function Alphabet() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-full flex-1">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl mb-6">
           <div className="relative z-10">
@@ -430,9 +434,8 @@ export default function Alphabet() {
             ))}
           </div>
         )}
-      </main>
-
-      <RightSidebar />
-    </div>
-  )
+      </div>
+    </main>
+  </div>
+)
 }

@@ -7,7 +7,14 @@ import { punjabiLessons } from './punjabi.js'
 import { gujaratiLessons } from './gujarati.js'
 import { englishLessons } from './english.js'
 import { createComprehensiveFoundationLessons } from './comprehensiveFoundation.js'
-import { getPromptText, getTranslation, dictionary, targetNameMap } from '../translations.js'
+import {
+  getPromptText,
+  getTranslation,
+  dictionary,
+  targetNameMap,
+  digitToLanguageWord,
+  sanitizeLanguageOptions,
+} from '../translations.js'
 import { getLanguageById } from '../languages.js'
 
 export const rawLessonsByLanguage = {
@@ -68,19 +75,28 @@ export function localizeLesson(lesson, targetLangId, preferredLangId = 'en') {
       }
     }
 
-    if (ex.type === 'multiple-choice') {
+    if (ex.type === 'multiple-choice' || ex.type === 'picture_choice' || ex.type === 'picture-choice' || ex.type === 'visual_match') {
+      localized.type = 'multiple-choice'
       // Check if prompt is asking for target word meaning
       const match = ex.prompt.match(/["'](.*?)["']/)
-      const word = match ? match[1] : ''
+      const word = match ? match[1] : (ex.targetWord || ex.word || '')
 
       if (word) {
         localized.prompt = getPromptText('meaning', preferredLangId, targetLangName, word)
       }
 
-      // Translate options to preferred language
-      if (ex.options && preferredLangId !== 'en') {
-        localized.options = ex.options.map((opt) => translateMeaning(opt, preferredLangId))
-        localized.correctAnswer = translateMeaning(ex.correctAnswer, preferredLangId)
+      // Translate options to preferred language and sanitize numbers
+      if (ex.options && ex.options.length > 0) {
+        const translatedOpts = ex.options.map((opt) => {
+          const optStr = typeof opt === 'string' ? opt : opt.text || opt.word || opt.label || ''
+          return preferredLangId !== 'en' ? translateMeaning(optStr, preferredLangId) : optStr
+        })
+        const translatedCorrect = preferredLangId !== 'en'
+          ? translateMeaning(ex.correctAnswer, preferredLangId)
+          : ex.correctAnswer
+
+        localized.options = sanitizeLanguageOptions(translatedOpts, translatedCorrect, preferredLangId)
+        localized.correctAnswer = digitToLanguageWord(translatedCorrect, preferredLangId)
       }
     } else if (ex.type === 'translation') {
       const match = ex.prompt.match(/["'](.*?)["']/)

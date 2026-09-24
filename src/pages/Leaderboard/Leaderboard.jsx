@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { supabase, isSupabaseConfigured } from '../../services/supabase'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import { Trophy, Flame, Zap, ShieldCheck, Clock, ArrowUp, ArrowDown } from 'lucide-react'
@@ -18,44 +19,44 @@ const LEAGUES = [
 
 const DEMO_USERS_BY_LEAGUE = {
   bronze: [
-    { id: 'b-1', name: 'Aditya Gupta', xp: 180, streak: 3 },
-    { id: 'b-2', name: 'Kavita Joshi', xp: 150, streak: 2 },
-    { id: 'b-3', name: 'Rahul Nair', xp: 120, streak: 1 },
-    { id: 'b-4', name: 'Pooja Reddy', xp: 90, streak: 2 },
-    { id: 'b-5', name: 'Vikram Seth', xp: 60, streak: 1 },
+    { id: 'b-1', name: 'Aditya Gupta', xp: 180, streak: 3, isDemo: true },
+    { id: 'b-2', name: 'Kavita Joshi', xp: 150, streak: 2, isDemo: true },
+    { id: 'b-3', name: 'Rahul Nair', xp: 120, streak: 1, isDemo: true },
+    { id: 'b-4', name: 'Pooja Reddy', xp: 90, streak: 2, isDemo: true },
+    { id: 'b-5', name: 'Vikram Seth', xp: 60, streak: 1, isDemo: true },
   ],
   silver: [
-    { id: 's-1', name: 'Deepak Sharma', xp: 480, streak: 6 },
-    { id: 's-2', name: 'Neha Kulkarni', xp: 420, streak: 5 },
-    { id: 's-3', name: 'Sameer Sen', xp: 370, streak: 4 },
-    { id: 's-4', name: 'Anita Das', xp: 310, streak: 3 },
-    { id: 's-5', name: 'Manish Pandey', xp: 260, streak: 2 },
+    { id: 's-1', name: 'Deepak Sharma', xp: 480, streak: 6, isDemo: true },
+    { id: 's-2', name: 'Neha Kulkarni', xp: 420, streak: 5, isDemo: true },
+    { id: 's-3', name: 'Sameer Sen', xp: 370, streak: 4, isDemo: true },
+    { id: 's-4', name: 'Anita Das', xp: 310, streak: 3, isDemo: true },
+    { id: 's-5', name: 'Manish Pandey', xp: 260, streak: 2, isDemo: true },
   ],
   gold: [
-    { id: 'g-1', name: 'Aarav Sharma', xp: 920, streak: 12 },
-    { id: 'g-2', name: 'Priya Patel', xp: 860, streak: 8 },
-    { id: 'g-3', name: 'Rohan Deshmukh', xp: 810, streak: 15 },
-    { id: 'g-4', name: 'Meera Iyer', xp: 740, streak: 5 },
-    { id: 'g-5', name: 'Gurpreet Singh', xp: 690, streak: 7 },
+    { id: 'g-1', name: 'Aarav Sharma', xp: 920, streak: 12, isDemo: true },
+    { id: 'g-2', name: 'Priya Patel', xp: 860, streak: 8, isDemo: true },
+    { id: 'g-3', name: 'Rohan Deshmukh', xp: 810, streak: 15, isDemo: true },
+    { id: 'g-4', name: 'Meera Iyer', xp: 740, streak: 5, isDemo: true },
+    { id: 'g-5', name: 'Gurpreet Singh', xp: 690, streak: 7, isDemo: true },
   ],
   sapphire: [
-    { id: 'sp-1', name: 'Siddharth Roy', xp: 1850, streak: 24 },
-    { id: 'sp-2', name: 'Ananya Verma', xp: 1620, streak: 19 },
-    { id: 'sp-3', name: 'Karthik Rao', xp: 1480, streak: 16 },
-    { id: 'sp-4', name: 'Divya Nambiar', xp: 1310, streak: 14 },
-    { id: 'sp-5', name: 'Arjun Kapoor', xp: 1190, streak: 11 },
+    { id: 'sp-1', name: 'Siddharth Roy', xp: 1850, streak: 24, isDemo: true },
+    { id: 'sp-2', name: 'Ananya Verma', xp: 1620, streak: 19, isDemo: true },
+    { id: 'sp-3', name: 'Karthik Rao', xp: 1480, streak: 16, isDemo: true },
+    { id: 'sp-4', name: 'Divya Nambiar', xp: 1310, streak: 14, isDemo: true },
+    { id: 'sp-5', name: 'Arjun Kapoor', xp: 1190, streak: 11, isDemo: true },
   ],
   ruby: [
-    { id: 'rb-1', name: 'Tanvi Roy', xp: 3200, streak: 35 },
-    { id: 'rb-2', name: 'Harsh Vardhan', xp: 2980, streak: 28 },
-    { id: 'rb-3', name: 'Sanya Mirza', xp: 2650, streak: 22 },
-    { id: 'rb-4', name: 'Gautam Gambhir', xp: 2340, streak: 18 },
+    { id: 'rb-1', name: 'Tanvi Roy', xp: 3200, streak: 35, isDemo: true },
+    { id: 'rb-2', name: 'Harsh Vardhan', xp: 2980, streak: 28, isDemo: true },
+    { id: 'rb-3', name: 'Sanya Mirza', xp: 2650, streak: 22, isDemo: true },
+    { id: 'rb-4', name: 'Gautam Gambhir', xp: 2340, streak: 18, isDemo: true },
   ],
   diamond: [
-    { id: 'dm-1', name: 'Ravi Teja', xp: 5400, streak: 60 },
-    { id: 'dm-2', name: 'Sunita Menon', xp: 4890, streak: 52 },
-    { id: 'dm-3', name: 'Amitabh Sen', xp: 4320, streak: 45 },
-    { id: 'dm-4', name: 'Pranathi Rao', xp: 3950, streak: 38 },
+    { id: 'dm-1', name: 'Ravi Teja', xp: 5400, streak: 60, isDemo: true },
+    { id: 'dm-2', name: 'Sunita Menon', xp: 4890, streak: 52, isDemo: true },
+    { id: 'dm-3', name: 'Amitabh Sen', xp: 4320, streak: 45, isDemo: true },
+    { id: 'dm-4', name: 'Pranathi Rao', xp: 3950, streak: 38, isDemo: true },
   ],
 }
 
@@ -117,10 +118,13 @@ export default function Leaderboard() {
   const userRank = user ? combinedList.findIndex((u) => u.id === user.id) + 1 : 1
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6 text-[#25231F] dark:text-slate-100">
       <AppSidebar />
 
-      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-5xl mx-auto flex-1">
         {/* League Selector Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           {LEAGUES.map((league) => {
@@ -222,8 +226,9 @@ export default function Leaderboard() {
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">
+                      <span className={`text-sm font-bold ${learner.isDemo ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
                         {learner.name} {isMe && '(You)'}
+                        {learner.isDemo && <span className="ml-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 normal-case">(demo)</span>}
                       </span>
                       {isPromotion && (
                         <span className="flex items-center text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded-full">
@@ -253,9 +258,8 @@ export default function Leaderboard() {
             )
           })}
         </div>
+        </div>
       </main>
-
-      <RightSidebar />
     </div>
   )
 }

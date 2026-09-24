@@ -26,6 +26,7 @@ import { useProgress } from '../../services/progress'
 import { useTheme } from '../../services/themeContext'
 import { getLanguageById } from '../../data/languages'
 import { GAME_MODES } from '../../services/gameEngine'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 
@@ -63,13 +64,15 @@ export default function GamesHub() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex pb-20 md:pb-6">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6">
       {/* 1. LEFT SIDEBAR NAVIGATION */}
       <AppSidebar />
 
       {/* 2. CENTER CONTENT */}
-      <main className="flex-1 min-w-0 md:ml-72 px-4 sm:px-6 lg:px-8 py-5">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-full flex-1">
 
           {/* ── Top Header Bar ────────────────────────────────────────── */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 md:p-6 rounded-3xl border border-[#E8E6E0] dark:border-slate-800 shadow-xs">
@@ -94,29 +97,6 @@ export default function GamesHub() {
               <p className="text-xs text-[#77736B] dark:text-slate-400 max-w-xl">
                 {t('games_subtitle') || 'Play educational games to reinforce vocabulary, grammar, and pronunciation with authentic language data.'}
               </p>
-            </div>
-
-            {/* Learner Badges */}
-            <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700">
-                <LanguageFlag languageId={learningLang.id} size={24} />
-                <div>
-                  <span className="text-xs font-black text-[#25231F] dark:text-white leading-none block">
-                    {learningLang.name}
-                  </span>
-                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">
-                    in {preferredLang.name}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-xs font-black">
-                <Flame size={15} fill="currentColor" />
-                <span>{persistedStreak}</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-xs font-black">
-                <Zap size={15} fill="currentColor" />
-                <span>{user?.xp || 0}</span>
-              </div>
             </div>
           </div>
 
@@ -144,7 +124,7 @@ export default function GamesHub() {
           </div>
 
           {/* ── Games Grid ────────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredModes.map((mode, idx) => (
               <motion.div
                 key={mode.id}

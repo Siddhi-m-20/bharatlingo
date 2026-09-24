@@ -4,7 +4,7 @@ import { AuthProvider } from './services/auth'
 import { ProgressProvider } from './services/progress'
 import { ThemeProvider } from './services/themeContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import SiteSettingsBar from './components/SiteSettingsBar/SiteSettingsBar'
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 
 // Eagerly loaded entry pages
 import Welcome from './pages/Welcome'
@@ -47,7 +47,8 @@ function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <ProgressProvider>
-            <Suspense fallback={<PageLoader />}>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
@@ -183,9 +184,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
-
-            {/* Persistent Global Site Language & Theme Control Bar */}
-            <SiteSettingsBar />
+        </ErrorBoundary>
           </ProgressProvider>
         </AuthProvider>
       </BrowserRouter>

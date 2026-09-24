@@ -42,8 +42,7 @@ test('Assessment Suite: covers multiple diverse exercise skills', () => {
   const questions = generateAssessmentSuite('ta', 'en')
   const exerciseTypes = new Set(questions.map((q) => q.type))
 
-  assert.ok(exerciseTypes.has('picture_choice') || exerciseTypes.has('picture-choice'), 'Missing picture choice')
-  assert.ok(exerciseTypes.has('multiple-choice'), 'Missing multiple choice')
+  assert.ok(exerciseTypes.has('multiple-choice') || exerciseTypes.has('picture_choice') || exerciseTypes.has('picture-choice'), 'Missing multiple choice')
   assert.ok(exerciseTypes.has('listening'), 'Missing listening')
   assert.ok(exerciseTypes.has('matching'), 'Missing matching')
   assert.ok(exerciseTypes.has('fill-blank'), 'Missing fill blank')

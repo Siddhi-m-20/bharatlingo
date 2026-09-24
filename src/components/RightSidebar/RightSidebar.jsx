@@ -41,19 +41,8 @@ export default function RightSidebar({ onStreakClick }) {
   }
 
   return (
-    <aside className="w-80 hidden xl:flex flex-col space-y-4 shrink-0 py-6 pr-4">
-      {/* 1. TOP HEADER STATUS BAR (Flag, Streak, XP, Gems) */}
-      <div className="flex items-center justify-between gap-1.5 p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-full min-w-0">
-        <LanguageDropdown />
-        <StreakBadge streak={user?.streak || 0} onClick={onStreakClick} />
-        <XPBadge xp={user?.xp || 0} />
-        <div className="flex items-center gap-1 bg-cyan-50 dark:bg-cyan-950/60 px-2.5 py-1 rounded-xl border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 shrink-0 font-black text-xs">
-          <span className="text-xs">💎</span>
-          <span>{user?.gems !== undefined ? Number(user.gems) : gems}</span>
-        </div>
-      </div>
-
-      {/* 2. LIVE AI TRANSLATOR & WORD LOOKUP */}
+    <div className="w-full flex flex-col space-y-4">
+      {/* 1. LIVE AI TRANSLATOR & WORD LOOKUP */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Sparkles size={15} className="text-emerald-500" />
@@ -104,7 +93,7 @@ export default function RightSidebar({ onStreakClick }) {
         )}
       </div>
 
-      {/* 3. DAILY QUESTS WIDGET */}
+      {/* 2. DAILY QUESTS WIDGET */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -151,7 +140,7 @@ export default function RightSidebar({ onStreakClick }) {
         </div>
       </div>
 
-      {/* 4. LEADERBOARD LEAGUE PREVIEW */}
+      {/* 3. LEADERBOARD LEAGUE PREVIEW */}
       <div
         onClick={() => navigate('/leaderboard')}
         className="bg-gradient-to-br from-amber-500/10 via-white to-white dark:from-amber-900/20 dark:to-slate-900 rounded-2xl border border-amber-500/30 p-4 shadow-sm cursor-pointer hover:border-amber-500 transition-all group"
@@ -174,7 +163,7 @@ export default function RightSidebar({ onStreakClick }) {
         </div>
       </div>
 
-      {/* 5. ADMIN CONSOLE ACCESS (Admins Only) */}
+      {/* 4. ADMIN CONSOLE ACCESS (Admins Only) */}
       {checkIsAdmin(user) && (
         <div
           onClick={() => navigate('/admin')}
@@ -194,6 +183,6 @@ export default function RightSidebar({ onStreakClick }) {
           </div>
         </div>
       )}
-    </aside>
+    </div>
   )
 }

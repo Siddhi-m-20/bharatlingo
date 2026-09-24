@@ -19,7 +19,7 @@ import CelebrationModal from '../../components/CelebrationModal/CelebrationModal
 import { audioFX } from '../../utils/audioFX'
 import SentenceOrderExercise from '../../components/SentenceOrderExercise/SentenceOrderExercise'
 import ReadingExercise from '../../components/ReadingExercise/ReadingExercise'
-import PictureChoiceExercise from '../../components/PictureChoiceExercise/PictureChoiceExercise'
+import { digitToLanguageWord, sanitizeLanguageOptions } from '../../data/translations.js'
 import { Sparkles, Crown, Brain, Lightbulb } from 'lucide-react'
 import { triggerConfetti } from '../../utils/confetti'
 import { ttsService } from '../../services/audio/AudioService'
@@ -134,7 +134,12 @@ export default function Lesson() {
     } else if (currentExerciseData.type === 'speaking') {
       isCorrect = answer === currentExerciseData.correctAnswer || answer === currentExerciseData.targetWord
     } else {
-      isCorrect = String(answer).trim().toLowerCase() === String(currentExerciseData.correctAnswer).trim().toLowerCase()
+      const isTarget = currentExerciseData.type === 'fill-blank' || (currentExerciseData.word && currentExerciseData.correctAnswer === currentExerciseData.word)
+      const optLang = isTarget ? user.learningLanguage : (user?.preferredLanguage || 'en')
+      const cleanAns = digitToLanguageWord(currentExerciseData.correctAnswer, optLang)
+      isCorrect =
+        String(answer).trim().toLowerCase() === String(currentExerciseData.correctAnswer).trim().toLowerCase() ||
+        String(answer).trim().toLowerCase() === String(cleanAns).trim().toLowerCase()
     }
 
     // Record attempt in authoritative Learner Model
@@ -296,20 +301,6 @@ export default function Lesson() {
           />
         )
 
-      case 'picture-choice':
-      case 'picture_choice':
-      case 'visual-match':
-      case 'visual_match':
-        return (
-          <PictureChoiceExercise
-            exercise={exercise}
-            languageId={user?.learningLanguage || 'hi'}
-            onAnswer={handleAnswer}
-            disabled={showResult}
-            showResult={showResult}
-            selectedAnswer={selectedAnswer}
-          />
-        )
 
       case 'reading':
         return (
@@ -326,40 +317,67 @@ export default function Lesson() {
           />
         )
 
-      case 'multiple-choice':
+      case 'picture-choice':
+      case 'picture_choice':
+      case 'visual-match':
+      case 'visual_match':
+      case 'multiple-choice': {
+        const langCode = user?.learningLanguage || 'hi'
+        const prefCode = user?.preferredLanguage || 'en'
+        const isTarget = exercise.type === 'fill-blank' || (exercise.word && exercise.correctAnswer === exercise.word)
+        const optionLang = isTarget ? langCode : prefCode
+        const cleanCorrect = digitToLanguageWord(exercise.correctAnswer, optionLang)
+        const rawOptions = (exercise.options && exercise.options.length > 0)
+          ? exercise.options.map((opt) => (typeof opt === 'string' ? opt : opt?.word || opt?.text || opt?.label || ''))
+          : []
+        const sanitizedOptions = sanitizeLanguageOptions(rawOptions, cleanCorrect, optionLang)
+
+        let displayPrompt = exercise.prompt || ''
+        if (/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i.test(displayPrompt)) {
+          const match = displayPrompt.match(/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i)
+          const target = match ? match[3] : ''
+          const targetLangObj = getLanguageById(langCode)
+          const targetLangName = targetLangObj?.name || 'target language'
+          displayPrompt = `What is "${target}" in ${targetLangName}?`
+        }
+
         return (
           <div className="space-y-4">
             <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] dark:text-white mb-6">
-              {exercise.prompt}
+              {displayPrompt}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {exercise.options.map((option, index) => (
-                <motion.button
-                  key={index}
-                  type="button"
-                  className={`
-                    p-4 rounded-xl border-2 text-left transition-all
-                    ${showResult && option === exercise.correctAnswer
-                      ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
-                      : selectedAnswer === option
-                        ? showResult
-                          ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
-                        : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
-                      : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
-                    }
-                    ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                  onClick={() => !showResult && handleAnswer(option)}
-                  disabled={showResult}
-                  whileHover={!showResult ? { scale: 1.02 } : {}}
-                  whileTap={!showResult ? { scale: 0.98 } : {}}
-                >
-                  <span className="font-medium">{option}</span>
-                </motion.button>
-              ))}
+              {sanitizedOptions.map((option, index) => {
+                const isMatch = option === cleanCorrect || option === exercise.correctAnswer
+                return (
+                  <motion.button
+                    key={index}
+                    type="button"
+                    className={`
+                      p-4 rounded-xl border-2 text-left transition-all
+                      ${showResult && isMatch
+                        ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+                        : selectedAnswer === option
+                          ? showResult
+                            ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
+                          : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
+                      }
+                      ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                    onClick={() => !showResult && handleAnswer(option)}
+                    disabled={showResult}
+                    whileHover={!showResult ? { scale: 1.02 } : {}}
+                    whileTap={!showResult ? { scale: 0.98 } : {}}
+                  >
+                    <span className="font-medium">{option}</span>
+                  </motion.button>
+                )
+              })}
             </div>
           </div>
         )
+      }
 
       case 'translation':
         if (exercise.wordBank && exercise.wordBank.length > 0) {
@@ -532,7 +550,7 @@ export default function Lesson() {
 
         {wasSkipped && (
           <p className="text-sm font-medium text-[#77736B] dark:text-slate-400 mt-1">
-            No XP earned for this skipped speaking exercise.
+            {t('no_xp_skipped_speaking') || 'No XP earned for this skipped speaking exercise.'}
           </p>
         )}
 

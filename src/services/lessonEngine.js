@@ -245,7 +245,7 @@ export function generateAdaptiveLesson({
   // --- PART B: NEW CONCEPTS (30% ~ 3-4 items) ---
   const newVocabItems = topicVocab.slice(0, Math.min(3, topicVocab.length))
   for (const item of newVocabItems) {
-    newExercises.push(createPictureChoiceExercise(item, allSeedVocab, langId, preferredLang, targetLangName))
+    newExercises.push(createWordToMeaningMCQ(item, allSeedVocab, langId, preferredLang, targetLangName))
     newExercises.push(createMeaningToWordMCQ(item, allSeedVocab, langId, preferredLang, targetLangName))
   }
 

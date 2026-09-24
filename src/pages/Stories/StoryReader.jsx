@@ -65,6 +65,10 @@ function SpeakingSegment({ segment, languageId, onComplete }) {
     // Never penalize in story context — just mark complete
     setTimeout(() => onComplete(), 600)
   }
+  const handleSkip = () => {
+    setDone(true)
+    setTimeout(() => onComplete(), 300)
+  }
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-purple-200 dark:border-purple-800 p-6 md:p-8 shadow-lg">
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 dark:bg-purple-950/50 mb-4">
@@ -86,6 +90,7 @@ function SpeakingSegment({ segment, languageId, onComplete }) {
           pronunciation={segment.pronunciation}
           languageId={languageId}
           onSubmit={handleSubmit}
+          onSkip={handleSkip}
           showResult={false}
         />
       )}

@@ -26,11 +26,11 @@ export const GAME_MODES = [
     description: 'Connect target-language words with their correct native meanings.',
     category: 'vocabulary',
     icon: '🧩',
-    difficulty: 1,
-    estimatedMinutes: 2,
-    defaultRounds: 4,
-    baseXP: 20,
-    baseGems: 10,
+    difficulty: 2,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 45,
+    baseGems: 20,
   },
   {
     id: 'sentence_builder',
@@ -38,11 +38,11 @@ export const GAME_MODES = [
     description: 'Assemble scrambled words into grammatically coherent sentences.',
     category: 'grammar',
     icon: '🏗️',
-    difficulty: 2,
-    estimatedMinutes: 3,
-    defaultRounds: 5,
-    baseXP: 25,
-    baseGems: 10,
+    difficulty: 3,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 50,
+    baseGems: 20,
   },
   {
     id: 'listening_challenge',
@@ -51,22 +51,22 @@ export const GAME_MODES = [
     category: 'audio',
     icon: '🎧',
     difficulty: 2,
-    estimatedMinutes: 2,
-    defaultRounds: 5,
-    baseXP: 20,
-    baseGems: 10,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 45,
+    baseGems: 20,
   },
   {
     id: 'quick_translation',
     title: 'Quick Translation',
-    description: 'Translate essential everyday phrases under gentle time pressure.',
+    description: 'Translate essential everyday phrases under active time pressure.',
     category: 'speed',
     icon: '⚡',
-    difficulty: 2,
-    estimatedMinutes: 2,
-    defaultRounds: 5,
-    baseXP: 25,
-    baseGems: 12,
+    difficulty: 3,
+    estimatedMinutes: 4,
+    defaultRounds: 15,
+    baseXP: 50,
+    baseGems: 20,
   },
   {
     id: 'picture_match',
@@ -74,11 +74,11 @@ export const GAME_MODES = [
     description: 'Associate real vocabulary words with their visual representation.',
     category: 'vocabulary',
     icon: '🖼️',
-    difficulty: 1,
-    estimatedMinutes: 2,
-    defaultRounds: 5,
-    baseXP: 20,
-    baseGems: 8,
+    difficulty: 2,
+    estimatedMinutes: 4,
+    defaultRounds: 15,
+    baseXP: 45,
+    baseGems: 18,
   },
   {
     id: 'odd_one_out',
@@ -86,11 +86,11 @@ export const GAME_MODES = [
     description: 'Spot the linguistic anomaly among words from common semantic groups.',
     category: 'vocabulary',
     icon: '🔍',
-    difficulty: 2,
-    estimatedMinutes: 2,
-    defaultRounds: 5,
-    baseXP: 25,
-    baseGems: 10,
+    difficulty: 3,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 50,
+    baseGems: 20,
   },
   {
     id: 'memory_cards',
@@ -99,10 +99,10 @@ export const GAME_MODES = [
     category: 'speed',
     icon: '🃏',
     difficulty: 2,
-    estimatedMinutes: 3,
-    defaultRounds: 3,
-    baseXP: 25,
-    baseGems: 12,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 45,
+    baseGems: 20,
   },
   {
     id: 'script_challenge',
@@ -110,11 +110,11 @@ export const GAME_MODES = [
     description: 'Master authentic characters, vowels, consonants, and phonetic sounds.',
     category: 'reading',
     icon: '🔤',
-    difficulty: 1,
-    estimatedMinutes: 2,
-    defaultRounds: 5,
-    baseXP: 20,
-    baseGems: 10,
+    difficulty: 2,
+    estimatedMinutes: 4,
+    defaultRounds: 15,
+    baseXP: 45,
+    baseGems: 20,
   },
   {
     id: 'pronunciation_challenge',
@@ -123,22 +123,22 @@ export const GAME_MODES = [
     category: 'audio',
     icon: '🎙️',
     difficulty: 3,
-    estimatedMinutes: 3,
-    defaultRounds: 5,
-    baseXP: 30,
-    baseGems: 15,
+    estimatedMinutes: 5,
+    defaultRounds: 15,
+    baseXP: 55,
+    baseGems: 25,
   },
   {
     id: 'speed_round',
     title: 'Speed Round',
-    description: 'Fast-paced mixed sprint across multi-skill questions in 60 seconds.',
+    description: 'Fast-paced mixed sprint across 15 multi-skill questions in 90 seconds.',
     category: 'speed',
     icon: '⏱️',
     difficulty: 3,
-    estimatedMinutes: 2,
-    defaultRounds: 10,
-    baseXP: 35,
-    baseGems: 15,
+    estimatedMinutes: 3,
+    defaultRounds: 15,
+    baseXP: 60,
+    baseGems: 25,
   },
 ]
 
@@ -609,39 +609,40 @@ export function generateGameSession(gameId, targetLangId = 'hi', preferredLangId
   const vocabPool = getLanguageVocabPool(targetLang.id, preferredLangId)
 
   let rounds = []
+  const roundsToGenerate = options.rounds || 15
   switch (gameId) {
     case 'word_match':
-      rounds = buildWordMatchSession(vocabPool, options.rounds || 4)
+      rounds = buildWordMatchSession(vocabPool, roundsToGenerate)
       break
     case 'sentence_builder':
-      rounds = buildSentenceBuilderSession(vocabPool, targetLang.id, preferredLangId, options.rounds || 5)
+      rounds = buildSentenceBuilderSession(vocabPool, targetLang.id, preferredLangId, roundsToGenerate)
       break
     case 'listening_challenge':
-      rounds = buildListeningSession(vocabPool, options.rounds || 5)
+      rounds = buildListeningSession(vocabPool, roundsToGenerate)
       break
     case 'quick_translation':
-      rounds = buildQuickTranslationSession(vocabPool, options.rounds || 5)
+      rounds = buildQuickTranslationSession(vocabPool, roundsToGenerate)
       break
     case 'picture_match':
-      rounds = buildPictureMatchSession(vocabPool, options.rounds || 5)
+      rounds = buildPictureMatchSession(vocabPool, roundsToGenerate)
       break
     case 'odd_one_out':
-      rounds = buildOddOneOutSession(vocabPool, preferredLangId, options.rounds || 5)
+      rounds = buildOddOneOutSession(vocabPool, preferredLangId, roundsToGenerate)
       break
     case 'memory_cards':
-      rounds = buildMemoryCardsSession(vocabPool, options.rounds || 3)
+      rounds = buildMemoryCardsSession(vocabPool, roundsToGenerate)
       break
     case 'script_challenge':
-      rounds = buildScriptChallengeSession(targetLang.id, vocabPool, options.rounds || 5)
+      rounds = buildScriptChallengeSession(targetLang.id, vocabPool, roundsToGenerate)
       break
     case 'pronunciation_challenge':
-      rounds = buildPronunciationSession(vocabPool, options.rounds || 5)
+      rounds = buildPronunciationSession(vocabPool, roundsToGenerate)
       break
     case 'speed_round':
-      rounds = buildSpeedRoundSession(vocabPool, options.rounds || 10)
+      rounds = buildSpeedRoundSession(vocabPool, roundsToGenerate)
       break
     default:
-      rounds = buildWordMatchSession(vocabPool, 4)
+      rounds = buildWordMatchSession(vocabPool, 15)
       break
   }
 

@@ -6,6 +6,7 @@ import { useProgress } from '../../services/progress'
 import { useTheme } from '../../services/themeContext'
 import { alphabetDataByLanguage } from '../../data/alphabets'
 import { getLanguageById, languages } from '../../data/languages'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
@@ -79,12 +80,15 @@ export default function WritingPractice() {
 
   if (!isWritingSupported) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
+      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6 text-[#25231F] dark:text-slate-100">
         {/* 1. LEFT SIDEBAR */}
         <AppSidebar />
 
         {/* 2. CENTER CONTENT */}
-        <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+        <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+          <TopNavbar />
+
+          <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-full flex-1">
           {/* Banner */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl">
             <div className="relative z-10">
@@ -135,21 +139,22 @@ export default function WritingPractice() {
               </Button>
             </div>
           </div>
-        </main>
-
-        {/* 3. RIGHT SIDEBAR */}
-        <RightSidebar />
-      </div>
-    )
+        </div>
+      </main>
+    </div>
+  )
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0 text-[#25231F] dark:text-slate-100">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6 text-[#25231F] dark:text-slate-100">
       {/* 1. LEFT SIDEBAR */}
       <AppSidebar />
 
       {/* 2. CENTER CONTENT */}
-      <main className="flex-1 max-w-[640px] md:ml-72 px-4 py-4 md:py-5 space-y-3.5">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-4 w-full max-w-5xl mx-auto flex-1">
         {/* Compact Banner */}
         <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 sm:px-5 py-3 rounded-2xl text-white shadow-md">
           <div className="flex items-center gap-2.5">
@@ -275,10 +280,8 @@ export default function WritingPractice() {
             onNext={handleNextLetter}
           />
         </div>
+        </div>
       </main>
-
-      {/* 3. RIGHT SIDEBAR */}
-      <RightSidebar />
     </div>
   )
 }

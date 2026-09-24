@@ -6,6 +6,7 @@ export default function MatchingExercise({
   prompt,
   pairs = [],
   onSubmit,
+  onComplete,
   disabled = false,
   showResult = false,
 }) {
@@ -55,8 +56,9 @@ export default function MatchingExercise({
 
       if (newMatched.length === pairs.length) {
         setTimeout(() => {
-          onSubmit('matched_all')
-        }, 500)
+          if (typeof onSubmit === 'function') onSubmit('matched_all')
+          if (typeof onComplete === 'function') onComplete('matched_all')
+        }, 400)
       }
     } else {
       setWrongMatch({ word, meaning })

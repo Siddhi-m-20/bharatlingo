@@ -45,12 +45,15 @@ function milestoneWord(value, languageId) {
 export function createComprehensiveFoundationLessons(languageId, languageName) {
   const phraseVocabulary = greetings[languageId].map(([word, translation, pronunciation]) => ({ word, translation, pronunciation, example: word }))
   const first = phraseVocabulary[0]
-  const numberVocabulary = Array.from({ length: 101 }, (_, value) => ({
-    word: nativeDigits(value, languageId),
-    translation: `${value} — ${milestoneWord(value, languageId)}`,
+
+  // Pure authentic milestone number words (0–10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+  const milestoneValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+  const numberVocabulary = milestoneValues.map((value) => ({
+    word: milestoneWord(value, languageId),
+    translation: milestoneWord(value, 'en'),
     pronunciation: milestoneWord(value, languageId),
     audioText: milestoneWord(value, languageId),
-    example: value % 10 === 0 || value <= 10 ? milestoneWord(value, languageId) : undefined,
+    example: milestoneWord(value, languageId),
   }))
 
   return [
@@ -66,14 +69,38 @@ export function createComprehensiveFoundationLessons(languageId, languageName) {
       ],
     },
     {
-      id: `${languageId}-numbers-0-100`, name: 'Numbers 0 to 100: Read & Say', nameNative: `${nativeDigits(0, languageId)}–${nativeDigits(100, languageId)}`,
+      id: `${languageId}-numbers-0-100`, name: 'Numbers 0 to 100: Read & Say', nameNative: `${milestoneWord(0, languageId)}–${milestoneWord(100, languageId)}`,
       unit: 'Foundation: Numbers', order: 91,
-      description: 'A complete 0–100 numeral reference. Tap any entry to hear it; anchor words are supplied for 0–10 and every ten.', vocabulary: numberVocabulary,
+      description: 'Authentic spelled-out number words for 0–10 and every ten up to 100.', vocabulary: numberVocabulary,
       exercises: [
-        { type: 'multiple-choice', prompt: `Which numeral is ${nativeDigits(10, languageId)}?`, options: ['10', '1', '20', '100'], correctAnswer: '10', xp: 10 },
-        { type: 'listening', prompt: 'Listen and select the number', audioText: milestoneWord(20, languageId), options: [nativeDigits(10, languageId), nativeDigits(20, languageId), nativeDigits(30, languageId), nativeDigits(100, languageId)], correctAnswer: nativeDigits(20, languageId), xp: 15 },
-        { type: 'fill-blank', prompt: `Complete the sequence: ${nativeDigits(8, languageId)}, ${nativeDigits(9, languageId)}, ___, ${nativeDigits(11, languageId)}`, options: [nativeDigits(10, languageId), nativeDigits(12, languageId), nativeDigits(20, languageId), nativeDigits(100, languageId)], correctAnswer: nativeDigits(10, languageId), xp: 15 },
-        { type: 'matching', prompt: 'Match number words and values', pairs: [1, 5, 10, 20, 100].map((value) => ({ word: milestoneWord(value, languageId), meaning: String(value) })), xp: 20 },
+        {
+          type: 'multiple-choice',
+          prompt: `What is "${milestoneWord(10, languageId)}" in English?`,
+          options: [milestoneWord(10, 'en'), milestoneWord(1, 'en'), milestoneWord(20, 'en'), milestoneWord(100, 'en')],
+          correctAnswer: milestoneWord(10, 'en'),
+          xp: 10,
+        },
+        {
+          type: 'listening',
+          prompt: 'Listen and select the correct number word',
+          audioText: milestoneWord(20, languageId),
+          options: [milestoneWord(10, languageId), milestoneWord(20, languageId), milestoneWord(30, languageId), milestoneWord(100, languageId)],
+          correctAnswer: milestoneWord(20, languageId),
+          xp: 15,
+        },
+        {
+          type: 'fill-blank',
+          prompt: `Complete the sequence: ${milestoneWord(1, languageId)}, ${milestoneWord(2, languageId)}, ___, ${milestoneWord(4, languageId)}`,
+          options: [milestoneWord(3, languageId), milestoneWord(5, languageId), milestoneWord(6, languageId), milestoneWord(7, languageId)],
+          correctAnswer: milestoneWord(3, languageId),
+          xp: 15,
+        },
+        {
+          type: 'matching',
+          prompt: 'Match number words with their English names',
+          pairs: [1, 5, 10, 20].map((value) => ({ word: milestoneWord(value, languageId), meaning: milestoneWord(value, 'en') })),
+          xp: 20,
+        },
       ],
     },
   ]

@@ -119,9 +119,9 @@ export const englishLessons = [
     exercises: [
       {
         type: 'multiple-choice',
-        prompt: 'What is the number "Five"?',
-        options: ['5', '2', '3', '10'],
-        correctAnswer: '5',
+        prompt: 'Which word represents the number after Four?',
+        options: ['Five', 'Two', 'Three', 'Ten'],
+        correctAnswer: 'Five',
         xp: 10,
       },
       {
@@ -133,12 +133,12 @@ export const englishLessons = [
       },
       {
         type: 'matching',
-        prompt: 'Match words with digits',
+        prompt: 'Match English number words with Hindi equivalents',
         pairs: [
-          { word: 'One', meaning: '1' },
-          { word: 'Two', meaning: '2' },
-          { word: 'Three', meaning: '3' },
-          { word: 'Ten', meaning: '10' },
+          { word: 'One', meaning: 'एक' },
+          { word: 'Two', meaning: 'दो' },
+          { word: 'Three', meaning: 'तीन' },
+          { word: 'Ten', meaning: 'दस' },
         ],
         xp: 20,
       },

@@ -1,0 +1,15 @@
+const res = await fetch('https://bharat-lingo.vercel.app')
+const html = await res.text()
+console.log('Status:', res.status)
+console.log('Title:', html.match(/<title>(.*?)<\/title>/i)?.[1])
+console.log('Has root div:', html.includes('id="root"'))
+console.log('Scripts:', html.match(/src=".*?"/g))
+console.log('Links:', html.match(/href=".*?"/g))
+
+const apiRes = await fetch('https://bharat-lingo.vercel.app/api/tts?text=test&lang=hi')
+console.log('API /api/tts status:', apiRes.status)
+
+const pushRes = await fetch('https://bharat-lingo.vercel.app/api/push')
+console.log('API /api/push status:', pushRes.status)
+const pushJson = await pushRes.json().catch(() => ({}))
+console.log('API /api/push body:', pushJson)

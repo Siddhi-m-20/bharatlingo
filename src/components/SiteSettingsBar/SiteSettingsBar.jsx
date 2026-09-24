@@ -13,7 +13,7 @@ const THEMES = [
   { id: 'emerald', name: 'Emerald Theme', icon: Leaf, color: '#059669', bg: '#ECFDF5' },
 ]
 
-export default function SiteSettingsBar() {
+export default function SiteSettingsBar({ inline = false }) {
   const { theme, setTheme, siteLanguage, setSiteLanguage, t } = useTheme()
   const { user, updateUser } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
@@ -30,28 +30,34 @@ export default function SiteSettingsBar() {
   }, [])
 
   return (
-    <div className="fixed bottom-5 right-5 z-40" ref={menuRef}>
-      {/* Floating Trigger Button */}
+    <div className={inline ? 'relative' : 'fixed bottom-5 right-5 z-40'} ref={menuRef}>
+      {/* Trigger Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        className="flex items-center gap-2 px-3.5 py-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-[#E8E6E0] dark:border-slate-700 shadow-xl rounded-full text-xs font-black text-[#25231F] dark:text-white transition-all hover:shadow-2xl"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={
+          inline
+            ? 'flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-all shadow-xs cursor-pointer'
+            : 'flex items-center gap-2 px-3.5 py-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-[#E8E6E0] dark:border-slate-700 shadow-xl rounded-full text-xs font-black text-[#25231F] dark:text-white transition-all hover:shadow-2xl'
+        }
         title="Theme & Site Language Options"
       >
-        <Palette size={16} className="text-[#0B8F62] dark:text-[#34D399]" />
-        <Globe size={16} className="text-[#3B82F6]" />
-        <span className="hidden sm:inline">Theme & Language</span>
+        <Palette size={15} className="text-[#0B8F62] dark:text-[#34D399]" />
+        <Globe size={15} className="text-[#3B82F6]" />
+        <span>Theme & Language</span>
       </motion.button>
 
-      {/* Floating Settings Popover */}
+      {/* Settings Popover */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 15 }}
+            initial={{ opacity: 0, scale: 0.9, y: inline ? -10 : 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 15 }}
-            className="absolute bottom-14 right-0 w-80 bg-white dark:bg-slate-900 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-3xl shadow-2xl p-5 z-50 overflow-hidden"
+            exit={{ opacity: 0, scale: 0.9, y: inline ? -10 : 15 }}
+            className={`absolute w-80 bg-white dark:bg-slate-900 border-2 border-[#E8E6E0] dark:border-slate-800 rounded-3xl shadow-2xl p-5 z-50 overflow-hidden ${
+              inline ? 'top-12 right-0' : 'bottom-14 right-0'
+            }`}
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E8E6E0] dark:border-slate-800">

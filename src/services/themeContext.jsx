@@ -204,6 +204,106 @@ export const uiTranslations = {
     pa: '✗ ਗ਼ਲਤ ਹੈ',
     gu: '✗ ખોટું છે',
   },
+  cant_speak_now: {
+    en: "Can't speak now",
+    hi: 'अभी बोल नहीं सकते',
+    mr: 'आत्ता बोलू शकत नाही',
+    ta: 'இப்போது பேச முடியாது',
+    te: 'ఇప్పుడు మాట్లాడలేను',
+    bn: 'এখন বলতে পারছি না',
+    pa: 'ਹੁਣ ਨਹੀਂ ਬੋਲ ਸਕਦੇ',
+    gu: 'અત્યારે બોલી શકતા નથી',
+  },
+  skip: {
+    en: 'Skip',
+    hi: 'छोड़ें',
+    mr: 'वगळा',
+    ta: 'தவிர்',
+    te: 'దాటవేయి',
+    bn: 'এড়িয়ে যান',
+    pa: 'ਛੱਡੋ',
+    gu: 'છોડો',
+  },
+  check_pronunciation: {
+    en: 'Check Pronunciation →',
+    hi: 'उच्चारण जांचें →',
+    mr: 'उच्चार तपासा →',
+    ta: 'உச்சரிப்பைச் சரிபார்க்கவும் →',
+    te: 'ఉచ్ఛారణను తనిఖీ చేయండి →',
+    bn: 'উচ্চারণ পরীক্ষা করুন →',
+    pa: 'ਉਚਾਰਨ ਚੈੱਕ ਕਰੋ →',
+    gu: 'ઉચ્ચાર ચકાસો →',
+  },
+  continue_without_speaking: {
+    en: 'Continue without speaking',
+    hi: 'बिना बोले आगे बढ़ें',
+    mr: 'न बोलता पुढे जा',
+    ta: 'பேசாமல் தொடரவும்',
+    te: 'మాట్లాడకుండా కొనసాగించండి',
+    bn: 'না বলে এগিয়ে যান',
+    pa: 'ਬਿਨਾਂ ਬੋਲੇ ਜਾਰੀ ਰੱਖੋ',
+    gu: 'બોલ્યા વગર આગળ વધો',
+  },
+  no_xp_skipped_speaking: {
+    en: 'No XP earned for this skipped speaking exercise.',
+    hi: 'इस छोड़े गए बोलने के अभ्यास के लिए कोई XP नहीं मिला।',
+    mr: 'या वगळलेल्या बोलण्याच्या सरावासाठी कोणतेही XP मिळाले नाही.',
+    ta: 'இந்தத் தவிர்க்கப்பட்ட பேச்சுப் பயிற்சிக்கு XP எதுவும் கிடைக்கவில்லை.',
+    te: 'ఈ దాటవేసిన మాట్లాడే సాధనకు XP లభించదు.',
+    bn: 'এই এড়িয়ে যাওয়া বলার অনুশীলনের জন্য কোনো XP অর্জিত হয়নি।',
+    pa: 'ਇਸ ਛੱਡੇ ਗਏ ਬੋਲਣ ਦੇ ਅਭਿਆਸ ਲਈ ਕੋਈ XP ਨਹੀਂ ਮਿਲਿਆ।',
+    gu: 'આ છોડેલા બોલવાના અભ્યાસ માટે કોઈ XP મળ્યું નથી.',
+  },
+  tap_to_speak: {
+    en: 'Tap to speak',
+    hi: 'बोलने के लिए टैप करें',
+    mr: 'बोलण्यासाठी टॅप करा',
+    ta: 'பேச தட்டவும்',
+    te: 'మాట్లాడటానికి ట్యాప్ చేయండి',
+    bn: 'বলতে ট্যাপ করুন',
+    pa: 'ਬੋਲਣ ਲਈ ਟੈਪ ਕਰੋ',
+    gu: 'બોલવા માટે ટેપ કરો',
+  },
+  checking: {
+    en: 'Checking...',
+    hi: 'जांच की जा रही है...',
+    mr: 'तपासत आहे...',
+    ta: 'சரிபார்க்கிறது...',
+    te: 'తనిఖీ చేస్తోంది...',
+    bn: 'পরীক্ষা করা হচ্ছে...',
+    pa: 'ਚੈੱਕ ਕਰ ਰਿਹਾ ਹੈ...',
+    gu: 'ચકાસી રહ્યા છીએ...',
+  },
+  try_again: {
+    en: 'Try again',
+    hi: 'पुनः प्रयास करें',
+    mr: 'पुन्हा प्रयत्न करा',
+    ta: 'மீண்டும் முயற்சிக்கவும்',
+    te: 'మీరు మళ్లీ ప్రయత్నించండి',
+    bn: 'আবার চেষ্টা করুন',
+    pa: 'ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ',
+    gu: 'ફરી પ્રયાસ કરો',
+  },
+  allow_microphone: {
+    en: 'Allow microphone...',
+    hi: 'माइक्रोफ़ोन की अनुमति दें...',
+    mr: 'मायक्रोफोनला अनुमती द्या...',
+    ta: 'மைக்ரோஃபோனை அனுமதிக்கவும்...',
+    te: 'మైక్రోఫోన్‌ను అనుమతించండి...',
+    bn: 'মাইক্রোফোনের অনুমতি দিন...',
+    pa: 'ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ...',
+    gu: 'માઇક્રોફોનને મંજૂરી આપો...',
+  },
+  recording_captured: {
+    en: 'Recording captured',
+    hi: 'रिकॉर्डिंग रिकॉर्ड हो गई',
+    mr: 'रेकॉर्डिंग कॅप्चर झाली',
+    ta: 'பதிவு செய்யப்பட்டது',
+    te: 'రికార్డింగ్ పూర్తయింది',
+    bn: 'রেকর্ডিং সংগৃহীত হয়েছে',
+    pa: 'ਰਿਕਾਰਡਿੰਗ ਹੋ ਗਈ',
+    gu: 'રેકોર્ડિંગ કેપ્ચર થયું',
+  },
   writing_practice: {
     en: 'Writing Practice',
     hi: 'लेखन अभ्यास',
@@ -806,11 +906,14 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem('bharatlingo_theme', theme)
+      // Apply Tailwind dark class for dark-mode utilities
       if (theme === 'dark') {
         document.documentElement.classList.add('dark')
       } else {
         document.documentElement.classList.remove('dark')
       }
+      // Apply data-theme attribute so CSS variable themes (saffron, emerald, dark) work
+      document.documentElement.setAttribute('data-theme', theme)
     } catch (e) {
       console.error(e)
     }
@@ -824,8 +927,9 @@ export function ThemeProvider({ children }) {
     }
   }, [siteLanguage])
 
+  const VALID_THEMES = ['light', 'dark', 'saffron', 'emerald']
   const setTheme = (newTheme) => {
-    if (newTheme === 'dark' || newTheme === 'light') {
+    if (VALID_THEMES.includes(newTheme)) {
       setThemeState(newTheme)
     }
   }

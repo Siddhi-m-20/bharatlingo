@@ -19,63 +19,19 @@
  *  11. challenge (advanced composite translation or syntax construction)
  */
 
-import { getPromptText } from '../data/translations.js'
+import {
+  getPromptText,
+  digitToLanguageWord,
+  sanitizeLanguageOptions,
+  NUMBER_WORDS_MAP,
+} from '../data/translations.js'
 import { getLanguageById } from '../data/languages.js'
 import { rawLessonsByLanguage, translateMeaning } from '../data/lessons/index.js'
 import { alphabetDataByLanguage } from '../data/alphabets.js'
 
-
-// ── Visual Emojis Dictionary for Picture Choice ──────────────────────────────
-const VISUAL_EMOJIS = {
-  water: '💧', pani: '💧', neer: '💧', jalam: '💧', tholi: '💧', jal: '💧',
-  tea: '☕', chai: '☕', theneer: '☕', cha: '☕', chaha: '☕',
-  apple: '🍎', seb: '🍎', aappil: '🍎', sebu: '🍎',
-  mango: '🥭', aam: '🥭', maangaai: '🥭', maamidipandu: '🥭', amba: '🥭', keri: '🥭',
-  food: '🍲', khana: '🍲', saappaadu: '🍲', bhojanam: '🍲', jevan: '🍲', khaaoya: '🍲',
-  milk: '🥛', doodh: '🥛', paal: '🥛', paalu: '🥛', dudh: '🥛',
-  bread: '🍞', roti: '🍞', appam: '🍞', chapati: '🍞',
-  rice: '🍚', chawal: '🍚', saatham: '🍚', annam: '🍚', bhaat: '🍚', bhat: '🍚',
-  house: '🏠', home: '🏠', ghar: '🏠', veedu: '🏠', illu: '🏠', baadi: '🏠',
-  book: '📖', kitab: '📖', pusthakam: '📖', boi: '📖', pustak: '📖',
-  car: '🚗', gaadi: '🚗', vaaganam: '🚗', vandi: '🚗', gadi: '🚗',
-  sun: '☀️', suraj: '☀️', sooriyan: '☀️', sooryudu: '☀️', surya: '☀️',
-  moon: '🌙', chand: '🌙', nilavu: '🌙', chandrudu: '🌙', chandra: '🌙',
-  flower: '🪷', lotus: '🪷', phool: '🪷', poo: '🪷', puvvu: '🪷', phul: '🪷',
-  tree: '🌳', ped: '🌳', maram: '🌳', chettu: '🌳', gaach: '🌳', jhaad: '🌳',
-  elephant: '🐘', haathi: '🐘', yaanai: '🐘', eenugu: '🐘', haati: '🐘', hathi: '🐘',
-  peacock: '🦚', mor: '🦚', mayil: '🦚', nemali: '🦚', mayur: '🦚',
-  tiger: '🐅', baagh: '🐅', puli: '🐅', peddapuli: '🐅', bagh: '🐅',
-  dog: '🐶', kutta: '🐶', naai: '🐶', kukka: '🐶', kukur: '🐶', kutra: '🐶',
-  cat: '🐱', billi: '🐱', poonai: '🐱', pilli: '🐱', beral: '🐱', manjar: '🐱',
-  bird: '🐦', pakshi: '🐦', paravai: '🐦', pitta: '🐦', pakhi: '🐦',
-  money: '💰', paisa: '💰', panam: '💰', dabbulu: '💰', taka: '💰', paise: '💰',
-  hello: '🙏', namaste: '🙏', vanakkam: '🙏', namaskaram: '🙏', nomoshkar: '🙏',
-  school: '🏫', vidyalaya: '🏫', pallikkoodam: '🏫', shala: '🏫',
-  friend: '🤝', dost: '🤝', nanban: '🤝', snehithudu: '🤝', bondhu: '🤝', mitra: '🤝',
-  yes: '✅', haan: '✅', aam: '✅', avunu: '✅', hoy: '✅',
-  no: '❌', nahi: '❌', illai: '❌', kaadhu: '❌', na: '❌',
-}
-
-export function getVisualEmoji(vocabItem) {
-  if (!vocabItem) return '✨'
-  const keys = [
-    vocabItem.translation?.toLowerCase(),
-    vocabItem.word?.toLowerCase(),
-    vocabItem.roman?.toLowerCase(),
-    vocabItem.pronunciation?.toLowerCase(),
-  ].filter(Boolean)
-
-  for (const k of keys) {
-    for (const [key, emoji] of Object.entries(VISUAL_EMOJIS)) {
-      if (k.includes(key) || key.includes(k)) {
-        return emoji
-      }
-    }
-  }
-
-  const fallbackEmojis = ['🌟', '💎', '📚', '🎯', '🌿', '🎨', '🪷', '🛺', '☀️', '🌸']
-  const hash = Math.abs((vocabItem.word || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0))
-  return fallbackEmojis[hash % fallbackEmojis.length]
+// Safe helper for legacy references (emojis removed per user requirement)
+export function getVisualEmoji() {
+  return ''
 }
 
 // ── Array Utility Functions ───────────────────────────────────────────────────
@@ -92,70 +48,62 @@ export function pickRandom(arr, n = 1) {
   return shuffle(arr).slice(0, n)
 }
 
-function buildDistractors(correctAnswer, vocabPool, key = 'translation', count = 3) {
+function buildDistractors(correctAnswer, vocabPool, key = 'translation', count = 3, langId = 'en') {
+  const cleanCorrect = digitToLanguageWord(correctAnswer, langId)
+  const isInvalidCandidate = (val) => {
+    if (!val) return true
+    const s = String(val).trim()
+    if (!s) return true
+    if (/^\d+$/.test(s)) return true
+    if (/^[\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0BE6-\u0BEF\u0C66-\u0C6F]+$/.test(s)) return true
+    if (/\d+\s*[-—–]\s*\d+/.test(s)) return true
+    if (/^[\d\s\-—–]+$/.test(s)) return true
+    return false
+  }
+
+  // Check if correctAnswer is a number word
+  const isCorrectNum = Object.values(NUMBER_WORDS_MAP).some(
+    (entry) => Object.values(entry).some((w) => String(w).toLowerCase() === String(cleanCorrect).toLowerCase())
+  )
+
   const candidates = vocabPool
-    .filter((v) => v[key] && String(v[key]).trim().toLowerCase() !== String(correctAnswer).trim().toLowerCase())
-    .map((v) => v[key])
+    .filter((v) => v[key])
+    .map((v) => digitToLanguageWord(v[key], langId))
+    .filter((val) => {
+      if (isInvalidCandidate(val)) return false
+      if (String(val).trim().toLowerCase() === String(cleanCorrect).trim().toLowerCase()) return false
+      // If not a number question, prevent number words from diluting general vocabulary
+      if (!isCorrectNum) {
+        const isCandidateNum = Object.values(NUMBER_WORDS_MAP).some(
+          (entry) => Object.values(entry).some((w) => String(w).toLowerCase() === String(val).toLowerCase())
+        )
+        if (isCandidateNum) return false
+      }
+      return true
+    })
+
   const unique = [...new Set(candidates)]
   const picked = pickRandom(unique, count)
 
-  // Fallback distractors if pool has fewer than 3 alternatives
-  if (picked.length < count) {
-    const genericFallbacks = key === 'translation'
-      ? ['Hello', 'Thank you', 'Water', 'Friend', 'Good morning', 'House', 'Book', 'Yes']
-      : vocabPool.map((v) => v[key] || v.word || v.translation).filter(Boolean)
-    for (const fb of genericFallbacks) {
-      if (picked.length >= count) break
-      if (String(fb).toLowerCase() !== String(correctAnswer).toLowerCase() && !picked.includes(fb)) {
-        picked.push(fb)
-      }
-    }
-  }
-
-  return shuffle([...picked, correctAnswer])
+  return sanitizeLanguageOptions(picked, cleanCorrect, langId, count + 1)
 }
 
 
 // ── Exercise Generators (Combinatorial Templates) ────────────────────────────
 
 /**
- * 1. Picture Choice / Visual Match
+ * 1. Picture Choice Replacement: Clean Authentic Language Vocabulary MCQ
+ * Images and emojis removed per user requirement to avoid broken/blank cards and render confusion.
  */
 export function createPictureChoiceExercise(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
-  const distractors = pickRandom(vocabPool.filter((v) => v.word !== item.word), 3)
-  const cardOptions = shuffle([item, ...distractors]).map((opt) => ({
-    text: opt.word,
-    word: opt.word,
-    meaning: opt.translation,
-    translation: opt.translation,
-    roman: opt.pronunciation || opt.roman || '',
-    emoji: getVisualEmoji(opt),
-  }))
-
-  return {
-    id: `ex_pic_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-    type: 'picture_choice',
-    prompt: `Select the correct image for "${item.translation}"`,
-    questionText: `Select the correct image for "${item.translation}"`,
-    targetWord: item.word,
-    word: item.word,
-    translation: item.translation,
-    roman: item.pronunciation || item.roman || '',
-    audioText: item.word,
-    options: cardOptions,
-    correctAnswer: item.word,
-    xp: 15,
-    category: 'visual_recognition',
-    skill: 'vocabulary',
-    difficulty: 1,
-  }
+  return createWordToMeaningMCQ(item, vocabPool, langId, preferredLang, targetLangName)
 }
 
 /**
  * 2. Multiple Choice (Target Word -> Translation)
  */
 export function createWordToMeaningMCQ(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
-  const options = buildDistractors(item.translation, vocabPool, 'translation', 3)
+  const options = buildDistractors(item.translation, vocabPool, 'translation', 3, preferredLang)
   return {
     id: `ex_mcq_wm_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'multiple-choice',
@@ -177,7 +125,7 @@ export function createWordToMeaningMCQ(item, vocabPool, langId, preferredLang = 
  * 3. Multiple Choice (Translation -> Target Script)
  */
 export function createMeaningToWordMCQ(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
-  const options = buildDistractors(item.word, vocabPool, 'word', 3)
+  const options = buildDistractors(item.word, vocabPool, 'word', 3, langId)
   return {
     id: `ex_mcq_mw_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'multiple-choice',
@@ -199,7 +147,7 @@ export function createMeaningToWordMCQ(item, vocabPool, langId, preferredLang = 
  * 4. Listening Exercise (Hear audio -> Pick matching word)
  */
 export function createListeningExercise(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
-  const options = buildDistractors(item.word, vocabPool, 'word', 3)
+  const options = buildDistractors(item.word, vocabPool, 'word', 3, langId)
   return {
     id: `ex_listen_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'listening',
@@ -401,7 +349,15 @@ export function generateAssessmentSuite(languageId, preferredLangId = 'en', opti
   const seenWords = new Set()
   for (const lesson of lessons) {
     for (const v of lesson.vocabulary || []) {
-      if (v.word && !seenWords.has(v.word)) {
+      if (!v.word || !v.translation) continue
+      const wordStr = String(v.word).trim()
+      const transStr = String(v.translation).trim()
+      // Exclude bare digits, synthetic number strings (e.g. 99 — 99)
+      if (/^\d+$/.test(wordStr) || /^\d+$/.test(transStr)) continue
+      if (/\d+\s*[-—–]\s*\d+/.test(transStr) || /\d+\s*[-—–]\s*\d+/.test(wordStr)) continue
+      if (/^[\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0BE6-\u0BEF\u0C66-\u0C6F]+$/.test(wordStr)) continue
+
+      if (!seenWords.has(v.word)) {
         seenWords.add(v.word)
         vocabPool.push(v)
       }
@@ -432,9 +388,28 @@ export function generateAssessmentSuite(languageId, preferredLangId = 'en', opti
       const fallbackItem = vocabPool[questions.length % vocabPool.length] || defaultLangVocab
       q = createWordToMeaningMCQ(fallbackItem, vocabPool, langId, preferredLangId, targetLangName)
     }
+
+    let cleanPrompt = q.prompt || ''
+    if (/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i.test(cleanPrompt)) {
+      const match = cleanPrompt.match(/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i)
+      const target = match ? match[3] : ''
+      cleanPrompt = `What is "${target}" in ${targetLangName || 'target language'}?`
+    }
+
+    const isTargetOptions = q.type === 'listening' || q.type === 'fill-blank' || (q.word && q.correctAnswer === q.word)
+    const optionLang = isTargetOptions ? langId : preferredLangId
+    const cleanCorrect = digitToLanguageWord(q.correctAnswer, optionLang)
+    const cleanOptions = Array.isArray(q.options) && q.options.length > 0
+      ? sanitizeLanguageOptions(q.options, cleanCorrect, optionLang)
+      : q.options
+
     return {
       ...q,
       ...meta,
+      type: (q.type === 'picture_choice' || q.type === 'picture-choice') ? 'multiple-choice' : q.type,
+      prompt: cleanPrompt,
+      options: cleanOptions,
+      correctAnswer: cleanCorrect,
       languageId: langId,
       preferredLanguage: preferredLangId,
     }
@@ -442,17 +417,17 @@ export function generateAssessmentSuite(languageId, preferredLangId = 'en', opti
 
   // ══════════════════════════════════════════════════════════════════════════════
   // TIER 1: BEGINNER (Questions 1–5 | Difficulty 1 | XP: 10)
-  // Skills: Visual recognition, high-frequency word meaning, script identification,
+  // Skills: Core vocabulary, high-frequency word meaning, script identification,
   //         basic listening, essential greetings.
   // ══════════════════════════════════════════════════════════════════════════════
 
-  // Q1: Visual / Picture Choice Recognition
+  // Q1: Core Vocabulary Recognition (Word Meaning MCQ)
   const q1Item = vocabPool[0] || defaultLangVocab
   questions.push(
-    wrap(createPictureChoiceExercise(q1Item, vocabPool, langId, preferredLangId, targetLangName), {
+    wrap(createWordToMeaningMCQ(q1Item, vocabPool, langId, preferredLangId, targetLangName), {
       tier: 'beginner',
       difficulty: 1,
-      skill: 'visual_recognition',
+      skill: 'vocabulary',
       stage: 1,
       stageTitle: 'Stage 1: Fundamentals',
       xp: 10,

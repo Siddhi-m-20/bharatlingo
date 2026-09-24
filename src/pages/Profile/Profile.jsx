@@ -6,6 +6,7 @@ import { fetchLearningAnalytics } from '../../services/dbService'
 import { getSkillProficiencies } from '../../services/learnerModel'
 import { achievements } from '../../data/achievements'
 import { languages, getLanguageById } from '../../data/languages'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
@@ -25,7 +26,19 @@ import {
   Clock,
   Globe,
   Smile,
+  Bell,
+  BellRing,
+  BellOff,
+  BarChart3,
+  RefreshCw,
 } from 'lucide-react'
+import {
+  isPushSupported,
+  getNotificationPermission,
+  subscribeToPush,
+  unsubscribeFromPush,
+  sendPushNotificationTest,
+} from '../../services/notificationService.js'
 
 const AGE_LABELS = {
   child: 'Under 13',
@@ -69,6 +82,10 @@ export default function Profile() {
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [analytics, setAnalytics] = useState({ activity: [], lessonAttempts: [], longestStreak: 0 })
 
+  const [notificationState, setNotificationState] = useState(() => getNotificationPermission())
+  const [notificationMsg, setNotificationMsg] = useState(null)
+  const [isUpdatingNotif, setIsUpdatingNotif] = useState(false)
+
   // Edit Form State
   const [name, setName] = useState(user?.name || '')
   const [bio, setBio] = useState(user?.bio || '')
@@ -96,15 +113,18 @@ export default function Profile() {
         overall: Number(persistedLearnerStats.overallAccuracy) || 0,
       }
     : fallbackSkills
-  const activitySummary = analytics.activity.reduce((result, item) => ({
+  const activityList = Array.isArray(analytics?.activity) ? analytics.activity : []
+  const lessonAttemptsList = Array.isArray(analytics?.lessonAttempts) ? analytics.lessonAttempts : []
+
+  const activitySummary = activityList.reduce((result, item) => ({
     exercises: result.exercises + (Number(item.exercises_completed) || 0),
     xp: result.xp + (Number(item.xp_earned) || 0),
     seconds: result.seconds + (Number(item.session_duration_seconds) || 0),
   }), { exercises: 0, xp: 0, seconds: 0 })
-  const activityDatesWithDuration = new Set(analytics.activity
+  const activityDatesWithDuration = new Set(activityList
     .filter((item) => Number(item.session_duration_seconds) > 0)
     .map((item) => item.activity_date))
-  activitySummary.seconds += analytics.lessonAttempts.reduce((total, attempt) => {
+  activitySummary.seconds += lessonAttemptsList.reduce((total, attempt) => {
     const dateKey = attempt.completed_at?.slice(0, 10)
     return total + (dateKey && !activityDatesWithDuration.has(dateKey) ? Number(attempt.duration_seconds) || 0 : 0)
   }, 0)
@@ -168,13 +188,46 @@ export default function Profile() {
     navigate('/')
   }
 
+  const handleToggleNotifications = async () => {
+    setIsUpdatingNotif(true)
+    setNotificationMsg(null)
+    if (notificationState === 'granted') {
+      const res = await unsubscribeFromPush(user)
+      if (res.success) {
+        setNotificationState('default')
+        setNotificationMsg('Streak reminders turned off.')
+      }
+    } else {
+      const res = await subscribeToPush(user)
+      if (res.success) {
+        setNotificationState('granted')
+        setNotificationMsg(res.message || 'Streak reminders enabled!')
+      } else {
+        setNotificationState(getNotificationPermission())
+        setNotificationMsg(res.message || 'Could not enable notifications.')
+      }
+    }
+    setIsUpdatingNotif(false)
+  }
+
+  const handleSendTestAlert = async () => {
+    const res = await sendPushNotificationTest(user, {
+      title: `${activeCourse?.name || 'BharatLingo'} Streak Safe! 🔥`,
+      body: `Keep up the great work learning ${activeCourse?.name || 'languages'}!`,
+    })
+    setNotificationMsg(res.message)
+  }
+
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6">
       {/* 1. LEFT SIDEBAR */}
       <AppSidebar />
 
       {/* 2. CENTER PROFILE CONTENT */}
-      <main className="flex-1 max-w-[640px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-5xl mx-auto flex-1">
         {/* Success Alert Banner */}
         <AnimatePresence>
           {savedSuccess && (
@@ -583,16 +636,89 @@ export default function Profile() {
           )}
         </div>
 
+        {/* Daily Streak Reminders & Notification Control */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-sm">
+                {notificationState === 'granted' ? <BellRing size={20} /> : <Bell size={20} />}
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-[#25231F] dark:text-white">
+                  Daily Streak Reminders
+                </h3>
+                <p className="text-[11px] text-[#77736B] dark:text-slate-400">
+                  {isPushSupported() ? 'Gentle push alerts so you never lose momentum.' : 'Push alerts supported in modern browsers.'}
+                </p>
+              </div>
+            </div>
+
+            <span
+              className={`text-[10px] font-black px-2.5 py-1 rounded-full shrink-0 border ${
+                notificationState === 'granted'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                  : notificationState === 'denied'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+              }`}
+            >
+              {notificationState === 'granted' ? '✓ Active' : notificationState === 'denied' ? 'Blocked' : 'Off'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              type="button"
+              disabled={isUpdatingNotif || !isPushSupported()}
+              onClick={handleToggleNotifications}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                notificationState === 'granted'
+                  ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
+                  : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-sm shadow-[#0B8F62]/20'
+              }`}
+            >
+              {isUpdatingNotif ? (
+                <RefreshCw size={14} className="animate-spin" />
+              ) : notificationState === 'granted' ? (
+                <>
+                  <BellOff size={14} />
+                  <span>Turn Off Reminders</span>
+                </>
+              ) : (
+                <>
+                  <BellRing size={14} />
+                  <span>Enable Reminders</span>
+                </>
+              )}
+            </button>
+
+            {notificationState === 'granted' && (
+              <button
+                type="button"
+                onClick={handleSendTestAlert}
+                className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                title="Send a sample reminder to test your device"
+              >
+                <span>Test Alert</span>
+              </button>
+            )}
+          </div>
+
+          {notificationMsg && (
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+              {notificationMsg}
+            </p>
+          )}
+        </div>
+
         {/* Log Out Action */}
         <div className="pt-2">
           <Button variant="danger" className="w-full font-bold" onClick={handleLogout}>
             Log Out Account
           </Button>
         </div>
+        </div>
       </main>
-
-      {/* 3. RIGHT SIDEBAR */}
-      <RightSidebar />
     </div>
   )
 }

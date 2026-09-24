@@ -14,8 +14,8 @@ import ListeningExercise from '../../components/ListeningExercise/ListeningExerc
 import SpeakingExercise from '../../components/SpeakingExercise/SpeakingExercise'
 import SentenceOrderExercise from '../../components/SentenceOrderExercise/SentenceOrderExercise'
 import MatchingExercise from '../../components/MatchingExercise/MatchingExercise'
-import PictureChoiceExercise from '../../components/PictureChoiceExercise/PictureChoiceExercise'
 import AudioButton from '../../components/AudioButton'
+import { digitToLanguageWord, sanitizeLanguageOptions } from '../../data/translations.js'
 
 // ── Personalized Plan Screen ─────────────────────────────────────────────────
 function PersonalizedPlanScreen({ plan, user, onContinue }) {
@@ -171,8 +171,32 @@ export default function Assessment() {
           goal: user.goal || 'conversation',
           count: 15,
         })
+        const langObj = getLanguageById(user.learningLanguage)
+        const targetLangName = langObj?.name || 'target language'
+        const normalized = (qs || []).map((q) => {
+          let prompt = q.prompt || ''
+          if (/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i.test(prompt)) {
+            const match = prompt.match(/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i)
+            const target = match ? match[3] : ''
+            prompt = `What is "${target}" in ${targetLangName}?`
+          }
+          const isTarget = q.type === 'listening' || q.type === 'fill-blank' || (q.word && q.correctAnswer === q.word)
+          const optLang = isTarget ? user.learningLanguage : (user?.preferredLanguage || 'en')
+          const cleanAns = digitToLanguageWord(q.correctAnswer, optLang)
+          const rawOpts = (q.options && q.options.length > 0)
+            ? q.options.map((opt) => (typeof opt === 'string' ? opt : opt?.word || opt?.text || opt?.label || ''))
+            : []
+          const cleanOpts = sanitizeLanguageOptions(rawOpts, cleanAns, optLang)
+          return {
+            ...q,
+            type: (q.type === 'picture_choice' || q.type === 'picture-choice') ? 'multiple-choice' : q.type,
+            prompt,
+            correctAnswer: cleanAns,
+            options: cleanOpts,
+          }
+        })
         if (!cancelled) {
-          setQuestions(qs)
+          setQuestions(normalized)
           assessmentStartTimeRef.current = Date.now()
           setLoading(false)
         }
@@ -188,12 +212,25 @@ export default function Assessment() {
     return () => { cancelled = true }
   }, [user?.learningLanguage, user?.ageRange, user?.goal, user?.hasCompletedAssessment, user?.assessmentScore, user?.completedLessons, navigate])
 
-  const handleAnswer = useCallback((answer) => {
+  const handleAnswer = useCallback((answer, { skipped = false } = {}) => {
     if (showResult || !questions[currentQuestion]) return
     setSelectedAnswer(answer)
     const q = questions[currentQuestion]
-    const isCorrect = answer.trim().toLowerCase() === (q.correctAnswer || '').trim().toLowerCase()
-    setAnswers((prev) => [...prev, { question: currentQuestion, answer, isCorrect }])
+    const langCode = user?.learningLanguage || 'hi'
+    const prefCode = user?.preferredLanguage || 'en'
+    const isTargetOptions = q.type === 'fill-blank' || (q.word && q.correctAnswer === q.word)
+    const optionLang = isTargetOptions ? langCode : prefCode
+    const cleanCorrect = digitToLanguageWord(q.correctAnswer, optionLang)
+
+    const isMatching = q.type === 'matching' || answer === 'matched_all'
+    const isSpeaking = q.type === 'speaking'
+    const isCorrect = skipped ? false : (
+      isMatching ||
+      isSpeaking ||
+      (answer || '').trim().toLowerCase() === (q.correctAnswer || '').trim().toLowerCase() ||
+      (answer || '').trim().toLowerCase() === (cleanCorrect || '').trim().toLowerCase()
+    )
+    setAnswers((prev) => [...prev, { question: currentQuestion, answer, isCorrect, skipped }])
     setShowResult(true)
     if (isCorrect) addXP(q.xp || 10)
 
@@ -201,7 +238,7 @@ export default function Assessment() {
       const learnerStats = recordExerciseAttempt(user?.learningLanguage || 'hi', q, isCorrect)
       if (user?.id && learnerStats) persistLearnerStats(user.id, learnerStats)
     } catch { }
-  }, [showResult, questions, currentQuestion, addXP, user?.learningLanguage])
+  }, [showResult, questions, currentQuestion, addXP, user?.learningLanguage, user?.preferredLanguage])
 
   const handleNext = async () => {
     if (currentQuestion < questions.length - 1) {
@@ -209,9 +246,22 @@ export default function Assessment() {
       setShowResult(false)
       setSelectedAnswer('')
     } else {
+      const q = questions[currentQuestion]
+      const langCode = user?.learningLanguage || 'hi'
+      const prefCode = user?.preferredLanguage || 'en'
+      const isTargetOptions = q?.type === 'fill-blank' || (q?.word && q?.correctAnswer === q?.word)
+      const cleanCorrect = digitToLanguageWord(q?.correctAnswer, isTargetOptions ? langCode : prefCode)
+      const isMatching = q?.type === 'matching' || selectedAnswer === 'matched_all'
+      const isSpeaking = q?.type === 'speaking'
+      const isCorrect =
+        isMatching ||
+        isSpeaking ||
+        (selectedAnswer || '').trim().toLowerCase() === (q?.correctAnswer || '').trim().toLowerCase() ||
+        (selectedAnswer || '').trim().toLowerCase() === (cleanCorrect || '').trim().toLowerCase()
+
       await completeAssessment([
         ...answers,
-        { question: currentQuestion, answer: selectedAnswer, isCorrect: selectedAnswer.trim().toLowerCase() === (questions[currentQuestion].correctAnswer || '').trim().toLowerCase() },
+        { question: currentQuestion, answer: selectedAnswer, isCorrect },
       ])
     }
   }
@@ -295,17 +345,66 @@ export default function Assessment() {
     switch (q.type) {
       case 'picture-choice':
       case 'picture_choice':
+      case 'multiple-choice':
+      case 'fill-blank': {
+        const langCode = user?.learningLanguage || 'hi'
+        const prefCode = user?.preferredLanguage || 'en'
+        const isTargetOptions = q.type === 'fill-blank' || (q.word && q.correctAnswer === q.word)
+        const optionLang = isTargetOptions ? langCode : prefCode
+        const cleanCorrect = digitToLanguageWord(q.correctAnswer, optionLang)
+        const rawOptions = (q.options && q.options.length > 0)
+          ? q.options.map((opt) => (typeof opt === 'string' ? opt : opt?.word || opt?.text || opt?.label || ''))
+          : []
+        const sanitizedOptions = sanitizeLanguageOptions(rawOptions, cleanCorrect, optionLang)
+
+        let displayPrompt = q.prompt || ''
+        if (/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i.test(displayPrompt)) {
+          const match = displayPrompt.match(/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i)
+          const target = match ? match[3] : ''
+          const targetLangObj = getLanguageById(langCode)
+          const targetLangName = targetLangObj?.name || 'target language'
+          displayPrompt = `What is "${target}" in ${targetLangName}?`
+        }
+
         return (
-          <PictureChoiceExercise
-            prompt={q.prompt}
-            options={q.options || []}
-            correctAnswer={q.correctAnswer}
-            selectedAnswer={selectedAnswer}
-            onSelectAnswer={(ans) => !showResult && handleAnswer(ans)}
-            showResult={showResult}
-            disabled={showResult}
-          />
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-[#25231F] dark:text-white mb-4">
+              {displayPrompt}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {sanitizedOptions.map((option, idx) => {
+                const isMatch = option === cleanCorrect || option === q.correctAnswer
+                return (
+                  <motion.button
+                    key={idx}
+                    type="button"
+                    className={`
+                      p-4 rounded-xl border-2 text-left transition-all
+                      ${selectedAnswer === option
+                        ? showResult
+                          ? isMatch
+                            ? 'border-[#2F9E69] bg-[#2F9E69]/10'
+                            : 'border-[#D84B42] bg-[#D84B42]/10'
+                          : 'border-[#0B8F62] bg-[#0B8F62]/10'
+                        : showResult && isMatch
+                          ? 'border-[#2F9E69] bg-[#2F9E69]/10'
+                          : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
+                      }
+                      ${showResult ? 'cursor-default' : 'cursor-pointer'}
+                    `}
+                    onClick={() => !showResult && handleAnswer(option)}
+                    disabled={showResult}
+                    whileHover={!showResult ? { scale: 1.02 } : {}}
+                    whileTap={!showResult ? { scale: 0.98 } : {}}
+                  >
+                    <span className="font-medium text-[#25231F] dark:text-white">{option}</span>
+                  </motion.button>
+                )
+              })}
+            </div>
+          </div>
         )
+      }
 
       case 'sentence-order':
       case 'sentence_order':
@@ -325,49 +424,14 @@ export default function Assessment() {
       case 'matching':
         return (
           <MatchingExercise
+            prompt={q.prompt}
             pairs={q.pairs || []}
-            onComplete={() => handleAnswer('matched_all')}
+            onSubmit={(ans) => handleAnswer(ans || 'matched_all')}
+            onComplete={(ans) => handleAnswer(ans || 'matched_all')}
             disabled={showResult}
+            showResult={showResult}
             languageId={user?.learningLanguage || 'hi'}
           />
-        )
-
-      case 'multiple-choice':
-      case 'fill-blank':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-[#25231F] dark:text-white mb-4">
-              {q.prompt}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {(q.options || []).map((option, idx) => (
-                <motion.button
-                  key={idx}
-                  type="button"
-                  className={`
-                    p-4 rounded-xl border-2 text-left transition-all
-                    ${selectedAnswer === option
-                      ? showResult
-                        ? option === q.correctAnswer
-                          ? 'border-[#2F9E69] bg-[#2F9E69]/10'
-                          : 'border-[#D84B42] bg-[#D84B42]/10'
-                        : 'border-[#0B8F62] bg-[#0B8F62]/10'
-                      : showResult && option === q.correctAnswer
-                        ? 'border-[#2F9E69] bg-[#2F9E69]/10'
-                        : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
-                    }
-                    ${showResult ? 'cursor-default' : 'cursor-pointer'}
-                  `}
-                  onClick={() => !showResult && handleAnswer(option)}
-                  disabled={showResult}
-                  whileHover={!showResult ? { scale: 1.02 } : {}}
-                  whileTap={!showResult ? { scale: 0.98 } : {}}
-                >
-                  <span className="font-medium text-[#25231F] dark:text-white">{option}</span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
         )
 
       case 'translation':
@@ -443,6 +507,7 @@ export default function Assessment() {
             languageId={user?.learningLanguage || 'hi'}
             showResult={showResult}
             onSubmit={(answer) => !showResult && handleAnswer(answer)}
+            onSkip={() => !showResult && handleAnswer('', { skipped: true })}
           />
         )
 
@@ -469,6 +534,7 @@ export default function Assessment() {
             languageId={user?.learningLanguage || 'hi'}
             showResult={showResult}
             onSubmit={(answer) => !showResult && handleAnswer(answer)}
+            onSkip={() => !showResult && handleAnswer('', { skipped: true })}
           />
         )
 
@@ -633,7 +699,7 @@ export default function Assessment() {
             )}
             {(q?.type === 'picture_choice' || q?.type === 'picture-choice') && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                🖼️ Visual Recognition
+                📖 Word Meaning
               </span>
             )}
             {(q?.type === 'multiple-choice' || q?.type === 'fill-blank') && (

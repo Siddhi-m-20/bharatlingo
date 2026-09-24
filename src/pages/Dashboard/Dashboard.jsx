@@ -31,6 +31,7 @@ import {
 import { getSM2Stats } from '../../services/spacedRepetition'
 import { useTheme } from '../../services/themeContext'
 import AppSidebar from '../../components/Navigation/AppSidebar'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import AlphabetModal from '../../components/AlphabetModal/AlphabetModal'
@@ -425,47 +426,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex pb-20 md:pb-6">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6">
       {/* 1. LEFT SIDEBAR NAVIGATION */}
       <AppSidebar />
 
-      {/* 2. CENTER CONTENT */}
-      <main className="flex-1 min-w-0 md:ml-72 px-4 sm:px-6 lg:px-8 py-5">
-        <div className="max-w-7xl mx-auto space-y-6">
+      {/* 2. CENTER CONTENT WITH TOP STICKY NAVBAR */}
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar onStreakClick={() => setShowStreakDetails(true)} />
 
-          {/* ── Header Status Capsule (< xl screens: Mobile & Tablet) ── */}
-          <div className="flex xl:hidden items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <LanguageFlag languageId={learningLang.id} size={32} />
-              <div>
-                <span className="text-xs font-black text-[#25231F] dark:text-white leading-none block">
-                  {learningLang.name}
-                </span>
-                <span className="text-[10px] text-[#77736B] dark:text-slate-400 leading-none">
-                  {preferredLang.name}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowStreakDetails(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-xs font-black cursor-pointer active:scale-95 transition-transform"
-                title="Open Streak Details"
-              >
-                <Flame size={15} fill="currentColor" />
-                <span>{persistedStreak}</span>
-              </button>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-xs font-black">
-                <Zap size={15} fill="currentColor" />
-                <span>{user?.xp || 0}</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 text-xs font-black">
-                <span>💎</span>
-                <span>{user?.gems !== undefined ? Number(user.gems) : gems}</span>
-              </div>
-            </div>
-          </div>
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-full flex-1">
 
           {/* ── Placement Plan Welcome Banner (Dismissible) ───────────────── */}
           <AnimatePresence>
@@ -506,10 +475,10 @@ export default function Dashboard() {
           </AnimatePresence>
 
           {/* ── 2-COLUMN BALANCED RESPONSIVE GRID ─────────────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-1 2xl:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
             
             {/* ── PRIMARY COLUMN: ADAPTIVE ACTIONS & PRACTICE (Left) ───────── */}
-            <div className="lg:col-span-7 xl:col-span-1 2xl:col-span-7 space-y-6">
+            <div className="lg:col-span-8 space-y-6">
 
               {/* 1. Next Lesson Hero Card */}
               <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 md:p-6 space-y-4">
@@ -835,322 +804,10 @@ export default function Dashboard() {
 
             </div>
 
-            {/* ── SECONDARY COLUMN: ANALYTICS, REMINDERS & MASTERY (Right) ─── */}
-            <div className="lg:col-span-5 xl:col-span-1 2xl:col-span-5 space-y-6">
-
-              {/* 1. PWA Streak & Practice Reminders Card */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-sm">
-                      {notificationState === 'granted' ? <BellRing size={20} /> : <Bell size={20} />}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-[#25231F] dark:text-white">
-                        {t('streak_reminders') || 'Daily Streak Reminders'}
-                      </h3>
-                      <p className="text-[11px] text-[#77736B] dark:text-slate-400">
-                        {isPushSupported() ? 'Gentle push alerts so you never lose momentum.' : 'Push alerts supported in modern browsers.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span
-                    className={`text-[10px] font-black px-2.5 py-1 rounded-full shrink-0 border ${
-                      notificationState === 'granted'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                        : notificationState === 'denied'
-                        ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
-                        : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-                    }`}
-                  >
-                    {notificationState === 'granted'
-                      ? `✓ ${t('notifications_enabled') || 'Active'}`
-                      : notificationState === 'denied'
-                      ? 'Blocked'
-                      : 'Off'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    disabled={isUpdatingNotif || !isPushSupported()}
-                    onClick={handleToggleNotifications}
-                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      notificationState === 'granted'
-                        ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
-                        : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-sm shadow-[#0B8F62]/20'
-                    }`}
-                  >
-                    {isUpdatingNotif ? (
-                      <RefreshCw size={14} className="animate-spin" />
-                    ) : notificationState === 'granted' ? (
-                      <>
-                        <BellOff size={14} />
-                        <span>{t('disable_reminders') || 'Turn Off'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <BellRing size={14} />
-                        <span>{t('enable_reminders') || 'Enable Reminders'}</span>
-                      </>
-                    )}
-                  </button>
-
-                  {notificationState === 'granted' && (
-                    <button
-                      type="button"
-                      onClick={handleSendTestAlert}
-                      className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
-                      title="Send a sample reminder to test your device"
-                    >
-                      <span>{t('send_test_reminder') || 'Test Alert'}</span>
-                    </button>
-                  )}
-                </div>
-
-                {notificationMsg && (
-                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-                    {notificationMsg}
-                  </p>
-                )}
-              </div>
-
-              {/* 2. Real Persisted Learner Metrics Overview */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E8E6E0]/70 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <LanguageFlag languageId={learningLang.id} size={28} />
-                    <div>
-                      <h3 className="font-black text-sm text-[#25231F] dark:text-white leading-tight">
-                        {learningLang.name} Progress
-                      </h3>
-                      <p className="text-[10px] text-[#77736B] dark:text-slate-400">
-                        {completedLessonsCount} completed {completedLessonsCount === 1 ? 'lesson' : 'lessons'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${diffBadge.color}`}>
-                    {diffBadge.label}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <div className="bg-[#F7F5EF] dark:bg-slate-800/70 rounded-2xl p-2.5 text-center border border-[#E8E6E0]/80 dark:border-slate-700/60">
-                    <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">Lessons</p>
-                    <p className="text-base font-black text-[#25231F] dark:text-white mt-0.5">{completedLessonsCount}</p>
-                  </div>
-                  <div className="bg-[#F7F5EF] dark:bg-slate-800/70 rounded-2xl p-2.5 text-center border border-[#E8E6E0]/80 dark:border-slate-700/60">
-                    <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">Exercises</p>
-                    <p className="text-base font-black text-[#0B8F62] dark:text-[#34D399] mt-0.5">{totalExercisesCount}</p>
-                  </div>
-                  <div className="bg-[#F7F5EF] dark:bg-slate-800/70 rounded-2xl p-2.5 text-center border border-[#E8E6E0]/80 dark:border-slate-700/60">
-                    <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">Accuracy</p>
-                    <p className="text-base font-black text-blue-600 dark:text-blue-400 mt-0.5">
-                      {hasAccuracyData ? `${realAccuracy}%` : 'New'}
-                    </p>
-                  </div>
-                  <div className="bg-[#F7F5EF] dark:bg-slate-800/70 rounded-2xl p-2.5 text-center border border-[#E8E6E0]/80 dark:border-slate-700/60">
-                    <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">In Memory</p>
-                    <p className="text-base font-black text-purple-600 dark:text-purple-400 mt-0.5">{vocabularyWordsCount}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Learning Analytics & Skill Mastery Card */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E8E6E0]/70 dark:border-slate-800 flex-wrap gap-2">
-                  <h3 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
-                    <BarChart3 size={16} className="text-[#0B8F62]" />
-                    Analytics & Mastery
-                  </h3>
-
-                  {/* Tab Switches */}
-                  <div className="flex items-center bg-[#F7F5EF] dark:bg-slate-800 p-1 rounded-xl border border-[#E8E6E0]/80 dark:border-slate-700/80 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setAnalyticsTab('activity')}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-colors cursor-pointer ${
-                        analyticsTab === 'activity'
-                          ? 'bg-[#0B8F62] text-white shadow-xs'
-                          : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
-                      }`}
-                    >
-                      Activity
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAnalyticsTab('skills')}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-colors cursor-pointer ${
-                        analyticsTab === 'skills'
-                          ? 'bg-[#0B8F62] text-white shadow-xs'
-                          : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
-                      }`}
-                    >
-                      Skills
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAnalyticsTab('memory')}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-colors cursor-pointer ${
-                        analyticsTab === 'memory'
-                          ? 'bg-[#0B8F62] text-white shadow-xs'
-                          : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
-                      }`}
-                    >
-                      Memory
-                    </button>
-                  </div>
-                </div>
-
-                {/* TAB 1: ACTIVITY VISUALIZATION */}
-                {analyticsTab === 'activity' && (
-                  <div className="space-y-3.5">
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-[#F7F5EF] dark:bg-slate-800/70 p-2.5 rounded-2xl border border-[#E8E6E0]/80 dark:border-slate-700/60 text-center">
-                        <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">14-Day Ex.</p>
-                        <p className="text-sm font-black text-[#25231F] dark:text-white mt-0.5">{totalExercises14}</p>
-                      </div>
-                      <div className="bg-[#F7F5EF] dark:bg-slate-800/70 p-2.5 rounded-2xl border border-[#E8E6E0]/80 dark:border-slate-700/60 text-center">
-                        <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">XP Earned</p>
-                        <p className="text-sm font-black text-amber-600 dark:text-amber-400 mt-0.5">{totalXP14}</p>
-                      </div>
-                      <div className="bg-[#F7F5EF] dark:bg-slate-800/70 p-2.5 rounded-2xl border border-[#E8E6E0]/80 dark:border-slate-700/60 text-center">
-                        <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">Practice Time</p>
-                        <p className="text-sm font-black text-[#0B8F62] dark:text-[#34D399] mt-0.5">
-                          {Math.round(totalSeconds14 / 60)} min
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* 14-Day Timeline Bar Chart */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between text-[11px] font-bold text-[#77736B] dark:text-slate-400 mb-2">
-                        <span>Daily Exercise Volume</span>
-                        <span>Last 14 Days</span>
-                      </div>
-
-                      <div className="flex items-end justify-between gap-1 h-24 pt-2">
-                        {past14Days.map((day) => {
-                          const heightPercent = day.exercises > 0
-                            ? Math.max(14, Math.round((day.exercises / maxExercises14) * 100))
-                            : 4
-                          return (
-                            <div
-                              key={day.dateKey}
-                              className="flex-1 flex flex-col items-center justify-end h-full group relative"
-                            >
-                              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute -top-8 bg-slate-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-10 transition-opacity">
-                                {day.exercises} ex · {day.xp} XP
-                              </div>
-                              <div
-                                style={{ height: `${heightPercent}%` }}
-                                className={`w-full rounded-t-md transition-all ${
-                                  day.isToday
-                                    ? 'bg-[#0B8F62] ring-2 ring-[#0B8F62]/30'
-                                    : day.exercises > 0
-                                    ? 'bg-[#0B8F62]/70 hover:bg-[#0B8F62]'
-                                    : 'bg-slate-200 dark:bg-slate-800'
-                                }`}
-                              />
-                              <span className={`text-[8px] font-bold mt-1 ${day.isToday ? 'text-[#0B8F62]' : 'text-slate-400'}`}>
-                                {day.dayName}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: SKILL PROFICIENCIES */}
-                {analyticsTab === 'skills' && (
-                  <div className="space-y-4">
-                    <div className="space-y-2.5">
-                      {skillsList.map((skill) => (
-                        <div key={skill.key} className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-[#25231F] dark:text-white flex items-center gap-1.5">
-                              <span>{skill.icon}</span>
-                              <span>{skill.label}</span>
-                            </span>
-                            <span className="text-[11px] font-black text-[#0B8F62] dark:text-[#34D399]">
-                              {skill.attempts > 0 ? `${Math.round(skill.score)}%` : 'Not practiced'}
-                            </span>
-                          </div>
-                          <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                              style={{ width: `${Math.min(100, skill.attempts > 0 ? skill.score : 0)}%` }}
-                              className="h-full bg-gradient-to-r from-[#0B8F62] to-[#10B981] rounded-full transition-all duration-500"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {practicedTopicsList.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-[#E8E6E0]/70 dark:border-slate-800">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-[#77736B] dark:text-slate-400">
-                          Topic Accuracy
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {practicedTopicsList.slice(0, 4).map((top) => (
-                            <div key={top.id} className="p-2 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-xl text-xs">
-                              <span className="font-bold text-[#25231F] dark:text-white block truncate">{top.name}</span>
-                              <span className="text-[10px] font-semibold text-[#0B8F62]">
-                                {Math.round((top.correct / Math.max(1, top.attempts)) * 100)}% accuracy
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* TAB 3: SM-2 MEMORY RETENTION */}
-                {analyticsTab === 'memory' && (
-                  <div className="space-y-3.5">
-                    <div className="grid grid-cols-4 gap-2">
-                      <div className="bg-[#F7F5EF] dark:bg-slate-800/70 p-2 rounded-xl text-center border border-[#E8E6E0]/80 dark:border-slate-700/60">
-                        <p className="text-[9px] font-bold uppercase text-[#77736B] dark:text-slate-400">Tracked</p>
-                        <p className="text-sm font-black text-[#25231F] dark:text-white mt-0.5">{sm2Stats.totalTracked}</p>
-                      </div>
-                      <div className="bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-xl text-center border border-emerald-200 dark:border-emerald-900/60">
-                        <p className="text-[9px] font-bold uppercase text-emerald-700 dark:text-emerald-300">Mastered</p>
-                        <p className="text-sm font-black text-emerald-700 dark:text-emerald-300 mt-0.5">{sm2Stats.masteredCount}</p>
-                      </div>
-                      <div className="bg-blue-50 dark:bg-blue-950/40 p-2 rounded-xl text-center border border-blue-200 dark:border-blue-900/60">
-                        <p className="text-[9px] font-bold uppercase text-blue-700 dark:text-blue-300">Learning</p>
-                        <p className="text-sm font-black text-blue-700 dark:text-blue-300 mt-0.5">{sm2Stats.learningCount}</p>
-                      </div>
-                      <div className="bg-rose-50 dark:bg-rose-950/40 p-2 rounded-xl text-center border border-rose-200 dark:border-rose-900/60">
-                        <p className="text-[9px] font-bold uppercase text-rose-700 dark:text-rose-400">Due Today</p>
-                        <p className="text-sm font-black text-rose-700 dark:text-rose-400 mt-0.5">{sm2Stats.dueCount}</p>
-                      </div>
-                    </div>
-
-                    {/* Retention Score Meter */}
-                    <div className="bg-[#F7F5EF] dark:bg-slate-800/70 p-3 rounded-2xl border border-[#E8E6E0]/80 dark:border-slate-700/60 space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-[#25231F] dark:text-white">Estimated Memory Retention</span>
-                        <span className="font-black text-[#0B8F62] dark:text-[#34D399]">{sm2Stats.averageRetention}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          style={{ width: `${Math.min(100, sm2Stats.averageRetention)}%` }}
-                          className="h-full bg-gradient-to-r from-[#0B8F62] to-[#10B981] rounded-full"
-                        />
-                      </div>
-                      <p className="text-[10px] text-[#77736B] dark:text-slate-400 pt-0.5">
-                        Calibrated by SuperMemo SM-2 algorithm based on recall intervals and response speed.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+            {/* ── SECONDARY COLUMN: SIDEBAR TOOLS (Right) ─── */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Live Translator, Quests & Leaderboard Sidebar Widgets */}
+              <RightSidebar onStreakClick={() => setShowStreakDetails(true)} />
 
             </div>
 
@@ -1361,9 +1018,6 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 5. RIGHT SIDEBAR (Stats, Quests, Translator) */}
-      <RightSidebar onStreakClick={() => setShowStreakDetails(true)} />
 
       {/* Alphabet Modal */}
       <AlphabetModal

@@ -21,6 +21,7 @@ import AudioButton from '../AudioButton/AudioButton'
 import { speechRecognitionService, REC_STATE, calculateSpeakingScore } from '../../services/audio/SpeechRecognitionService'
 import { ttsService } from '../../services/audio/AudioService'
 import Button from '../Button'
+import { useTheme } from '../../services/themeContext'
 
 const MAX_RECORDING_SECONDS = 15
 
@@ -135,6 +136,7 @@ function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], 
 
 // ── Fallback when ASR is unavailable ─────────────────────────────────────────
 function AsrFallback({ targetText, languageId, onSkip }) {
+  const { t } = useTheme()
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -143,21 +145,21 @@ function AsrFallback({ targetText, languageId, onSkip }) {
     >
       <div className="p-4 bg-[#F7F5EF] border border-[#E8E6E0] rounded-2xl max-w-md mx-auto">
         <p className="text-sm font-semibold text-[#77736B] mb-3">
-          Speaking practice isn't available on this device right now.
+          {t('speaking_unavailable_msg') || "Speaking practice isn't available on this device right now."}
         </p>
         <p className="text-sm text-[#77736B] mb-3">
-          You can still practice pronunciation:
+          {t('can_still_practice') || 'You can still practice pronunciation:'}
         </p>
         <div className="text-2xl font-bold text-[#0B8F62] mb-3">{targetText}</div>
         <AudioButton
           text={targetText}
           languageId={languageId}
-          label="🔊 Listen"
+          label={`🔊 ${t('listen') || 'Listen'}`}
           className="mx-auto"
         />
       </div>
       <Button variant="ghost" onClick={onSkip}>
-        Continue without speaking
+        {t('continue_without_speaking') || 'Continue without speaking'}
       </Button>
     </motion.div>
   )
@@ -174,6 +176,7 @@ export default function SpeakingExercise({
   disabled = false,
   showResult = false,
 }) {
+  const { t } = useTheme()
   const [recState, setRecState]     = useState(REC_STATE.IDLE)
   const [result, setResult]         = useState(null)
   const [errorMsg, setErrorMsg]     = useState(null)
@@ -297,12 +300,12 @@ export default function SpeakingExercise({
 
   const micLabel = () => {
     switch (recState) {
-      case REC_STATE.REQUESTING:  return 'Allow microphone...'
-      case REC_STATE.RECORDING:   return 'Listening...'
-      case REC_STATE.PROCESSING:  return 'Checking...'
-      case REC_STATE.RESULT:      return result?.isMatch ? '✓ Recording captured' : '✗ Try again'
-      case REC_STATE.ERROR:       return 'Error'
-      default:                    return 'Tap to speak'
+      case REC_STATE.REQUESTING:  return t('allow_microphone') || 'Allow microphone...'
+      case REC_STATE.RECORDING:   return t('listening') || 'Listening...'
+      case REC_STATE.PROCESSING:  return t('checking') || 'Checking...'
+      case REC_STATE.RESULT:      return result?.isMatch ? `✓ ${t('recording_captured') || 'Recording captured'}` : `✗ ${t('try_again') || 'Try again'}`
+      case REC_STATE.ERROR:       return t('error') || 'Error'
+      default:                    return t('tap_to_speak') || 'Tap to speak'
     }
   }
 
@@ -465,18 +468,18 @@ export default function SpeakingExercise({
             disabled={disabled}
             className="text-xs"
           >
-            {recState === REC_STATE.ERROR ? 'Skip' : "Can't speak now"}
+            {recState === REC_STATE.ERROR ? (t('skip') || 'Skip') : (t('cant_speak_now') || "Can't speak now")}
           </Button>
 
           {recState === REC_STATE.ERROR && (
             <Button variant="outline" onClick={handleRetry}>
-              Try again
+              {t('try_again') || 'Try again'}
             </Button>
           )}
 
           {result && recState === REC_STATE.RESULT && (
             <Button onClick={handleCheck} disabled={disabled}>
-              Check Pronunciation →
+              {t('check_pronunciation') || 'Check Pronunciation →'}
             </Button>
           )}
         </div>

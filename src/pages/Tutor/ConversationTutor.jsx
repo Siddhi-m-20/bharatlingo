@@ -10,6 +10,7 @@ import { speakText } from '../../services/aiService'
 import { speechRecognitionService, REC_STATE } from '../../services/audio/SpeechRecognitionService'
 import { audioFX } from '../../utils/audioFX'
 import { triggerConfetti } from '../../utils/confetti'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import Button from '../../components/Button'
@@ -184,12 +185,15 @@ export default function ConversationTutor() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6">
       {/* 1. LEFT SIDEBAR */}
       <AppSidebar />
 
       {/* 2. CENTER TUTOR CONVERSATION HUB */}
-      <main className="flex-1 max-w-[660px] md:ml-72 px-4 py-6 md:py-8 flex flex-col space-y-4 min-h-screen">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-4 w-full max-w-5xl mx-auto flex-1">
         {/* Header Title Banner */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border-2 border-[#E8E6E0] dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -406,10 +410,8 @@ export default function ConversationTutor() {
             </div>
           </div>
         )}
-      </main>
-
-      {/* 3. RIGHT SIDEBAR */}
-      <RightSidebar />
-    </div>
-  )
+      </div>
+    </main>
+  </div>
+)
 }

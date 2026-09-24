@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useTheme } from '../../services/themeContext'
 import { languages } from '../../data/languages'
+import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import Button from '../../components/Button'
@@ -97,12 +98,15 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex justify-center pb-20 md:pb-0">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex flex-col md:flex-row pb-20 md:pb-6">
       {/* 1. LEFT SIDEBAR */}
       <AppSidebar />
 
       {/* 2. CENTER SETTINGS CONTENT */}
-      <main className="flex-1 max-w-[680px] md:ml-72 px-4 py-6 md:py-8 space-y-6">
+      <main className="flex-1 min-w-0 md:ml-72 flex flex-col min-h-screen">
+        <TopNavbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-5xl mx-auto flex-1">
         {/* Appearance & Themes */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
           <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">
@@ -290,6 +294,7 @@ export default function Settings() {
         <div className="text-center text-xs text-[#77736B] pt-2">
           <p>BharatLingo v1.0.0</p>
           <p>© {new Date().getFullYear()} BharatLingo. All rights reserved.</p>
+        </div>
         </div>
       </main>
     </div>
