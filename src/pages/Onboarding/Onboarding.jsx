@@ -67,6 +67,7 @@ export default function Onboarding() {
       assessmentScore: null,
       learningPlan: null,
     })
+    sessionStorage.setItem('bharatlingo_assessment_required', '1')
     navigate('/assessment')
   }
 

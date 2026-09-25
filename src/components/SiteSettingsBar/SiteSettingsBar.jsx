@@ -41,11 +41,11 @@ export default function SiteSettingsBar({ inline = false }) {
             ? 'flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-all shadow-xs cursor-pointer'
             : 'flex items-center gap-2 px-3.5 py-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-[#E8E6E0] dark:border-slate-700 shadow-xl rounded-full text-xs font-black text-[#25231F] dark:text-white transition-all hover:shadow-2xl'
         }
-        title="Theme & Site Language Options"
+        title={t('theme_language')}
       >
         <Palette size={15} className="text-[#0B8F62] dark:text-[#34D399]" />
         <Globe size={15} className="text-[#3B82F6]" />
-        <span>Theme & Language</span>
+        <span>{t('theme_language')}</span>
       </motion.button>
 
       {/* Settings Popover */}
@@ -63,7 +63,7 @@ export default function SiteSettingsBar({ inline = false }) {
             <div className="flex items-center justify-between pb-3 border-b border-[#E8E6E0] dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Sparkles size={18} className="text-[#0B8F62] dark:text-[#34D399]" />
-                <h3 className="text-sm font-black text-[#25231F] dark:text-white">Theme & Language Options</h3>
+                <h3 className="text-sm font-black text-[#25231F] dark:text-white">{t('theme_language')}</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -76,7 +76,7 @@ export default function SiteSettingsBar({ inline = false }) {
             {/* Theme Selector */}
             <div className="py-3">
               <p className="text-[11px] font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-                {t('theme')} (Color Palette)
+                {t('theme')} ({t('color_palette')})
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {THEMES.map((th) => {
@@ -109,7 +109,7 @@ export default function SiteSettingsBar({ inline = false }) {
             {/* Site Interface Language */}
             <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800">
               <p className="text-[11px] font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-                {t('site_language')} (UI Text)
+                {t('site_language')} ({t('ui_text')})
               </p>
               <div className="max-h-44 overflow-y-auto space-y-1 pr-1">
                 {languages.map((lang) => {
@@ -119,9 +119,6 @@ export default function SiteSettingsBar({ inline = false }) {
                       key={lang.id}
                       onClick={() => {
                         setSiteLanguage(lang.id)
-                        if (user && updateUser) {
-                          updateUser({ preferredLanguage: lang.id })
-                        }
                       }}
                       className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-left text-xs transition-all ${
                         isSelected
@@ -142,7 +139,7 @@ export default function SiteSettingsBar({ inline = false }) {
 
             {/* Footer tip */}
             <div className="mt-3 pt-2.5 border-t border-[#E8E6E0] dark:border-slate-800 text-center text-[11px] text-[#77736B] dark:text-slate-500 font-medium">
-              Theme automatically persists in browser
+              {t('language_saved_tip')}
             </div>
           </motion.div>
         )}

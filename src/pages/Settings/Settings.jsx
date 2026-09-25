@@ -160,12 +160,39 @@ export default function Settings() {
                     key={lang.id}
                     onClick={() => {
                       setSiteLanguage(lang.id)
-                      handleLanguageChange('preferredLanguage', lang.id)
                     }}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
                         ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
                         : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:border-[#0B8F62]/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <LanguageFlag languageId={lang.id} size={18} />
+                      <span>{lang.name} ({lang.nativeName})</span>
+                    </div>
+                    {isSelected && <Check size={14} />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800">
+            <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
+              {t('questions_in') || 'Questions & Explanations In'} (Preferred Language)
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {languages.map((lang) => {
+                const isSelected = user?.preferredLanguage === lang.id
+                return (
+                  <button
+                    key={lang.id}
+                    onClick={() => handleLanguageChange('preferredLanguage', lang.id)}
+                    className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'border-[#F39A45] bg-[#F39A45]/10 text-[#F39A45] dark:text-[#FBBF24] shadow-sm'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:border-[#F39A45]/40'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">

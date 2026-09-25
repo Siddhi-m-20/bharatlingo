@@ -884,6 +884,77 @@ export const uiTranslations = {
     pa: 'ਲਿਖਣਾ',
     gu: 'લેખન',
   },
+  learning_course: {
+    en: 'Learning Course',
+    hi: 'सीखने का पाठ्यक्रम',
+    mr: 'शिकण्याचा अभ्यासक्रम',
+    ta: 'கற்றல் பாடநெறி',
+    te: 'అభ్యాస కోర్సు',
+    bn: 'শেখার কোর্স',
+    pa: 'ਸਿੱਖਣ ਦਾ ਕੋਰਸ',
+    gu: 'શીખવાનો અભ્યાસક્રમ',
+  },
+  questions_in: {
+    en: 'Questions In',
+    hi: 'प्रश्नों की भाषा',
+    mr: 'प्रश्नांची भाषा',
+    ta: 'கேள்விகளின் மொழி',
+    te: 'ప్రశ్నల భాష',
+    bn: 'প্রশ্নের ভাষা',
+    pa: 'ਸਵਾਲਾਂ ਦੀ ਭਾਸ਼ਾ',
+    gu: 'પ્રશ્નોની ભાષા',
+  },
+  theme_language: {
+    en: 'Theme & Language',
+    hi: 'थीम और भाषा',
+    mr: 'थीम आणि भाषा',
+    ta: 'தீம் மற்றும் மொழி',
+    te: 'థీమ్ మరియు భాష',
+    bn: 'থিম ও ভাষা',
+    pa: 'ਥੀਮ ਅਤੇ ਭਾਸ਼ਾ',
+    gu: 'થીમ અને ભાષા',
+  },
+  color_palette: {
+    en: 'Color Palette',
+    hi: 'रंग पैलेट',
+    mr: 'रंग पॅलेट',
+    ta: 'வண்ணத் தொகுப்பு',
+    te: 'రంగుల పాలెట్',
+    bn: 'রঙের প্যালেট',
+    pa: 'ਰੰਗ ਪੈਲੇਟ',
+    gu: 'રંગ પેલેટ',
+  },
+  ui_text: {
+    en: 'UI Text',
+    hi: 'इंटरफ़ेस पाठ',
+    mr: 'इंटरफेस मजकूर',
+    ta: 'இடைமுக உரை',
+    te: 'ఇంటర్‌ఫేస్ వచనం',
+    bn: 'ইন্টারফেস লেখা',
+    pa: 'ਇੰਟਰਫੇਸ ਲਿਖਤ',
+    gu: 'ઇન્ટરફેસ લખાણ',
+  },
+  language_saved_tip: {
+    en: 'Language settings are saved automatically',
+    hi: 'भाषा सेटिंग अपने आप सहेजी जाती हैं',
+    mr: 'भाषेच्या सेटिंग्ज आपोआप जतन होतात',
+    ta: 'மொழி அமைப்புகள் தானாகச் சேமிக்கப்படும்',
+    te: 'భాషా సెట్టింగ్‌లు స్వయంచాలకంగా సేవ్ అవుతాయి',
+    bn: 'ভাষার সেটিংস স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়',
+    pa: 'ਭਾਸ਼ਾ ਸੈਟਿੰਗਾਂ ਆਪਣੇ ਆਪ ਸੁਰੱਖਿਅਤ ਹੁੰਦੀਆਂ ਹਨ',
+    gu: 'ભાષા સેટિંગ્સ આપમેળે સાચવાય છે',
+  },
+  welcome_back: {
+    en: 'Welcome back', hi: 'वापसी पर स्वागत है', mr: 'पुन्हा स्वागत आहे', ta: 'மீண்டும் வரவேற்கிறோம்', te: 'తిరిగి స్వాగతం', bn: 'আবারও স্বাগতম', pa: 'ਵਾਪਸੀ ਤੇ ਸਵਾਗਤ ਹੈ', gu: 'ફરી સ્વાગત છે',
+  },
+  login_continue: {
+    en: 'Log in to continue learning', hi: 'सीखना जारी रखने के लिए लॉग इन करें', mr: 'शिकणे सुरू ठेवण्यासाठी लॉग इन करा', ta: 'கற்றலைத் தொடர உள்நுழையவும்', te: 'నేర్చుకోవడం కొనసాగించడానికి లాగిన్ చేయండి', bn: 'শেখা চালিয়ে যেতে লগ ইন করুন', pa: 'ਸਿੱਖਣਾ ਜਾਰੀ ਰੱਖਣ ਲਈ ਲੌਗ ਇਨ ਕਰੋ', gu: 'શીખવાનું ચાલુ રાખવા માટે લોગ ઇન કરો',
+  },
+  email: { en: 'Email', hi: 'ईमेल', mr: 'ईमेल', ta: 'மின்னஞ்சல்', te: 'ఈమెయిల్', bn: 'ইমেল', pa: 'ਈਮੇਲ', gu: 'ઇમેઇલ' },
+  password: { en: 'Password', hi: 'पासवर्ड', mr: 'पासवर्ड', ta: 'கடவுச்சொல்', te: 'పాస్‌వర్డ్', bn: 'পাসওয়ার্ড', pa: 'ਪਾਸਵਰਡ', gu: 'પાસવર્ડ' },
+  remember_me: { en: 'Remember me', hi: 'मुझे याद रखें', mr: 'मला लक्षात ठेवा', ta: 'என்னை நினைவில் வைத்திருங்கள்', te: 'నన్ను గుర్తుంచుకోండి', bn: 'আমাকে মনে রাখুন', pa: 'ਮੈਨੂੰ ਯਾਦ ਰੱਖੋ', gu: 'મને યાદ રાખો' },
+  forgot_password: { en: 'Forgot password?', hi: 'पासवर्ड भूल गए?', mr: 'पासवर्ड विसरलात?', ta: 'கடவுச்சொல்லை மறந்துவிட்டீர்களா?', te: 'పాస్‌వర్డ్ మర్చిపోయారా?', bn: 'পাসওয়ার্ড ভুলে গেছেন?', pa: 'ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?', gu: 'પાસવર્ડ ભૂલી ગયા?' },
+  continue_with_google: { en: 'Continue with Google', hi: 'Google के साथ जारी रखें', mr: 'Google सह पुढे जा', ta: 'Google மூலம் தொடரவும்', te: 'Googleతో కొనసాగించండి', bn: 'Google দিয়ে চালিয়ে যান', pa: 'Google ਨਾਲ ਜਾਰੀ ਰੱਖੋ', gu: 'Google સાથે ચાલુ રાખો' },
 }
 
 export function ThemeProvider({ children }) {
@@ -927,6 +998,16 @@ export function ThemeProvider({ children }) {
     }
   }, [siteLanguage])
 
+  useEffect(() => {
+    const handleLanguageChanged = (event) => {
+      const langId = event.detail?.langId
+      if (langId && langId !== siteLanguage) setSiteLanguageState(langId)
+    }
+
+    window.addEventListener('bharatlingo_site_lang_changed', handleLanguageChanged)
+    return () => window.removeEventListener('bharatlingo_site_lang_changed', handleLanguageChanged)
+  }, [siteLanguage])
+
   const VALID_THEMES = ['light', 'dark', 'saffron', 'emerald']
   const setTheme = (newTheme) => {
     if (VALID_THEMES.includes(newTheme)) {
@@ -941,6 +1022,12 @@ export function ThemeProvider({ children }) {
   const setSiteLanguage = (langId) => {
     if (langId) {
       setSiteLanguageState(langId)
+      try {
+        localStorage.setItem('bharatlingo_site_lang', langId)
+        window.dispatchEvent(new CustomEvent('bharatlingo_site_lang_changed', { detail: { langId } }))
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 

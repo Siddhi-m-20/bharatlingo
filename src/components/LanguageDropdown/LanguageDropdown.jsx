@@ -9,7 +9,7 @@ import { useTheme } from '../../services/themeContext'
 
 export default function LanguageDropdown() {
   const { user, updateUser } = useAuth()
-  const { setSiteLanguage } = useTheme()
+  const { setSiteLanguage, t } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -37,7 +37,6 @@ export default function LanguageDropdown() {
     if (langId !== user?.preferredLanguage) {
       updateUser({ preferredLanguage: langId })
     }
-    setSiteLanguage(langId)
   }
 
   return (
@@ -45,7 +44,7 @@ export default function LanguageDropdown() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 px-2 py-1 bg-[#F7F5EF] dark:bg-slate-800 hover:bg-[#E8E6E0] dark:hover:bg-slate-700 border border-[#E8E6E0] dark:border-slate-700 rounded-lg transition-all text-xs font-black text-[#25231F] dark:text-white shrink-0"
-        title="Switch Learning Course"
+        title={t('learning_course')}
       >
         <LanguageFlag languageId={currentLang.id} size={16} />
         <span className="truncate max-w-[58px]">{currentLang.name}</span>
@@ -62,7 +61,7 @@ export default function LanguageDropdown() {
           >
             {/* Learning Language Section */}
             <div className="px-2 py-1 text-[11px] font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider">
-              Learning Course
+              {t('learning_course')}
             </div>
             <div className="max-h-48 overflow-y-auto space-y-1 pr-1 mt-1">
               {languages.map((lang) => {
@@ -91,7 +90,7 @@ export default function LanguageDropdown() {
             <div className="mt-3 pt-2.5 border-t border-[#E8E6E0] dark:border-slate-800">
               <div className="px-2 py-1 text-[11px] font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <Globe size={13} />
-                <span>I Speak (Questions In)</span>
+                <span>{t('questions_in')}</span>
               </div>
               <div className="max-h-36 overflow-y-auto space-y-1 pr-1 mt-1">
                 {languages.map((lang) => {

@@ -107,7 +107,7 @@ export default function AppSidebar() {
                 className="flex flex-col items-center justify-center p-1 text-[#77736B] dark:text-slate-400"
               >
                 <Icon size={22} />
-                <span className="text-[10px] font-bold mt-0.5">Letters</span>
+                <span className="text-[10px] font-bold mt-0.5">{t('letters')}</span>
               </button>
             )
           }

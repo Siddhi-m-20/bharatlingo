@@ -3,11 +3,13 @@ import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, getNextAuthRedirect } from '../../services/auth'
 import Button from '../../components/Button'
+import { useTheme } from '../../services/themeContext'
 
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, signup, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
+  const { t } = useTheme()
   
   const successMessage = location.state?.successMessage
   const prefillEmail = location.state?.email || ''
@@ -72,68 +74,6 @@ export default function Login() {
     }
   }
 
-  const handleQuickAdminLogin = async () => {
-    const adminEmail = 'admin@bharatlingo.com'
-    const adminPass = 'admin123'
-    setFormData({ email: adminEmail, password: adminPass })
-    setErrors({})
-    setLoading(true)
-    try {
-      try {
-        await login(adminEmail, adminPass)
-      } catch (err) {
-        if (err.message?.toLowerCase().includes('email not confirmed')) {
-          const adminProfile = {
-            id: 'admin-' + Date.now(),
-            name: 'BharatLingo Admin',
-            email: adminEmail,
-            role: 'admin',
-            preferredLanguage: 'en',
-            learningLanguage: 'hi',
-            level: 'beginner',
-            xp: 100,
-            streak: 1,
-            completedLessons: [],
-            learnerStats: {},
-            createdAt: new Date().toISOString(),
-          }
-          localStorage.setItem('bharatlingo_user', JSON.stringify(adminProfile))
-          window.location.href = '/admin'
-          return
-        }
-        try {
-          if (signup) {
-            await signup('BharatLingo Admin', adminEmail, adminPass)
-          }
-          await login(adminEmail, adminPass)
-        } catch {
-          const adminProfile = {
-            id: 'admin-' + Date.now(),
-            name: 'BharatLingo Admin',
-            email: adminEmail,
-            role: 'admin',
-            preferredLanguage: 'en',
-            learningLanguage: 'hi',
-            level: 'beginner',
-            xp: 100,
-            streak: 1,
-            completedLessons: [],
-            learnerStats: {},
-            createdAt: new Date().toISOString(),
-          }
-          localStorage.setItem('bharatlingo_user', JSON.stringify(adminProfile))
-          window.location.href = '/admin'
-          return
-        }
-      }
-      navigate('/admin')
-    } catch (error) {
-      setErrors({ general: error.message || 'Admin login failed' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -160,8 +100,8 @@ export default function Login() {
             <div className="w-16 h-16 rounded-full bg-[#0B8F62] flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
               भा
             </div>
-            <h1 className="text-2xl font-bold text-[#25231F] mb-2">Welcome back</h1>
-            <p className="text-[#77736B]">Log in to continue learning</p>
+            <h1 className="text-2xl font-bold text-[#25231F] mb-2">{t('welcome_back')}</h1>
+            <p className="text-[#77736B]">{t('login_continue')}</p>
           </div>
 
           {successMessage && (
@@ -179,27 +119,10 @@ export default function Login() {
             </div>
           )}
 
-          {/* Quick Admin Credentials Bar */}
-          <div className="mb-5 p-2.5 rounded-xl bg-[#121B2A] text-white flex flex-wrap items-center justify-between gap-2 border border-emerald-500/30 shadow-sm">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-              <span className="text-gray-300">Admin:</span>
-              <span className="font-mono text-emerald-300 font-semibold">admin@bharatlingo.com</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleQuickAdminLogin}
-              disabled={loading}
-              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm active:scale-95 disabled:opacity-50"
-            >
-              Instant Admin Login →
-            </button>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-[#25231F] mb-1">
-                Email
+                {t('email')}
               </label>
               <input
                 type="email"
@@ -210,14 +133,14 @@ export default function Login() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.email ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Enter your email"
+                placeholder={t('email')}
               />
               {errors.email && <p className="mt-1 text-sm text-[#D84B42]">{errors.email}</p>}
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-[#25231F] mb-1">
-                Password
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -228,7 +151,7 @@ export default function Login() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.password ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Enter your password"
+                placeholder={t('password')}
               />
               {errors.password && <p className="mt-1 text-sm text-[#D84B42]">{errors.password}</p>}
             </div>
@@ -236,10 +159,10 @@ export default function Login() {
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="w-4 h-4 text-[#0B8F62] border-[#E8E6E0] rounded focus:ring-[#0B8F62]" />
-                <span className="ml-2 text-sm text-[#77736B]">Remember me</span>
+                <span className="ml-2 text-sm text-[#77736B]">{t('remember_me')}</span>
               </label>
               <button type="button" className="text-sm text-[#0B8F62] hover:underline">
-                Forgot password?
+                {t('forgot_password')}
               </button>
             </div>
 
@@ -252,7 +175,7 @@ export default function Login() {
                 <div className="w-full border-t border-[#E8E6E0]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-[#77736B]">Or continue with</span>
+                <span className="px-2 bg-white text-[#77736B]">{t('continue')}</span>
               </div>
             </div>
 
@@ -281,7 +204,7 @@ export default function Login() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Continue with Google</span>
+              <span>{t('continue_with_google')}</span>
             </Button>
           </form>
 

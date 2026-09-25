@@ -158,6 +158,10 @@ export default function Assessment() {
       navigate('/dashboard', { replace: true })
       return
     }
+    if (sessionStorage.getItem('bharatlingo_assessment_required') !== '1') {
+      navigate('/dashboard', { replace: true })
+      return
+    }
     let cancelled = false
 
     async function loadQuestions() {
@@ -252,7 +256,7 @@ export default function Assessment() {
       const isTargetOptions = q?.type === 'fill-blank' || (q?.word && q?.correctAnswer === q?.word)
       const cleanCorrect = digitToLanguageWord(q?.correctAnswer, isTargetOptions ? langCode : prefCode)
       const isMatching = q?.type === 'matching' || selectedAnswer === 'matched_all'
-      const isSpeaking = q?.type === 'speaking'
+      const isSpeaking = q?.type === 'speaking' && Boolean(selectedAnswer)
       const isCorrect =
         isMatching ||
         isSpeaking ||
@@ -291,6 +295,7 @@ export default function Assessment() {
       lastActiveDate: new Date().toISOString().split('T')[0],
       streak: 1,
     })
+    sessionStorage.removeItem('bharatlingo_assessment_required')
 
     await recordLearningActivity({
       userId: user.id,
@@ -649,7 +654,8 @@ export default function Assessment() {
               {language && (
                 <p className="text-xs text-[#77736B] dark:text-slate-400 flex items-center gap-1 mt-0.5">
                   <span>{language.flag}</span>
-                  <span>{language.name}</span>
+                  <span>Learning: {language.name}</span>
+                  <span className="ml-2 font-semibold text-[#0B8F62]">Questions in: {getLanguageById(user?.preferredLanguage || 'en')?.name || 'English'}</span>
                 </p>
               )}
             </div>

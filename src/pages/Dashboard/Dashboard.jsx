@@ -150,15 +150,6 @@ export default function Dashboard() {
       return
     }
 
-    if (
-      !user?.hasCompletedAssessment &&
-      (user?.assessmentScore === null || user?.assessmentScore === undefined) &&
-      (!user?.completedLessons || user.completedLessons.length === 0)
-    ) {
-      navigate('/assessment')
-      return
-    }
-
     // Check if user just completed placement assessment
     const justAssessed = sessionStorage.getItem('bharatlingo_just_assessed')
     if (justAssessed && user.learningPlan) {

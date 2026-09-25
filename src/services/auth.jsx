@@ -25,14 +25,6 @@ export function getNextAuthRedirect(user) {
   if (!user.learningLanguage || !user.goal) {
     return '/onboarding'
   }
-  // If newcomer has not completed assessment and has no completed lessons -> assessment
-  if (
-    !user.hasCompletedAssessment &&
-    (user.assessmentScore === null || user.assessmentScore === undefined) &&
-    (!user.completedLessons || user.completedLessons.length === 0)
-  ) {
-    return '/assessment'
-  }
   return '/dashboard'
 }
 
@@ -691,12 +683,6 @@ export function AuthProvider({ children }) {
     setUser(updatedUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
 
-    if (resolvedUpdates.preferredLanguage) {
-      try {
-        localStorage.setItem('bharatlingo_site_lang', resolvedUpdates.preferredLanguage)
-        window.dispatchEvent(new CustomEvent('bharatlingo_site_lang_changed', { detail: { langId: resolvedUpdates.preferredLanguage } }))
-      } catch {}
-    }
 
     // Update in Supabase if active
     if (isSupabaseConfigured() && supabase && currentUser.id) {

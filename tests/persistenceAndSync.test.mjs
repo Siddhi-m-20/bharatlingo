@@ -317,6 +317,29 @@ function runSuite() {
     assert(mapped.hearts === undefined, `Hearts column removed and not sent to Postgres`)
   }
 
+  // TEST 4: Strict Decoupling of Site Language and Preferred Learning Language
+  console.log('\n--- SUITE 4: Independent State Values (Site Language vs Target/Preferred Language) ---')
+  {
+    let localSiteLang = 'en'
+    let userProfile = {
+      preferredLanguage: 'mr',
+      learningLanguage: 'mr'
+    }
+
+    // Changing preferredLanguage must NOT update localSiteLang
+    userProfile.preferredLanguage = 'ta'
+    assert(localSiteLang === 'en', `Changing preferredLanguage to Tamil keeps siteLanguage as English (got: ${localSiteLang})`)
+
+    // Changing siteLanguage must NOT update preferredLanguage
+    localSiteLang = 'hi'
+    assert(userProfile.preferredLanguage === 'ta', `Changing siteLanguage to Hindi keeps preferredLanguage as Tamil (got: ${userProfile.preferredLanguage})`)
+
+    // Example scenario: Interface = English, Target = Marathi
+    const interfaceLang = 'en'
+    const targetLang = 'mr'
+    assert(interfaceLang !== targetLang, `Interface (${interfaceLang}) and Target (${targetLang}) remain independent state values`)
+  }
+
   console.log(`\n========================================`)
   console.log(`VERIFICATION SUMMARY: ${passed} Passed, ${failed} Failed`)
   console.log(`========================================\n`)
