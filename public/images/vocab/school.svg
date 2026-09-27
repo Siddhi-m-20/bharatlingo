@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-school" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF2F2"/>
+      <stop offset="100%" stop-color="#FEE2E2"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-school)"/>
+  <g transform="translate(25, 25)">
+    <!-- Building Body -->
+    <rect x="15" y="45" width="80" height="55" rx="3" fill="#FFFFFF" stroke="#B91C1C" stroke-width="3.5"/>
+    <!-- Roof Triangle Center -->
+    <polygon points="55,15 25,45 85,45" fill="#EF4444" stroke="#B91C1C" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Clock in Triangle -->
+    <circle cx="55" cy="33" r="7" fill="#FFFFFF" stroke="#B91C1C" stroke-width="2"/>
+    <line x1="55" y1="33" x2="55" y2="29" stroke="#B91C1C" stroke-width="1.5"/>
+    <line x1="55" y1="33" x2="58" y2="33" stroke="#B91C1C" stroke-width="1.5"/>
+    <!-- Windows -->
+    <rect x="25" y="55" width="15" height="15" rx="2" fill="#93C5FD" stroke="#1D4ED8" stroke-width="2"/>
+    <rect x="70" y="55" width="15" height="15" rx="2" fill="#93C5FD" stroke="#1D4ED8" stroke-width="2"/>
+    <!-- Door -->
+    <rect x="47" y="72" width="16" height="28" fill="#D97706" stroke="#78350F" stroke-width="2.5"/>
+    <!-- Flag post -->
+    <line x1="55" y1="15" x2="55" y2="2" stroke="#78350F" stroke-width="2"/>
+    <polygon points="55,2 70,6 55,10" fill="#22C55E"/>
+  </g>
+</svg>

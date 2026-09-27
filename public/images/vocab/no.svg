@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-no" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1F2"/>
+      <stop offset="100%" stop-color="#FFE4E6"/>
+    </linearGradient>
+    <linearGradient id="badge-no" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-no)"/>
+  <g transform="translate(30, 30)">
+    <!-- Outer Shield / Circle -->
+    <circle cx="50" cy="50" r="42" fill="url(#badge-no)" stroke="#BE123C" stroke-width="4"/>
+    <circle cx="50" cy="50" r="34" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="4,4"/>
+    <!-- Clean Crisp Prohibition / Cross Icon -->
+    <line x1="34" y1="34" x2="66" y2="66" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+    <line x1="66" y1="34" x2="34" y2="66" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>

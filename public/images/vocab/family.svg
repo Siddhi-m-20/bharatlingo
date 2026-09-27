@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-family" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5FF"/>
+      <stop offset="100%" stop-color="#F3E8FF"/>
+    </linearGradient>
+    <linearGradient id="badge-family" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-family)"/>
+  <g transform="translate(30, 30)">
+    <!-- Outer Shield / Circle -->
+    <circle cx="50" cy="50" r="42" fill="url(#badge-family)" stroke="#5B21B6" stroke-width="4"/>
+    <!-- Parent / Sibling Left -->
+    <circle cx="38" cy="38" r="8" fill="#FFFFFF"/>
+    <path d="M26 62 Q26 50 38 50 Q50 50 50 62 Z" fill="#FFFFFF"/>
+    <!-- Sibling Right -->
+    <circle cx="62" cy="42" r="7" fill="#F5F3FF"/>
+    <path d="M52 64 Q52 54 62 54 Q72 54 72 64 Z" fill="#F5F3FF"/>
+    <!-- Heart Symbol Above -->
+    <path d="M50 24 Q50 18 46 18 Q42 18 42 22 Q42 26 50 30 Q58 26 58 22 Q58 18 54 18 Q50 18 50 24 Z" fill="#F43F5E"/>
+  </g>
+</svg>

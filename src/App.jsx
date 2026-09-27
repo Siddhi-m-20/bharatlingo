@@ -29,6 +29,8 @@ const AdminRoute = lazy(() => import('./components/AdminRoute'))
 const AdminDashboard = lazy(() => import('./pages/Admin'))
 const GamesHub = lazy(() => import('./pages/Games/GamesHub'))
 const GameArena = lazy(() => import('./pages/Games/GameArena'))
+const Speaking = lazy(() => import('./pages/Speaking/Speaking'))
+const Review = lazy(() => import('./pages/Review/Review'))
 
 function PageLoader() {
   return (
@@ -130,6 +132,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Practice />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/speaking"
+                element={
+                  <ProtectedRoute>
+                    <Speaking />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/review"
+                element={
+                  <ProtectedRoute>
+                    <Review />
                   </ProtectedRoute>
                 }
               />

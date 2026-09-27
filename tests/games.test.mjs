@@ -55,7 +55,7 @@ test('Game Engine: Generates authentic sessions for all 10 modes across all 8 la
       } else if (mode.id === 'quick_translation') {
         assert.ok(round.prompt && round.correctAnswer && round.options && round.timeLimitSeconds, 'Quick translation fields missing')
       } else if (mode.id === 'picture_match') {
-        assert.ok(round.emoji && round.correctAnswer && round.options, 'Picture match fields missing')
+        assert.ok(round.image && round.correctAnswer && round.options, 'Picture match fields missing')
       } else if (mode.id === 'odd_one_out') {
         assert.ok(round.options && round.options.length === 4, 'Odd one out requires 4 options')
         assert.ok(round.options.some((o) => o.isIntruder), 'Odd one out requires 1 intruder')

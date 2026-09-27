@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-moon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="moon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#EAB308"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-moon)"/>
+  <g transform="translate(30, 25)">
+    <!-- Crescent Moon -->
+    <path d="M68 15 C40 15 20 38 20 68 C20 98 42 115 72 115 C82 115 92 112 100 106 C72 104 52 82 52 55 C52 38 60 23 68 15 Z" fill="url(#moon-grad)" stroke="#CA8A04" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Stars -->
+    <polygon points="95,25 98,32 105,33 100,38 101,45 95,41 89,45 90,38 85,33 92,32" fill="#FDE047"/>
+    <polygon points="30,20 32,25 37,26 33,30 34,35 30,32 26,35 27,30 23,26 28,25" fill="#FDE047" opacity="0.8"/>
+  </g>
+</svg>

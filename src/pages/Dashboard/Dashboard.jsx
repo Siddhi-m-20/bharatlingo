@@ -21,7 +21,7 @@ import { useProgress } from '../../services/progress'
 import { fetchNextAdaptiveLesson } from '../../services/dynamicLessonService'
 import { fetchLearningAnalytics } from '../../services/dbService'
 import { getLanguageById } from '../../data/languages'
-import { getLessonsForLanguage } from '../../data/lessons/index'
+import { getLessonsForLanguage, translateMeaning } from '../../data/lessons/index'
 import {
   getSkillProficiencies,
   getWeakAreas,
@@ -34,7 +34,7 @@ import AppSidebar from '../../components/Navigation/AppSidebar'
 import TopNavbar from '../../components/Navigation/TopNavbar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
-import AlphabetModal from '../../components/AlphabetModal/AlphabetModal'
+import ActivityChart from '../../components/ActivityChart/ActivityChart'
 import {
   Play,
   Sparkles,
@@ -85,7 +85,6 @@ export default function Dashboard() {
   const [weakAreas, setWeakAreas] = useState({ topics: [], skills: [], hasWeaknesses: false })
   const [dueReviews, setDueReviews] = useState([])
   const [sm2Stats, setSm2Stats] = useState(() => getSM2Stats(user?.learningLanguage || 'hi', user?.id))
-  const [showAlphabetModal, setShowAlphabetModal] = useState(false)
   const [showPlanBanner, setShowPlanBanner] = useState(false)
   const [analytics, setAnalytics] = useState({ activity: [], lessonAttempts: [], longestStreak: 0 })
   const [showStreakDetails, setShowStreakDetails] = useState(false)
@@ -96,6 +95,26 @@ export default function Dashboard() {
 
   const learningLang = getLanguageById(user?.learningLanguage) || { name: 'Hindi', nativeName: 'हिन्दी', id: 'hi' }
   const preferredLang = getLanguageById(user?.preferredLanguage || 'en') || { name: 'English', id: 'en' }
+
+  const getLocalizedLessonTitle = useCallback((name) => {
+    if (!name) return ''
+    const norm = String(name).toLowerCase()
+    if (norm.includes('greet') || norm.includes('salutation')) return t('topic_greetings') || name
+    if (norm.includes('essential')) return t('topic_everyday') || name
+    if (norm.includes('number')) return t('topic_numbers') || name
+    if (norm.includes('food') || norm.includes('thali') || norm.includes('dining')) return t('topic_food') || name
+    if (norm.includes('family') || norm.includes('relation')) return t('topic_family') || name
+    if (norm.includes('travel') || norm.includes('direction')) return t('topic_travel') || name
+    return name
+  }, [t])
+
+  const getLocalizedRationale = useCallback((rationale) => {
+    if (!rationale) return t('lesson_rationale_general') || 'Personalized exercise sequence aligned with your goals.'
+    const norm = String(rationale).toLowerCase()
+    if (norm.includes('travel')) return t('lesson_rationale_travel') || rationale
+    if (norm.includes('conversation')) return t('lesson_rationale_conversation') || rationale
+    return t('lesson_rationale_general') || rationale
+  }, [t])
 
   // ── 1. Fetch & Hydrate Dashboard Data ───────────────────────────────────────
   const loadAdaptiveDashboard = useCallback(async () => {
@@ -145,7 +164,7 @@ export default function Dashboard() {
   }, [user?.learningLanguage, user?.preferredLanguage, user?.level, user?.goal, user?.id])
 
   useEffect(() => {
-    if (!user?.learningLanguage || !user?.goal) {
+    if (!user?.learningLanguage) {
       navigate('/onboarding')
       return
     }
@@ -465,10 +484,10 @@ export default function Dashboard() {
             )}
           </AnimatePresence>
 
-          {/* ── 2-COLUMN BALANCED RESPONSIVE GRID ─────────────────────────── */}
+          {/* ── DASHBOARD GRID: Two-column top, full-width bottom ─────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
             
-            {/* ── PRIMARY COLUMN: ADAPTIVE ACTIONS & PRACTICE (Left) ───────── */}
+            {/* ── PRIMARY COLUMN: Next Lesson + Due Reviews (Left 8/12) ───── */}
             <div className="lg:col-span-8 space-y-6">
 
               {/* 1. Next Lesson Hero Card */}
@@ -517,10 +536,10 @@ export default function Dashboard() {
                     <div className="text-3xl">🌱</div>
                     <div>
                       <h4 className="font-black text-sm text-[#25231F] dark:text-white">
-                        Ready to start learning {learningLang.name}?
+                        {t('ready_to_start_learning') || 'Ready to start learning'} {learningLang.name}?
                       </h4>
                       <p className="text-xs text-[#77736B] dark:text-slate-400 mt-1">
-                        Begin with foundational greetings and core everyday vocabulary.
+                        {t('begin_foundational') || 'Begin with foundational greetings and core everyday vocabulary.'}
                       </p>
                     </div>
                     <button
@@ -529,7 +548,7 @@ export default function Dashboard() {
                       className="py-2.5 px-4 bg-[#0B8F62] hover:bg-[#097b54] text-white rounded-xl font-bold text-xs inline-flex items-center gap-2 transition-all cursor-pointer"
                     >
                       <Play size={14} className="fill-white" />
-                      <span>Start Greetings</span>
+                      <span>{t('start_greetings') || 'Start Greetings'}</span>
                     </button>
                   </div>
                 ) : (
@@ -541,7 +560,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] font-black uppercase tracking-wider text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">
-                            {nextLesson?.category || 'Adaptive Lesson'}
+                            {t('adaptive_lesson') || 'Adaptive Lesson'}
                           </span>
                           {nextLesson?.difficultyLabel && (
                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
@@ -550,7 +569,7 @@ export default function Dashboard() {
                           )}
                         </div>
                         <h3 className="text-base md:text-lg font-black text-[#25231F] dark:text-white truncate mt-0.5">
-                          {nextLesson?.name || 'Everyday Essentials'}
+                          {getLocalizedLessonTitle(nextLesson?.name) || 'Everyday Essentials'}
                         </h3>
                         <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
                           {nextLesson?.nameNative || learningLang.nativeName}
@@ -562,7 +581,7 @@ export default function Dashboard() {
                       <Brain size={16} className="text-[#0B8F62] shrink-0 mt-0.5" />
                       <p className="text-[#25231F] dark:text-slate-200 font-semibold leading-relaxed">
                         <span className="font-black text-[#0B8F62]">{t('adapts_dynamically') || 'Adapts to you'}: </span>
-                        {nextLesson?.rationale || nextLesson?.description || `Personalized exercise sequence aligned with your ${user?.goal || 'conversation'} goal.`}
+                        {getLocalizedRationale(nextLesson?.rationale || nextLesson?.description)}
                       </p>
                     </div>
 
@@ -579,6 +598,9 @@ export default function Dashboard() {
                 )}
               </div>
 
+              {/* 1.5 Shared 14-Day Activity Chart */}
+              <ActivityChart activity={analytics.activity} />
+
               {/* 2. Spaced Repetition Due Reviews Card */}
               {dueReviews.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-3">
@@ -588,20 +610,29 @@ export default function Dashboard() {
                       <span>{t('review_candidates') || 'Spaced Review Ready'}</span>
                     </div>
                     <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
-                      {dueReviews.length} words due
+                      {dueReviews.length} {t('words_due') || 'words due'}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {dueReviews.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="px-3 py-1.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl border border-[#E8E6E0] dark:border-slate-700 text-xs font-bold text-[#25231F] dark:text-slate-200 flex items-center gap-1.5"
-                      >
-                        <span>{item.word}</span>
-                        <span className="text-[10px] text-[#77736B] dark:text-slate-400 font-normal">({item.translation})</span>
-                      </div>
-                    ))}
+                    {dueReviews.map((item, idx) => {
+                      const translatedMeaning = item.translation
+                        ? translateMeaning(item.translation, user?.preferredLanguage || 'mr')
+                        : ''
+                      return (
+                        <div
+                          key={idx}
+                          className="px-3 py-1.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl border border-[#E8E6E0] dark:border-slate-700 text-xs font-bold text-[#25231F] dark:text-slate-200 flex items-center gap-1.5"
+                        >
+                          <span>{item.word}</span>
+                          {translatedMeaning && (
+                            <span className="text-[10px] text-[#77736B] dark:text-slate-400 font-normal">
+                              ({translatedMeaning})
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
 
                   <button
@@ -620,10 +651,10 @@ export default function Dashboard() {
                   <div>
                     <h2 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
                       <Compass size={16} className="text-[#0B8F62]" />
-                      Explore Topics
+                      {t('explore_topics') || 'Explore Topics'}
                     </h2>
                     <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
-                      Tap any topic — the engine constructs an adaptive exercise set
+                      {t('explore_topics_subtitle') || 'Tap any topic — the engine constructs an adaptive exercise set'}
                     </p>
                   </div>
                 </div>
@@ -631,6 +662,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
                   {TOPIC_CATEGORIES.slice(0, 6).map((topic) => {
                     const isWeak = weakAreas.topics.some((w) => w.id === topic.id)
+                    const topicLabel = t(`topic_${topic.id}`) || topic.name
                     return (
                       <motion.button
                         key={topic.id}
@@ -647,16 +679,16 @@ export default function Dashboard() {
                           <span className="text-2xl">{topic.icon}</span>
                           {isWeak && (
                             <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded-md">
-                              Needs Focus
+                              {t('needs_focus') || 'Needs Focus'}
                             </span>
                           )}
                         </div>
                         <div>
                           <p className="font-black text-xs text-[#25231F] dark:text-white leading-tight">
-                            {topic.name}
+                            {topicLabel}
                           </p>
                           <span className="text-[10px] text-[#0B8F62] font-bold flex items-center gap-0.5 mt-0.5">
-                            <span>Practice</span>
+                            <span>{t('practice') || 'Practice'}</span>
                             <ArrowRight size={10} />
                           </span>
                         </div>
@@ -669,88 +701,98 @@ export default function Dashboard() {
               {/* 4. Authentic Lessons Library */}
               {allCurriculumLessons.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-[#E8E6E0] dark:border-slate-800 p-5 space-y-3.5">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0]/70 dark:border-slate-800">
-                    <div>
-                      <h2 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
-                        <BookOpen size={16} className="text-[#0B8F62]" />
-                        <span>{learningLang.name} Lessons Library</span>
-                      </h2>
-                      <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
-                        All foundational & conversational units are unlocked and replayable
-                      </p>
+                    <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0]/70 dark:border-slate-800">
+                      <div>
+                        <h2 className="font-black text-sm text-[#25231F] dark:text-white flex items-center gap-1.5">
+                          <BookOpen size={16} className="text-[#0B8F62]" />
+                          <span>{learningLang.name} {t('lessons_library_title') || 'Lessons Library'}</span>
+                        </h2>
+                        <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
+                          {t('lessons_library_subtitle') || 'All foundational & conversational units are unlocked and replayable'}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
+                        {allCurriculumLessons.filter((l) => completedLessonsSet.has(l.id)).length}/{allCurriculumLessons.length} {t('completed_tag') || 'Completed'}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
-                      {allCurriculumLessons.filter((l) => completedLessonsSet.has(l.id)).length}/{allCurriculumLessons.length} Completed
-                    </span>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {(showAllLessons ? allCurriculumLessons : allCurriculumLessons.slice(0, 6)).map((lesson, idx) => {
-                      const isCompleted = completedLessonsSet.has(lesson.id)
-                      const exCount = lesson.exercises?.length || 5
-                      return (
-                        <div
-                          key={lesson.id || idx}
-                          className="p-3.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800/40 flex flex-col justify-between space-y-2.5 hover:border-[#0B8F62]/60 transition-all"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <span className="text-[9px] font-black uppercase tracking-wider text-[#77736B] dark:text-slate-400 block truncate">
-                                {lesson.unit || `Lesson ${idx + 1}`}
-                              </span>
-                              <h3 className="font-black text-xs text-[#25231F] dark:text-white truncate mt-0.5">
-                                {lesson.name}
-                              </h3>
-                              {lesson.nameNative && (
-                                <p className="text-[10px] text-[#0B8F62] dark:text-[#34D399] font-bold truncate">
-                                  {lesson.nameNative}
-                                </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {(showAllLessons ? allCurriculumLessons : allCurriculumLessons.slice(0, 6)).map((lesson, idx) => {
+                        const isCompleted = completedLessonsSet.has(lesson.id)
+                        const exCount = lesson.exercises?.length || 5
+                        const getUnitLabel = (unitStr) => {
+                          if (!unitStr) return `Lesson ${idx + 1}`
+                          const norm = String(unitStr).toLowerCase()
+                          if (norm.includes('unit 1') || norm.includes('fundamentals')) return t('unit_1_fundamentals') || unitStr
+                          if (norm.includes('unit 2') || norm.includes('daily life')) return t('unit_2_daily_life') || unitStr
+                          if (norm.includes('unit 3') || norm.includes('food')) return t('unit_3_food_dining') || unitStr
+                          if (norm.includes('unit 4') || norm.includes('family')) return t('unit_4_family_relations') || unitStr
+                          if (norm.includes('unit 5') || norm.includes('travel')) return t('unit_5_travel_places') || unitStr
+                          return unitStr
+                        }
+                        return (
+                          <div
+                            key={lesson.id || idx}
+                            className="p-3.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800/40 flex flex-col justify-between space-y-2.5 hover:border-[#0B8F62]/60 transition-all"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <span className="text-[9px] font-black uppercase tracking-wider text-[#77736B] dark:text-slate-400 block truncate">
+                                  {getUnitLabel(lesson.unit)}
+                                </span>
+                                <h3 className="font-black text-xs text-[#25231F] dark:text-white truncate mt-0.5">
+                                  {getLocalizedLessonTitle(lesson.name)}
+                                </h3>
+                                {lesson.nameNative && (
+                                  <p className="text-[10px] text-[#0B8F62] dark:text-[#34D399] font-bold truncate">
+                                    {lesson.nameNative}
+                                  </p>
+                                )}
+                              </div>
+                              {isCompleted ? (
+                                <span className="shrink-0 flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                                  <CheckCircle2 size={12} />
+                                  <span>{t('done') || 'Done'}</span>
+                                </span>
+                              ) : (
+                                <span className="shrink-0 text-[10px] text-slate-400 font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                  {exCount} {t('exs_short') || 'exs'}
+                                </span>
                               )}
                             </div>
-                            {isCompleted ? (
-                              <span className="shrink-0 flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                                <CheckCircle2 size={12} />
-                                <span>Done</span>
-                              </span>
-                            ) : (
-                              <span className="shrink-0 text-[10px] text-slate-400 font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                                {exCount} exs
-                              </span>
-                            )}
-                          </div>
 
-                          <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-                            <span className="text-[10px] text-[#77736B] dark:text-slate-400">
-                              {lesson.vocabulary?.length ? `${lesson.vocabulary.length} vocab words` : `${exCount} exercises`}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleStartLesson(null, lesson.id)}
-                              className={`px-3 py-1 rounded-xl text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
-                                isCompleted
-                                  ? 'bg-slate-200/70 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200'
-                                  : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-xs'
-                              }`}
-                            >
-                              <span>{isCompleted ? 'Review' : 'Start'}</span>
-                              <Play size={10} className="fill-current" />
-                            </button>
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                              <span className="text-[10px] text-[#77736B] dark:text-slate-400">
+                                {lesson.vocabulary?.length ? `${lesson.vocabulary.length} ${t('vocab_words') || 'vocab words'}` : `${exCount} ${t('exercises') || 'exercises'}`}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleStartLesson(null, lesson.id)}
+                                className={`px-3 py-1 rounded-xl text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
+                                  isCompleted
+                                    ? 'bg-slate-200/70 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200'
+                                    : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-xs'
+                                }`}
+                              >
+                                <span>{isCompleted ? (t('review') || 'Review') : (t('start') || 'Start')}</span>
+                                <Play size={10} className="fill-current" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
+
+                    {allCurriculumLessons.length > 6 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllLessons((prev) => !prev)}
+                        className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black transition-colors cursor-pointer text-center"
+                      >
+                        {showAllLessons ? (t('show_fewer_lessons') || 'Show Fewer Lessons') : `${t('view_all_lessons') || 'View All Lessons'} (${allCurriculumLessons.length}) →`}
+                      </button>
+                    )}
                   </div>
-
-                  {allCurriculumLessons.length > 6 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllLessons((prev) => !prev)}
-                      className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black transition-colors cursor-pointer text-center"
-                    >
-                      {showAllLessons ? 'Show Fewer Lessons' : `View All ${allCurriculumLessons.length} Lessons →`}
-                    </button>
-                  )}
-                </div>
               )}
 
               {/* 5. Subordinated Quick Tools */}
@@ -761,8 +803,8 @@ export default function Dashboard() {
                   className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 text-left hover:border-[#0B8F62] transition-colors cursor-pointer flex flex-col gap-1 shadow-xs"
                 >
                   <span className="text-xl">🎯</span>
-                  <span className="font-black text-xs text-[#25231F] dark:text-white">Practice</span>
-                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">Targeted drills</span>
+                  <span className="font-black text-xs text-[#25231F] dark:text-white">{t('practice') || 'Practice'}</span>
+                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">{t('targeted_drills') || 'Targeted drills'}</span>
                 </button>
                 <button
                   type="button"
@@ -770,17 +812,17 @@ export default function Dashboard() {
                   className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 text-left hover:border-[#0B8F62] transition-colors cursor-pointer flex flex-col gap-1 shadow-xs"
                 >
                   <span className="text-xl">🎙️</span>
-                  <span className="font-black text-xs text-[#25231F] dark:text-white">Speaking</span>
-                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">Voice tutor</span>
+                  <span className="font-black text-xs text-[#25231F] dark:text-white">{t('speaking') || 'Speaking'}</span>
+                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">{t('voice_tutor') || 'Voice tutor'}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAlphabetModal(true)}
+                  onClick={() => navigate('/letters')}
                   className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 text-left hover:border-[#0B8F62] transition-colors cursor-pointer flex flex-col gap-1 shadow-xs"
                 >
                   <span className="text-xl">🔤</span>
-                  <span className="font-black text-xs text-[#25231F] dark:text-white">Alphabet</span>
-                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">Script chart</span>
+                  <span className="font-black text-xs text-[#25231F] dark:text-white">{t('letters') || 'Letters / Script'}</span>
+                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">{t('script_chart') || 'Script chart'}</span>
                 </button>
                 <button
                   type="button"
@@ -788,18 +830,17 @@ export default function Dashboard() {
                   className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 text-left hover:border-[#0B8F62] transition-colors cursor-pointer flex flex-col gap-1 shadow-xs"
                 >
                   <span className="text-xl">🔄</span>
-                  <span className="font-black text-xs text-[#25231F] dark:text-white">Review</span>
-                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">Past lessons</span>
+                  <span className="font-black text-xs text-[#25231F] dark:text-white">{t('review') || 'Review'}</span>
+                  <span className="text-[10px] text-[#77736B] dark:text-slate-400">{t('past_lessons') || 'Past lessons'}</span>
                 </button>
               </div>
 
             </div>
 
-            {/* ── SECONDARY COLUMN: SIDEBAR TOOLS (Right) ─── */}
-            <div className="lg:col-span-4 space-y-6">
+            {/* ── SECONDARY COLUMN: Sticky Sidebar Tools (Right 4/12) ────────────── */}
+            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 self-start">
               {/* Live Translator, Quests & Leaderboard Sidebar Widgets */}
               <RightSidebar onStreakClick={() => setShowStreakDetails(true)} />
-
             </div>
 
           </div>
@@ -1009,14 +1050,6 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Alphabet Modal */}
-      <AlphabetModal
-        languageId={user.learningLanguage}
-        languageName={learningLang.name}
-        isOpen={showAlphabetModal}
-        onClose={() => setShowAlphabetModal(false)}
-      />
     </div>
   )
 }

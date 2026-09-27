@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-dog" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="dog-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-dog)"/>
+  <g transform="translate(30, 25)">
+    <!-- Floppy Ears -->
+    <path d="M15 35 C5 35 5 70 20 75 C25 60 22 40 15 35 Z" fill="#92400E" stroke="#78350F" stroke-width="3"/>
+    <path d="M85 35 C95 35 95 70 80 75 C75 60 78 40 85 35 Z" fill="#92400E" stroke="#78350F" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="50" cy="50" rx="34" ry="28" fill="url(#dog-grad)" stroke="#78350F" stroke-width="3.5"/>
+    <!-- Snout -->
+    <ellipse cx="50" cy="62" rx="20" ry="15" fill="#FEF3C7" stroke="#78350F" stroke-width="2.5"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="55" rx="8" ry="6" fill="#1C1917"/>
+    <!-- Eyes -->
+    <circle cx="36" cy="45" r="4.5" fill="#1C1917"/>
+    <circle cx="64" cy="45" r="4.5" fill="#1C1917"/>
+    <circle cx="38" cy="43" r="1.5" fill="#FFFFFF"/>
+    <circle cx="66" cy="43" r="1.5" fill="#FFFFFF"/>
+    <!-- Tongue -->
+    <path d="M46 68 Q50 78 54 68 Z" fill="#F43F5E" stroke="#BE123C" stroke-width="1.5"/>
+    <!-- Collar -->
+    <path d="M28 85 Q50 95 72 85" stroke="#EF4444" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="50" cy="91" r="3.5" fill="#FBBF24"/>
+  </g>
+</svg>

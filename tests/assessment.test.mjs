@@ -82,6 +82,45 @@ test('Assessment Suite: handles interface language (preferredLanguage) decouplin
   assert.equal(bengaliWithEnglish[0].languageId, 'bn')
 })
 
+test('Assessment Suite: renders valid Unicode prompt text without mojibake for Bengali + Marathi', () => {
+  const bengaliWithMarathi = generateAssessmentSuite('bn', 'mr')
+  assert.equal(bengaliWithMarathi.length, 15)
+
+  // Mojibake character pattern check: à, â, ð, replacement char \uFFFD
+  const mojibakeRegex = /[àâðÃ\uFFFD]/
+
+  bengaliWithMarathi.forEach((q, idx) => {
+    const qStr = JSON.stringify(q)
+    assert.equal(
+      mojibakeRegex.test(qStr),
+      false,
+      `Question #${idx + 1} contains mojibake: ${qStr}`
+    )
+  })
+
+  // Find a meaning question for Bengali word 'নমস্কার'
+  const nomoshkarQ = bengaliWithMarathi.find((q) => q.word === 'নমস্কার' || q.prompt.includes('নমস্কার'))
+  if (nomoshkarQ) {
+    assert.ok(
+      nomoshkarQ.prompt.includes('"নমস্কার" चा अर्थ काय आहे?'),
+      `Expected clean Marathi prompt for 'নমস্কার', got: ${nomoshkarQ.prompt}`
+    )
+  }
+
+  // Check all 8 languages as preferred language for Bengali target content
+  for (const prefLang of SUPPORTED_LANGUAGES) {
+    const suite = generateAssessmentSuite('bn', prefLang)
+    suite.forEach((q, idx) => {
+      const qStr = JSON.stringify(q)
+      assert.equal(
+        mojibakeRegex.test(qStr),
+        false,
+        `Bengali+${prefLang} question #${idx + 1} contains mojibake: ${qStr}`
+      )
+    })
+  }
+})
+
 test('Server lessonEngine: generateAssessmentQuestions returns 15 questions', () => {
   for (const lang of SUPPORTED_LANGUAGES) {
     const questions = generateAssessmentQuestions({ languageId: lang, preferredLanguage: 'en', count: 15 })

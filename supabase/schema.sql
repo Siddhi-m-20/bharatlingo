@@ -493,9 +493,39 @@ CREATE TRIGGER tr_user_progress_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 -- ==============================================================================
--- MIGRATION: Add age_range, assessment_score, learning_plan to existing profiles
--- Run this if you already have the profiles table in production
+-- MIGRATION: Ensure all modern columns exist on existing profiles table
+-- Safe & idempotent: will not overwrite existing data or fail if already present
 -- ==============================================================================
--- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS age_range VARCHAR(20) DEFAULT NULL;
--- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS assessment_score INTEGER DEFAULT NULL;
--- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS learning_plan JSONB DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS preferred_language VARCHAR(10) DEFAULT 'en';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS learning_language VARCHAR(10) DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS goal VARCHAR(50) DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS level VARCHAR(50) DEFAULT 'beginner';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS daily_goal INTEGER DEFAULT 10;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS age_range VARCHAR(20) DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS assessment_score INTEGER DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS has_completed_assessment BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS learning_plan JSONB DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gems INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS streak INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_active_date TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS completed_lessons JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS vocabulary JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS achievements JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS language_progress JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS legendary_completed JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS active_quests JSONB DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS completed_stories JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS learner_stats JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb;
+
+-- Safe backfill: If an existing learner already has XP, completed lessons, or assessment score, mark has_completed_assessment = true
+UPDATE public.profiles
+SET has_completed_assessment = true
+WHERE has_completed_assessment IS NOT TRUE
+  AND (
+    (completed_lessons IS NOT NULL AND jsonb_typeof(completed_lessons) = 'array' AND jsonb_array_length(completed_lessons) > 0)
+    OR (xp IS NOT NULL AND xp > 0)
+    OR (assessment_score IS NOT NULL)
+    OR (learning_plan IS NOT NULL)
+  );

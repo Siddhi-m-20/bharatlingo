@@ -1,35 +1,49 @@
 # BharatLingo
 
-**Learn Indian languages through interactive lessons, audio, speech practice, script tracing, conversational stories, and adaptive spaced review.**
+**Learn Indian languages through interactive gamified lessons, voice speech practice, authentic script tracing, conversational stories, AI tutoring, interactive arcade games, and adaptive spaced review.**
 
-BharatLingo is a full-featured, culturally immersive language-learning platform built with React and Vite for 8 languages: **Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English**. It works locally with zero cloud dependencies by default, with Supabase and Indic NLP microservices available for full cloud synchronization and advanced AI features.
+BharatLingo is a full-featured, culturally immersive language-learning platform built with React and Vite for 8 languages: **Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati, and English**. It functions locally with zero external dependencies by default, with Supabase and Indic NLP microservices available for full cloud synchronization, real-time analytics, and advanced neural AI features.
 
 ---
 
 ## 🚀 Recent Progress & Completed Milestones
 
-### 1. Dynamic UI Localization Across 8 Indian Languages
-- **Full UI Localization Engine**: Implemented `themeContext.jsx` covering 8 languages: English (`en`), Hindi (`hi`), Marathi (`mr`), Tamil (`ta`), Telugu (`te`), Bengali (`bn`), Punjabi (`pa`), and Gujarati (`gu`).
-- **Dashboard Dynamic Adaptation**: Course titles, personalized path banners, adaptive recommendations, quick hub shortcuts (Stories, AI Tutor, Writing, Script), spaced review retention drills, and streak milestones adapt dynamically.
-- **Lesson & Exercise Controls**: Action buttons (`Check Answer`, `Continue`, `Complete Lesson`, `✕ Exit`), hints, and real-time exercise feedback alerts (`✓ Excellent!`, `✗ Not quite right`, `Speaking skipped`, `Correct answer:`) respond instantly to site language changes.
-- **Persistent Right Sidebar & Quests**: Live AI Translator, Daily Quests (`Claim Reward` / `Claimed`), and Leaderboard League previews fully localized.
+### 1. Pedagogical Games Hub & Game Arena (10 Interactive Modes)
+- **Unified Game Runner (`/games` & `/games/:gameId`)**: Built a high-performance arcade engine featuring round progression, countdown timers, sound FX integration, instant educational feedback, and heart-free persistence of XP & Gems.
+- **10 Core Pedagogical Game Modes**:
+  1. **Word Match**: Interactive multi-choice vocabulary mapping.
+  2. **Word Scramble / Sentence Builder**: Token bank reconstruction with unique slot IDs.
+  3. **Listening Challenge**: Real-time Indic audio playback with multiple-choice comprehension.
+  4. **Quick Translation**: Rapid target-to-preferred and preferred-to-target language drilling.
+  5. **Picture Match**: Visual concept matching featuring authentic SVG illustrations and prominent localized concept clues.
+  6. **Odd One Out**: Semantic category contrast drills (food, nature, animals, family, civic).
+  7. **Memory Cards**: Interactive grid card flip matching words to meanings.
+  8. **Script Challenge**: Native character identification and phoneme recognition across 6 distinct Indian scripts.
+  9. **Pronunciation Challenge**: Voice recording with speech recognition and syllable accuracy scoring.
+  10. **Speed Round**: 45-second rapid-fire fluency drill with combo multipliers.
+- **Visual Clarity & Concept Badges**: Replaced ambiguous default emblems with dedicated SVG illustrations (`no.svg`, `yes.svg`, `family.svg`, `city.svg`, `road.svg`, etc.) and added localized concept meaning badges (`Meaning: नाही / No`) so learners are never left guessing.
 
-### 2. Unified Two-Way Language Synchronization
-- **Real-Time Sync**: *"Site Language"* (UI interface text) and *"I Speak (Questions In)"* (`preferredLanguage`) are unified in 100% two-way sync.
-- **Permanent Persistence**: Language preferences persist simultaneously across:
-  1. `localStorage` (`bharatlingo_site_lang` & `bharatlingo_user`)
-  2. Supabase database table `profiles.preferred_language`
-  3. Window event bus (`bharatlingo_site_lang_changed`) for instantaneous zero-reload updates across all mounted components.
+### 2. Admin Dashboard & Live Telemetry Console (`/admin`)
+- **Strict Role-Based Authorization**: Protected by `AdminRoute`, verifying authenticated administrative claims (`role === 'admin'`, `is_admin === true`, or designated `VITE_ADMIN_EMAIL`) with a graceful 403 Forbidden fallback screen.
+- **5 Comprehensive Management Tabs**:
+  1. **System Overview**: Live KPI cards for registered users, active learners (7-day), new signups (30-day), total lessons completed, total XP distributed, and gems in circulation.
+  2. **Learner Directory**: Full user table with live search (by name, email, or user ID), language filters, and a slide-out profile inspection drawer detailing user achievements, quests, and language progress.
+  3. **Language Analytics**: Enrollment and interface preference distribution charts across all 8 Indian languages with percentage breakdowns.
+  4. **Learning Activity & Streaks**: Retention metrics, streak milestones, learner level distributions, and exercise accuracy telemetry.
+  5. **Curriculum & Script Health Audit**: Real-time inventory auditing lessons, exercise pools, alphabet character counts, and authentic stroke-tracing data availability per language.
 
-### 3. Streamlined Onboarding & Level Check
-- **Welcoming Experience**: Replaced clinical "Placement Assessment" phrasing with friendly, motivating terminology: **"Find Your Starting Level"**.
-- **Action Button**: Standardized onboarding CTA to **`Find My Level →`**.
-- **Frictionless Signup**: Streamlined onboarding to 4 core steps (Age, Preferred Language, Target Language, Goal), removing the daily time question and automatically applying an optimal 10-minute daily practice default.
+### 3. Strict User Identity Isolation & ACID Guarantees
+- **Zero Cross-Account Leakage**: Implemented strict user isolation guards in profile merging (`mergeUserProfiles`). User B logging into a browser where User A previously practiced will never inherit User A's XP, gems, streak, or completed lessons.
+- **Safe Boolean Mapping**: Fixed JavaScript nullish coalescing handling for Supabase's `has_completed_assessment BOOLEAN DEFAULT false` column. Active learners are recognized durably and never routed back into placement assessments upon login.
+- **Decoupled Language State**: Interface language (`preferredLanguage`) and target learning language (`learningLanguage`) operate independently—e.g., learners can learn Gujarati through a Marathi or Hindi interface with zero English leakage or Hindi fallback.
 
-### 4. ACID Compliance & Robust State Persistence
-- **Atomicity & Consistency**: Multi-state operations (XP transactions, Diamond economy, Streaks, Lesson completions, and Profile updates) persist reliably or fail gracefully without desynchronized states.
-- **Isolation & Concurrency**: Input locking and debouncing prevent duplicate submissions during rapid exercise interactions.
-- **Durability**: All learning records and metrics are committed durably to both local client storage and Supabase (`learning_activity`, `profiles`, `user_progress`).
+### 4. Dynamic UI Localization Across 8 Indian Languages
+- **Full UI Localization Engine**: Implemented `themeContext.jsx` covering all 8 supported languages: English (`en`), Hindi (`hi`), Marathi (`mr`), Tamil (`ta`), Telugu (`te`), Bengali (`bn`), Punjabi (`pa`), and Gujarati (`gu`).
+- **Unified Two-Way Synchronization**: UI interface language and user preference are unified in 100% two-way sync across `localStorage`, Supabase, and internal event buses (`bharatlingo_site_lang_changed`).
+
+### 5. Streamlined Onboarding & Welcoming Assessment
+- **Friendly Terminology**: Standardized on **"Find Your Starting Level"** and **`Find My Level →`**.
+- **Frictionless Signup**: Streamlined onboarding to 4 core steps (Age, Preferred Language, Target Language, Goal), applying an optimal 10-minute daily practice default.
 
 ---
 
@@ -38,27 +52,28 @@ BharatLingo is a full-featured, culturally immersive language-learning platform 
 - **Comprehensive Multi-Language Foundation**: Curated lessons, vocabulary, alphabets, conversation scenarios, and stroke reference data across 8 languages.
 - **Rich Exercise Varieties**:
   - Multiple choice & vocabulary recognition
-  - Word Bank sentence building
-  - Sentence reordering exercises
-  - Matching pairs drills
-  - Listening comprehension with audio playback
-  - Speaking exercises with browser speech recognition & zero-XP skip fallback
-  - Reading comprehension & picture choice
+  - Word Bank sentence building & reordering
+  - Matching pairs & flashcard drills
+  - Listening comprehension with Indic voice audio
+  - Speaking exercises with browser speech recognition & zero-penalty skip fallback
+  - Reading comprehension & visual concept matching
 - **Adaptive Learning & Spaced Repetition**:
   - Dynamic lesson engine tailored to user proficiency, goals, and age range.
-  - SM-2 spaced repetition algorithm for reviewing weak words and retention candidates.
-  - Granular skill radar tracking: Vocabulary, Grammar, Listening, and Speaking proficiencies.
+  - SM-2 spaced repetition algorithm for reviewing weak vocabulary and long-term retention.
+  - Granular skill radar: Vocabulary, Grammar, Listening, and Speaking proficiencies.
 - **Gamification & Habit Building**:
   - Daily Quests with XP rewards
-  - Streak tracking with milestone celebrations and detailed week heatmaps
-  - Gem/Diamond economy
+  - Streak tracking with milestone celebrations and weekly activity heatmaps
+  - Gem economy
   - League Leaderboards (Bronze through Diamond leagues)
   - Achievement badges
 - **Cultural & Interactive Hubs**:
+  - **Games Hub & Arena**: 10 pedagogical game modes for bite-sized fun.
   - **Conversational Stories**: Interactive stories with branching comprehension checkpoints.
   - **AI Conversation Tutor**: Scenario-based dialogue practice with real-time feedback.
   - **Script & Alphabet Tracing**: Interactive stroke-by-stroke character writing canvas with accuracy scoring.
-  - **Live AI Translator**: Fast translation and pronunciation lookup widget.
+  - **Live AI Translator**: Instant translation and pronunciation lookup widget.
+  - **Admin Console**: Live telemetry, user directory, and curriculum auditing.
 
 ---
 
@@ -109,16 +124,17 @@ npm run dev
 
 - **Client App**: `http://localhost:5173`
 - **Backend API**: `http://localhost:5000`
+- **Admin Console**: `http://localhost:5173/admin` *(requires admin role or `VITE_ADMIN_EMAIL`)*
 
 ### Available Scripts
 
 ```bash
-npm run dev           # Concurrently runs client and server
-npm run dev:client    # Vite frontend only
-npm run dev:server    # Express API server only
-npm run build         # Production client build
-npm run preview       # Preview production build locally
-node --test tests/*.test.mjs  # Run test suite
+npm run dev                    # Concurrently runs client and server
+npm run dev:client             # Vite frontend only
+npm run dev:server             # Express API server only
+npm run build                  # Production client build
+npm run preview                # Preview production build locally
+node --test tests/*.test.mjs   # Run automated test suite
 ```
 
 ---
@@ -133,6 +149,9 @@ PORT=5000
 # Optional Supabase Cloud Sync
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional Designated Administrator Email (grants /admin access locally & in production)
+VITE_ADMIN_EMAIL=admin@bharatlingo.com
 
 # Optional Indic NLP Microservice Endpoints
 INDICTRANS_URL=http://127.0.0.1:8000
@@ -162,19 +181,31 @@ INDICCONFORMER_URL=http://127.0.0.1:8001
 ## 📁 Repository Layout
 
 ```text
+├── public/
+│   ├── images/vocab/     # Visual SVG illustrations (apple, water, no, yes, city, road, etc.)
+│   └── sounds/           # Audio effects (correct, wrong, completion, click)
 ├── src/
-│   ├── components/       # Reusable UI widgets (AudioButton, WordBank, Navigation, etc.)
-│   ├── data/             # Curated lesson sets, alphabets, stories, questions
-│   ├── pages/            # Page views (Dashboard, Lesson, Assessment, Stories, Tutor, etc.)
-│   ├── services/         # Auth, DB, SM-2 Spaced Repetition, Speech, Themes & Audio
-│   └── utils/            # Confetti, Canvas tracing, Web Audio effects
+│   ├── components/       # Reusable UI widgets (AudioButton, WordBank, Navigation, AdminRoute, etc.)
+│   ├── data/             # Curated lesson sets, alphabets, stroke data, stories, questions
+│   ├── pages/            # Page views:
+│   │   ├── Admin/        # Admin Telemetry & Content Health Console
+│   │   ├── Games/        # Games Hub & Game Arena (10 game modes)
+│   │   ├── Dashboard/    # Learner Dashboard & adaptive recommendations
+│   │   ├── Lesson/       # Gamified exercise player
+│   │   ├── Assessment/   # Starting level placement assessment
+│   │   ├── Stories/      # Conversational stories & reader
+│   │   ├── Tutor/        # Scenario-based AI dialogue tutor
+│   │   ├── Writing/      # Canvas character stroke tracing
+│   │   └── Alphabet/     # Interactive alphabet catalogue
+│   ├── services/         # Auth, Admin, DB, SM-2 Spaced Repetition, Game Engine, Audio, Theme
+│   └── utils/            # Confetti, Canvas tracing algorithms, Web Audio effects
 ├── server/
 │   ├── routes/           # Express endpoint routers (Indic NLP, lessons, health)
 │   └── services/         # Lesson engine, Indic NLP client adapters
 ├── supabase/
 │   ├── schema.sql        # Core DB schema with RLS policies
 │   └── migrations/       # Incremental database migrations
-├── tests/                # Verification tests for state, NLP, and stroke data
+├── tests/                # Automated verification suites (Admin, Games, Assessment, State, NLP)
 └── AGENTS.md             # Persistent project rules & AI memory
 ```
 

@@ -107,35 +107,37 @@ export default function WritingPractice() {
             </div>
           </div>
 
-          {/* Polished Empty / Availability Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-8 sm:p-12 text-center shadow-sm space-y-6">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-4xl shadow-inner">
+          {/* Compact Unavailable State Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-5 sm:p-6 text-center shadow-sm space-y-3 max-w-md mx-auto my-6">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-2xl">
               📝
             </div>
 
-            <div className="space-y-2 max-w-md mx-auto">
-              <h2 className="text-xl sm:text-2xl font-black text-[#25231F] dark:text-white">
+            <div className="space-y-1">
+              <h2 className="text-base font-black text-[#25231F] dark:text-white">
                 {t('writing_unavailable_msg') || 'Interactive writing practice is not yet available for this script.'}
               </h2>
-              <p className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
+              <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
                 {t('writing_practice_alt_msg') || 'Practice reading and speaking meanwhile.'}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex flex-row items-center justify-center gap-2 pt-1">
               <Button
+                size="small"
                 onClick={() => navigate('/letters')}
-                className="w-full sm:w-auto justify-center"
+                className="justify-center text-xs font-bold"
               >
-                <BookOpen size={16} className="mr-1.5" />
+                <BookOpen size={14} className="mr-1" />
                 {t('explore_alphabet') || 'Explore Alphabet'}
               </Button>
               <Button
+                size="small"
                 variant="secondary"
                 onClick={() => navigate('/dashboard')}
-                className="w-full sm:w-auto justify-center"
+                className="justify-center text-xs font-bold"
               >
-                {t('back_to_dashboard') || 'Back to Dashboard'}
+                {t('back_to_dashboard') || 'Dashboard'}
               </Button>
             </div>
           </div>

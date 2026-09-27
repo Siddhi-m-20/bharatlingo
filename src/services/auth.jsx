@@ -21,11 +21,19 @@ async function syncUserSpacedRepetition(userId) {
 // Helper: Determine next route for authenticated user
 export function getNextAuthRedirect(user) {
   if (!user) return '/login'
-  // If newcomer has not set learning language or goal -> onboarding
-  if (!user.learningLanguage || !user.goal) {
-    return '/onboarding'
+  // If user has completed assessment, has completed lessons, has accumulated XP,
+  // has a learning plan, or already selected a learning language -> go straight to dashboard
+  if (
+    user.hasCompletedAssessment ||
+    (Array.isArray(user.completedLessons) && user.completedLessons.length > 0) ||
+    (Number(user.xp) || 0) > 0 ||
+    user.learningPlan ||
+    user.learningLanguage
+  ) {
+    return '/dashboard'
   }
-  return '/dashboard'
+  // Only true newcomers without a target learning language go to onboarding
+  return '/onboarding'
 }
 
 // Helper: map DB snake_case profile to App user format
@@ -56,12 +64,18 @@ export function mapProfileToUser(profile, authUser) {
     bio: profile?.bio || '',
     preferredLanguage: profile?.preferred_language || 'en',
     learningLanguage: learningLang,
-    goal: profile?.goal || null,
+    goal: profile?.goal || 'conversation',
     level: profile?.level || 'beginner',
     dailyGoal: profile?.daily_goal || 10,
     ageRange: profile?.age_range || 'adult',
     assessmentScore: profile?.assessment_score ?? null,
-    hasCompletedAssessment: profile?.has_completed_assessment ?? (Boolean(profile?.assessment_score !== null && profile?.assessment_score !== undefined) || existingCompleted.length > 0),
+    hasCompletedAssessment: Boolean(
+      profile?.has_completed_assessment ||
+      (profile?.assessment_score !== null && profile?.assessment_score !== undefined) ||
+      existingCompleted.length > 0 ||
+      (Number(profile?.xp) || 0) > 0 ||
+      profile?.learning_plan
+    ),
     learningPlan: profile?.learning_plan || null,
     xp: Number(profile?.xp) || 0,
     gems: profile?.gems !== undefined ? Number(profile.gems) : 0,
@@ -121,6 +135,18 @@ export function mergeUserProfiles(remoteProfile, localProfile) {
   if (!remoteProfile && !localProfile) return null
   if (!remoteProfile) return localProfile
   if (!localProfile) return remoteProfile
+
+  // CRITICAL USER ISOLATION GUARD:
+  // If remoteProfile and localProfile do not have matching ID or email, they belong to DIFFERENT users!
+  // Progress (XP, gems, streak, lessons) must NEVER leak across accounts.
+  const isSameUser =
+    (remoteProfile.id && localProfile.id && String(remoteProfile.id) === String(localProfile.id)) ||
+    (remoteProfile.email && localProfile.email && remoteProfile.email.toLowerCase() === localProfile.email.toLowerCase())
+
+  if (!isSameUser) {
+    // If profiles belong to different users, the incoming remote profile must be kept cleanly isolated
+    return remoteProfile
+  }
 
   // Merge completed lessons (union)
   const mergedCompleted = Array.from(
@@ -412,6 +438,9 @@ export function AuthProvider({ children }) {
             setUser(null)
             userRef.current = null
             localStorage.removeItem('bharatlingo_user')
+            localStorage.removeItem('bharatlingo_learner_stats_v2')
+            sessionStorage.removeItem('bharatlingo_assessment_required')
+            sessionStorage.removeItem('bharatlingo_just_assessed')
             clearSM2Data(currentId)
           }
         }
@@ -523,12 +552,16 @@ export function AuthProvider({ children }) {
         const remoteProfile = await fetchSupabaseProfile(data.user)
         if (remoteProfile?.learnerStats && typeof remoteProfile.learnerStats === 'object') {
           localStorage.setItem('bharatlingo_learner_stats_v2', JSON.stringify(remoteProfile.learnerStats))
+        } else {
+          localStorage.removeItem('bharatlingo_learner_stats_v2')
         }
         const currentLocal = userRef.current
         const mergedProfile = mergeUserProfiles(remoteProfile, currentLocal)
         setUser(mergedProfile)
         userRef.current = mergedProfile
         localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
+        sessionStorage.removeItem('bharatlingo_assessment_required')
+        sessionStorage.removeItem('bharatlingo_just_assessed')
         syncProfileToSupabase(mergedProfile)
         await syncUserSpacedRepetition(data.user.id)
         return mergedProfile
@@ -558,6 +591,8 @@ export function AuthProvider({ children }) {
       setUser(resolvedUser)
       userRef.current = resolvedUser
       localStorage.setItem('bharatlingo_user', JSON.stringify(resolvedUser))
+      sessionStorage.removeItem('bharatlingo_assessment_required')
+      sessionStorage.removeItem('bharatlingo_just_assessed')
       return resolvedUser
     }
 
@@ -568,7 +603,7 @@ export function AuthProvider({ children }) {
       email: normalizedEmail,
       preferredLanguage: 'en',
       learningLanguage: null,
-      goal: null,
+      goal: 'conversation',
       level: 'beginner',
       dailyGoal: 10,
       ageRange: 'adult',
@@ -590,6 +625,8 @@ export function AuthProvider({ children }) {
     setUser(mockUser)
     userRef.current = mockUser
     localStorage.setItem('bharatlingo_user', JSON.stringify(mockUser))
+    sessionStorage.removeItem('bharatlingo_assessment_required')
+    sessionStorage.removeItem('bharatlingo_just_assessed')
     return mockUser
   }
 
@@ -614,41 +651,38 @@ export function AuthProvider({ children }) {
       }
     }
 
-    // Local / Offline fallback Google profile (preserves any existing local session progress)
+    // Local / Offline fallback Google profile (strictly isolated per user identity)
     const existing = userRef.current
-    const currentLang = existing?.learningLanguage || null
+    const isSameGoogle = existing?.id && existing.id.startsWith('google_')
+    const currentLang = isSameGoogle ? (existing?.learningLanguage || null) : null
     const googleUser = {
-      id: existing?.id && existing.id.startsWith('google_') ? existing.id : 'google_' + Date.now().toString(),
-      name: existing?.name || 'Google Learner',
-      email: existing?.email || 'learner@gmail.com',
-      preferredLanguage: existing?.preferredLanguage || 'en',
+      id: isSameGoogle ? existing.id : 'google_' + Date.now().toString(),
+      name: isSameGoogle ? (existing?.name || 'Google Learner') : 'Google Learner',
+      email: isSameGoogle ? (existing?.email || 'learner@gmail.com') : 'learner@gmail.com',
+      preferredLanguage: isSameGoogle ? (existing?.preferredLanguage || 'en') : 'en',
       learningLanguage: currentLang,
-      goal: existing?.goal || null,
-      level: existing?.level || 'beginner',
-      dailyGoal: existing?.dailyGoal || 10,
-      ageRange: existing?.ageRange || 'adult',
-      assessmentScore: existing?.assessmentScore ?? null,
-      hasCompletedAssessment: existing?.hasCompletedAssessment || false,
-      xp: Math.max(0, existing?.xp || 0),
-      gems: existing?.gems !== undefined ? Number(existing.gems) : 0,
-      streak: Math.max(0, existing?.streak || 0),
-      lastActiveDate: existing?.lastActiveDate || null,
-      completedLessons: existing?.completedLessons || [],
-      languageProgress: existing?.languageProgress || (currentLang ? {
-        [currentLang]: {
-          completedLessons: existing?.completedLessons || [],
-          xp: Math.max(0, existing?.xp || 0),
-          level: existing?.level || 'beginner',
-        },
-      } : {}),
-      legendaryCompleted: existing?.legendaryCompleted || [],
-      vocabulary: existing?.vocabulary || {},
-      achievements: existing?.achievements || [],
-      createdAt: existing?.createdAt || new Date().toISOString(),
+      goal: isSameGoogle ? (existing?.goal || 'conversation') : 'conversation',
+      level: isSameGoogle ? (existing?.level || 'beginner') : 'beginner',
+      dailyGoal: isSameGoogle ? (existing?.dailyGoal || 10) : 10,
+      ageRange: isSameGoogle ? (existing?.ageRange || 'adult') : 'adult',
+      assessmentScore: isSameGoogle ? (existing?.assessmentScore ?? null) : null,
+      hasCompletedAssessment: isSameGoogle ? Boolean(existing?.hasCompletedAssessment) : false,
+      xp: isSameGoogle ? (Number(existing?.xp) || 0) : 0,
+      gems: isSameGoogle ? (Number(existing?.gems) || 0) : 100,
+      streak: isSameGoogle ? (Number(existing?.streak) || 0) : 0,
+      lastActiveDate: isSameGoogle ? (existing?.lastActiveDate || null) : null,
+      completedLessons: isSameGoogle ? (existing?.completedLessons || []) : [],
+      languageProgress: isSameGoogle ? (existing?.languageProgress || {}) : {},
+      legendaryCompleted: isSameGoogle ? (existing?.legendaryCompleted || []) : [],
+      vocabulary: isSameGoogle ? (existing?.vocabulary || {}) : {},
+      achievements: isSameGoogle ? (existing?.achievements || []) : [],
+      createdAt: isSameGoogle ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
     }
     userRef.current = googleUser
     setUser(googleUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(googleUser))
+    sessionStorage.removeItem('bharatlingo_assessment_required')
+    sessionStorage.removeItem('bharatlingo_just_assessed')
     return googleUser
   }
 
@@ -669,6 +703,9 @@ export function AuthProvider({ children }) {
     setUser(null)
     userRef.current = null
     localStorage.removeItem('bharatlingo_user')
+    localStorage.removeItem('bharatlingo_learner_stats_v2')
+    sessionStorage.removeItem('bharatlingo_assessment_required')
+    sessionStorage.removeItem('bharatlingo_just_assessed')
     clearSM2Data(currentId)
   }
 
@@ -682,6 +719,20 @@ export function AuthProvider({ children }) {
     userRef.current = updatedUser
     setUser(updatedUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
+
+    // Rule 2: Permanent Synchronization between preferredLanguage and siteLanguage
+    if (resolvedUpdates.preferredLanguage) {
+      try {
+        localStorage.setItem('bharatlingo_site_lang', resolvedUpdates.preferredLanguage)
+        window.dispatchEvent(
+          new CustomEvent('bharatlingo_site_lang_changed', {
+            detail: { langId: resolvedUpdates.preferredLanguage },
+          })
+        )
+      } catch (e) {
+        console.error(e)
+      }
+    }
 
 
     // Update in Supabase if active

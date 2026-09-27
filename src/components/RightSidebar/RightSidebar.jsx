@@ -51,7 +51,7 @@ export default function RightSidebar({ onStreakClick }) {
           </h4>
         </div>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
-          Translate into <span className="font-bold text-emerald-600 dark:text-emerald-400">{learningLang.name}</span>
+          {t('translate_into') || 'Translate into'} <span className="font-bold text-emerald-600 dark:text-emerald-400">{learningLang.nativeName || learningLang.name}</span>
         </p>
 
         <form onSubmit={handleLiveTranslate} className="space-y-2">
@@ -101,25 +101,35 @@ export default function RightSidebar({ onStreakClick }) {
           </h4>
           <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1">
             <Zap size={12} fill="currentColor" />
-            <span>Rewards</span>
+            <span>{t('rewards') || 'Rewards'}</span>
           </span>
         </div>
 
         <div className="space-y-2.5">
-          {quests.map((quest) => (
-            <div key={quest.id} className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <CheckCircle2
-                  size={15}
-                  className={quest.completed ? 'text-emerald-500 shrink-0' : 'text-slate-300 dark:text-slate-600 shrink-0'}
-                />
-                <div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200 leading-snug">{quest.title}</p>
-                  <p className="text-[10px] text-slate-400">
-                    {quest.current} / {quest.target}
-                  </p>
+          {quests.map((quest) => {
+            const questTitle =
+              quest.id === 'xp_30'
+                ? (t('quest_xp_30') || quest.title)
+                : quest.id === 'lessons_2'
+                ? (t('quest_lessons_2') || quest.title)
+                : quest.id === 'practice_5'
+                ? (t('quest_practice_5') || quest.title)
+                : quest.title
+
+            return (
+              <div key={quest.id} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2
+                    size={15}
+                    className={quest.completed ? 'text-emerald-500 shrink-0' : 'text-slate-300 dark:text-slate-600 shrink-0'}
+                  />
+                  <div>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200 leading-snug">{questTitle}</p>
+                    <p className="text-[10px] text-slate-400">
+                      {quest.current} / {quest.target}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
               {quest.completed && !quest.claimed ? (
                 <button
@@ -136,7 +146,8 @@ export default function RightSidebar({ onStreakClick }) {
                 </span>
               )}
             </div>
-          ))}
+          );
+        })}
         </div>
       </div>
 

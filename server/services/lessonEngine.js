@@ -320,12 +320,12 @@ export function getDynamicLesson({ languageId, goal, ageRange, level, lessonInde
 }
 
 // ── Get adaptive lesson ──────────────────────────────────────────────────────
-export function getAdaptiveLesson({ languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null }) {
+export function getAdaptiveLesson({ languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null, preferredLanguage = 'en' }) {
   if (!PRODUCT_LANGUAGE_IDS.includes(languageId)) {
     throw new Error(`Unsupported product language: ${languageId}`)
   }
 
-  const sourceLessons = getLessonsForLanguage(languageId, 'en')
+  const sourceLessons = getLessonsForLanguage(languageId, preferredLanguage)
   const topicLessons = topicId
     ? sourceLessons.filter((lesson) => lesson.id.includes(topicId) || lesson.category?.toLowerCase().includes(topicId.toLowerCase()))
     : sourceLessons

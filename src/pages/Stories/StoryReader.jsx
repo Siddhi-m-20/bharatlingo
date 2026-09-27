@@ -489,8 +489,8 @@ export default function StoryReader() {
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 mt-1">XP Earned</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800/60 min-w-[100px]">
-                  <div className="flex items-center justify-center gap-1 text-cyan-600 dark:text-cyan-400 font-black text-xl">
+                <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 min-w-[100px]">
+                  <div className="flex items-center justify-center gap-1 text-sky-600 dark:text-sky-400 font-black text-xl">
                     💎 +{story.rewardGems}
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 mt-1">Gems Earned</div>

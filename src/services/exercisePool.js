@@ -49,7 +49,12 @@ export function pickRandom(arr, n = 1) {
 }
 
 function buildDistractors(correctAnswer, vocabPool, key = 'translation', count = 3, langId = 'en') {
-  const cleanCorrect = digitToLanguageWord(correctAnswer, langId)
+  const baseCorrect = (key === 'translation' && langId !== 'en')
+    ? translateMeaning(correctAnswer, langId)
+    : correctAnswer
+  const cleanCorrect = digitToLanguageWord(baseCorrect, langId)
+  const correctWords = cleanCorrect ? String(cleanCorrect).trim().split(/\s+/).length : 1
+
   const isInvalidCandidate = (val) => {
     if (!val) return true
     const s = String(val).trim()
@@ -58,6 +63,12 @@ function buildDistractors(correctAnswer, vocabPool, key = 'translation', count =
     if (/^[\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0BE6-\u0BEF\u0C66-\u0C6F]+$/.test(s)) return true
     if (/\d+\s*[-—–]\s*\d+/.test(s)) return true
     if (/^[\d\s\-—–]+$/.test(s)) return true
+    // Reject full sentences, proverbs, and terminal punctuation
+    if (/[.?!।]$/.test(s)) return true
+    const wCount = s.split(/\s+/).length
+    // If the question tests a single word or short term, NEVER allow full sentences/proverbs
+    if (correctWords <= 2 && wCount > 3) return true
+    if (correctWords >= 4 && wCount <= 1) return true
     return false
   }
 
@@ -68,7 +79,12 @@ function buildDistractors(correctAnswer, vocabPool, key = 'translation', count =
 
   const candidates = vocabPool
     .filter((v) => v[key])
-    .map((v) => digitToLanguageWord(v[key], langId))
+    .map((v) => {
+      const val = (key === 'translation' && langId !== 'en')
+        ? translateMeaning(v[key], langId)
+        : v[key]
+      return digitToLanguageWord(val, langId)
+    })
     .filter((val) => {
       if (isInvalidCandidate(val)) return false
       if (String(val).trim().toLowerCase() === String(cleanCorrect).trim().toLowerCase()) return false
@@ -103,16 +119,17 @@ export function createPictureChoiceExercise(item, vocabPool, langId, preferredLa
  * 2. Multiple Choice (Target Word -> Translation)
  */
 export function createWordToMeaningMCQ(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
-  const options = buildDistractors(item.translation, vocabPool, 'translation', 3, preferredLang)
+  const targetMeaning = preferredLang !== 'en' ? translateMeaning(item.translation, preferredLang) : item.translation
+  const options = buildDistractors(targetMeaning, vocabPool, 'translation', 3, preferredLang)
   return {
     id: `ex_mcq_wm_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'multiple-choice',
     prompt: getPromptText('meaning', preferredLang, targetLangName, item.word),
     word: item.word,
     targetWord: item.word,
-    translation: item.translation,
+    translation: targetMeaning,
     options,
-    correctAnswer: item.translation,
+    correctAnswer: targetMeaning,
     audioText: item.word,
     xp: 10,
     category: 'vocabulary',
@@ -125,21 +142,22 @@ export function createWordToMeaningMCQ(item, vocabPool, langId, preferredLang = 
  * 3. Multiple Choice (Translation -> Target Script)
  */
 export function createMeaningToWordMCQ(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
+  const sourceMeaning = preferredLang !== 'en' ? translateMeaning(item.translation, preferredLang) : item.translation
   const options = buildDistractors(item.word, vocabPool, 'word', 3, langId)
   return {
     id: `ex_mcq_mw_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'multiple-choice',
-    prompt: `What is "${item.translation}" in ${targetLangName || 'target language'}?`,
+    prompt: getPromptText('translate_to_target', preferredLang, targetLangName, sourceMeaning),
     word: item.word,
     targetWord: item.word,
-    translation: item.translation,
+    translation: sourceMeaning,
     options,
     correctAnswer: item.word,
     audioText: item.word,
     xp: 12,
     category: 'vocabulary',
     skill: 'vocabulary',
-    difficulty: 2,
+    difficulty: 1,
   }
 }
 
@@ -192,15 +210,16 @@ export function createSpeakingExercise(item, vocabPool, langId, preferredLang = 
 export function createTranslationExercise(item, vocabPool, langId, preferredLang = 'en', targetLangName = '') {
   const distractors = pickRandom(vocabPool.filter((v) => v.word !== item.word), 3).map((v) => v.word)
   const wordBank = shuffle([item.word, ...distractors])
+  const sourceMeaning = preferredLang !== 'en' ? translateMeaning(item.translation, preferredLang) : item.translation
 
   return {
     id: `ex_trans_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'translation',
-    prompt: getPromptText('translate_to_target', preferredLang, targetLangName, item.translation),
+    prompt: getPromptText('translate_to_target', preferredLang, targetLangName, sourceMeaning),
     correctAnswer: item.word,
     word: item.word,
     targetWord: item.word,
-    translation: item.translation,
+    translation: sourceMeaning,
     wordBank,
     audioText: item.word,
     xp: 15,
@@ -219,7 +238,10 @@ export function createMatchingExercise(items, langId, preferredLang = 'en', targ
     id: `ex_match_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'matching',
     prompt: getPromptText('matching', preferredLang, targetLangName),
-    pairs: selected.map((v) => ({ word: v.word, meaning: v.translation })),
+    pairs: selected.map((v) => ({
+      word: v.word,
+      meaning: preferredLang !== 'en' ? translateMeaning(v.translation, preferredLang) : v.translation,
+    })),
     correctAnswer: 'matched_all',
     xp: 20,
     category: 'matching',
@@ -237,12 +259,15 @@ export function createFillBlankExercise(item, vocabPool, langId, preferredLang =
   }
 
   const blanked = item.example.replace(item.word, '___')
-  const options = buildDistractors(item.word, vocabPool, 'word', 3)
+  const options = buildDistractors(item.word, vocabPool, 'word', 3, langId)
 
   return {
     id: `ex_fill_${item.word}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     type: 'fill-blank',
-    prompt: `${getPromptText('fill_blank', preferredLang, targetLangName)}: ${blanked}`,
+    prompt: getPromptText('fill_blank', preferredLang, targetLangName),
+    instruction: getPromptText('fill_blank', preferredLang, targetLangName),
+    sentence: blanked,
+    blankedSentence: blanked,
     sentenceContext: item.example,
     options,
     correctAnswer: item.word,

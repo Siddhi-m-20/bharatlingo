@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-concept-default" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="badge-bulb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-concept-default)"/>
+  <g transform="translate(30, 30)">
+    <!-- Round Crest -->
+    <circle cx="50" cy="50" r="42" fill="#FEF3C7" stroke="#F59E0B" stroke-width="4"/>
+    <circle cx="50" cy="50" r="34" fill="none" stroke="#FBBF24" stroke-width="2" stroke-dasharray="4,4"/>
+    <!-- Glowing Lightbulb Motif (Concept / Word Meaning) -->
+    <path d="M50 24 C40 24 34 32 34 42 C34 48 38 52 42 58 L42 64 C42 66 44 68 46 68 L54 68 C56 68 58 66 58 64 L58 58 C62 52 66 48 66 42 C66 32 60 24 50 24 Z" fill="url(#badge-bulb)"/>
+    <!-- Bulb Base -->
+    <rect x="44" y="70" width="12" height="3" rx="1.5" fill="#B45309"/>
+    <!-- Glow Rays -->
+    <line x1="50" y1="16" x2="50" y2="20" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+    <line x1="28" y1="26" x2="31" y2="29" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+    <line x1="72" y1="26" x2="69" y2="29" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

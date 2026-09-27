@@ -364,21 +364,67 @@ function buildQuickTranslationSession(vocabPool, roundsCount = 5) {
 }
 
 /**
+ * Maps a vocabulary item to a local educational visual illustration path.
+ */
+export function getVocabIllustration(item) {
+  if (!item) return '/images/vocab/default.svg'
+  const text = `${item.originalTranslation || ''} ${item.translation || ''} ${item.meaning || ''} ${item.word || ''}`.toLowerCase()
+
+  if (text.includes('water') || text.includes('drink')) return '/images/vocab/water.svg'
+  if (text.includes('book')) return '/images/vocab/book.svg'
+  if (text.includes('house') || text.includes('home')) return '/images/vocab/house.svg'
+  if (text.includes('tea') || text.includes('chai')) return '/images/vocab/tea.svg'
+  if (text.includes('food') || text.includes('meal') || text.includes('rice') || text.includes('bread') || text.includes('eat')) return '/images/vocab/food.svg'
+  if (text.includes('apple')) return '/images/vocab/apple.svg'
+  if (text.includes('mango')) return '/images/vocab/mango.svg'
+  if (text.includes('tree')) return '/images/vocab/tree.svg'
+  if (text.includes('flower')) return '/images/vocab/flower.svg'
+  if (text.includes('sun') && !text.includes('sunday')) return '/images/vocab/sun.svg'
+  if (text.includes('moon')) return '/images/vocab/moon.svg'
+  if (text.includes('cat')) return '/images/vocab/cat.svg'
+  if (text.includes('dog')) return '/images/vocab/dog.svg'
+  if (text.includes('elephant')) return '/images/vocab/elephant.svg'
+  if (text.includes('peacock')) return '/images/vocab/peacock.svg'
+  if (text.includes('milk')) return '/images/vocab/milk.svg'
+  if (text.includes('friend')) return '/images/vocab/friend.svg'
+  if (text.includes('school')) return '/images/vocab/school.svg'
+  if (text.includes('train')) return '/images/vocab/train.svg'
+  if (text.includes('bus')) return '/images/vocab/bus.svg'
+  if (text.includes('auto') || text.includes('rickshaw')) return '/images/vocab/auto.svg'
+  if (text.includes('rain')) return '/images/vocab/rain.svg'
+  if (text.includes('clock') || text.includes('time')) return '/images/vocab/clock.svg'
+  if (text.includes('hello') || text.includes('greet') || text.includes('namaste') || text.includes('namaskar')) return '/images/vocab/hello.svg'
+  if (/\b(no|not|nah|नाही|नहीं|ના|నద్దు|இல்லை)\b/i.test(text) || text.includes('नाही') || text.includes('નથી') || text.includes('ના')) return '/images/vocab/no.svg'
+  if (/\b(yes|yeah|होय|हाँ|હા|అవును|ஆம்)\b/i.test(text) || text.includes('होय') || text.includes('હા') || text.includes('हाँ')) return '/images/vocab/yes.svg'
+  if (text.includes('sister') || text.includes('brother') || text.includes('family') || text.includes('कुटुंब') || text.includes('बहीण') || text.includes('બહેન') || text.includes('પરિવાર') || text.includes('परिवार')) return '/images/vocab/family.svg'
+  if (text.includes('city') || text.includes('town') || text.includes('शहर') || text.includes('શહેર') || text.includes('नगर')) return '/images/vocab/city.svg'
+  if (text.includes('road') || text.includes('street') || text.includes('car') || text.includes('रस्ता') || text.includes('રસ્તો') || text.includes('सड़क') || text.includes('मार्ग')) return '/images/vocab/road.svg'
+
+  return '/images/vocab/default.svg'
+}
+
+/**
  * 5. Picture / Vocab Match Session
  */
 function buildPictureMatchSession(vocabPool, roundsCount = 5) {
-  const shuffled = shuffle(vocabPool)
+  // Prioritize vocabulary items that have authentic visual illustrations
+  const withIllustrations = vocabPool.filter((v) => getVocabIllustration(v) !== '/images/vocab/default.svg')
+  const poolToUse = withIllustrations.length >= roundsCount ? withIllustrations : (withIllustrations.length > 0 ? withIllustrations : vocabPool)
+
+  const shuffled = shuffle(poolToUse)
   const rounds = []
 
   for (let i = 0; i < roundsCount; i++) {
     const correct = shuffled[i % shuffled.length]
     const otherWords = vocabPool.filter((v) => v.word !== correct.word).map((v) => v.word)
     const distractors = pickRandom([...new Set(otherWords)], 3)
+    const illustration = getVocabIllustration(correct)
 
     rounds.push({
       roundNumber: i + 1,
       type: 'picture_match',
-      emoji: correct.emoji || '✨',
+      image: illustration,
+      isDefaultImage: illustration === '/images/vocab/default.svg',
       correctAnswer: correct.word,
       options: shuffle([correct.word, ...distractors]),
       meaning: correct.nativeTranslation || correct.translation,

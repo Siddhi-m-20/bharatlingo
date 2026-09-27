@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-rain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="cloud-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/>
+      <stop offset="100%" stop-color="#64748B"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-rain)"/>
+  <g transform="translate(30, 25)">
+    <!-- Cloud -->
+    <path d="M25 60 C10 60 5 45 20 38 C20 20 45 15 55 28 C65 18 85 25 80 40 C95 42 95 60 80 60 Z" fill="url(#cloud-grad)" stroke="#334155" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Raindrops -->
+    <line x1="25" y1="72" x2="18" y2="86" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="42" y1="72" x2="35" y2="86" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="59" y1="72" x2="52" y2="86" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="76" y1="72" x2="69" y2="86" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="33" y1="92" x2="26" y2="106" stroke="#0284C7" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="67" y1="92" x2="60" y2="106" stroke="#0284C7" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>

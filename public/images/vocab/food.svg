@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-food" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF2F2"/>
+      <stop offset="100%" stop-color="#FEE2E2"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-food)"/>
+  <g transform="translate(30, 30)">
+    <!-- Plate -->
+    <ellipse cx="50" cy="55" rx="46" ry="32" fill="#FFFFFF" stroke="#DC2626" stroke-width="4"/>
+    <ellipse cx="50" cy="55" rx="36" ry="24" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="2"/>
+    <!-- Bowl of rice/curry -->
+    <circle cx="38" cy="50" r="14" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+    <path d="M28 48 Q38 42 48 48" stroke="#FEF3C7" stroke-width="2.5" fill="none"/>
+    <!-- Naan / Roti slice -->
+    <path d="M52 42 C68 40 76 58 64 66 C56 64 48 52 52 42 Z" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+    <circle cx="60" cy="50" r="1.5" fill="#B45309"/>
+    <circle cx="65" cy="56" r="1.2" fill="#B45309"/>
+    <!-- Green garnishing leaf -->
+    <path d="M38 40 C35 34 42 32 44 38 C40 40 38 42 38 40 Z" fill="#16A34A"/>
+  </g>
+</svg>

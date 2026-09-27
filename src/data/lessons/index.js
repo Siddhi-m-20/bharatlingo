@@ -28,17 +28,65 @@ export const rawLessonsByLanguage = {
   en: [...englishLessons, ...createComprehensiveFoundationLessons('en', 'English')],
 }
 
+// Build cross-lingual index from rawLessonsByLanguage
+const crossLingualVocabMap = {}
+
+function buildCrossLingualVocabIndex() {
+  if (Object.keys(crossLingualVocabMap).length > 0) return
+  for (const [langId, lessons] of Object.entries(rawLessonsByLanguage)) {
+    for (const l of lessons) {
+      if (!l.vocabulary) continue
+      for (const v of l.vocabulary) {
+        if (!v.word || !v.translation) continue
+        const rawEn = String(v.translation).trim().toLowerCase()
+        const parts = rawEn.split('/').map((s) => s.trim().toLowerCase())
+        const keys = [rawEn, ...parts]
+        for (const k of keys) {
+          if (!k) continue
+          if (!crossLingualVocabMap[k]) crossLingualVocabMap[k] = {}
+          if (!crossLingualVocabMap[k][langId]) {
+            crossLingualVocabMap[k][langId] = v.word
+          }
+        }
+      }
+    }
+  }
+}
+
 // Find translation of an English meaning into preferred language
 export function translateMeaning(meaning, preferredLang) {
   if (!meaning || preferredLang === 'en') return meaning
-  const cleanMeaning = meaning.split('/')[0].trim().toLowerCase()
+  buildCrossLingualVocabIndex()
+
+  const raw = String(meaning).trim()
+  const lower = raw.toLowerCase()
+  const cleanMeaning = lower.split('/')[0].trim()
+
+  // 1. Direct dictionary match
   const entry = dictionary.find((d) => {
     const enVal = d.translations['en']?.toLowerCase()
-    return enVal === cleanMeaning || enVal?.includes(cleanMeaning) || cleanMeaning.includes(enVal)
+    if (!enVal) return false
+    return enVal === lower || enVal === cleanMeaning || enVal.includes(cleanMeaning) || lower.includes(enVal)
   })
   if (entry && entry.translations[preferredLang]) {
     return entry.translations[preferredLang]
   }
+
+  // 2. Cross-lingual curriculum lookup
+  if (crossLingualVocabMap[lower]?.[preferredLang]) {
+    return crossLingualVocabMap[lower][preferredLang]
+  }
+  if (crossLingualVocabMap[cleanMeaning]?.[preferredLang]) {
+    return crossLingualVocabMap[cleanMeaning][preferredLang]
+  }
+
+  // 3. Substring match in crossLingualVocabMap
+  for (const [key, langMap] of Object.entries(crossLingualVocabMap)) {
+    if (key.includes(cleanMeaning) || cleanMeaning.includes(key)) {
+      if (langMap[preferredLang]) return langMap[preferredLang]
+    }
+  }
+
   return meaning
 }
 
@@ -77,26 +125,40 @@ export function localizeLesson(lesson, targetLangId, preferredLangId = 'en') {
 
     if (ex.type === 'multiple-choice' || ex.type === 'picture_choice' || ex.type === 'picture-choice' || ex.type === 'visual_match') {
       localized.type = 'multiple-choice'
-      // Check if prompt is asking for target word meaning
-      const match = ex.prompt.match(/["'](.*?)["']/)
-      const word = match ? match[1] : (ex.targetWord || ex.word || '')
+      const isTargetOptions = (ex.word && ex.correctAnswer === ex.word) || (ex.targetWord && ex.correctAnswer === ex.targetWord)
 
-      if (word) {
-        localized.prompt = getPromptText('meaning', preferredLangId, targetLangName, word)
-      }
+      if (isTargetOptions) {
+        // Options are in target language (e.g. Gujarati: બહેન, માતા, ભાઈ)
+        // Prompt asks learner to translate meaning word into target language:
+        const rawSource = ex.translation || (ex.prompt && ex.prompt.match(/["'](.*?)["']/)?.[1]) || ''
+        const translatedSource = preferredLangId !== 'en' ? translateMeaning(rawSource, preferredLangId) : rawSource
+        localized.prompt = getPromptText('translate_to_target', preferredLangId, targetLangName, translatedSource)
 
-      // Translate options to preferred language and sanitize numbers
-      if (ex.options && ex.options.length > 0) {
-        const translatedOpts = ex.options.map((opt) => {
-          const optStr = typeof opt === 'string' ? opt : opt.text || opt.word || opt.label || ''
-          return preferredLangId !== 'en' ? translateMeaning(optStr, preferredLangId) : optStr
-        })
-        const translatedCorrect = preferredLangId !== 'en'
-          ? translateMeaning(ex.correctAnswer, preferredLangId)
-          : ex.correctAnswer
+        if (ex.options && ex.options.length > 0) {
+          localized.options = sanitizeLanguageOptions(ex.options, ex.correctAnswer, targetLangId)
+          localized.correctAnswer = ex.correctAnswer
+        }
+      } else {
+        // Options are in learner's preferred language (e.g. Marathi: बहीण, आई, भाऊ)
+        // Prompt asks learner what target word means:
+        const targetWord = ex.targetWord || ex.word || ''
+        if (targetWord) {
+          localized.prompt = getPromptText('meaning', preferredLangId, targetLangName, targetWord)
+        }
 
-        localized.options = sanitizeLanguageOptions(translatedOpts, translatedCorrect, preferredLangId)
-        localized.correctAnswer = digitToLanguageWord(translatedCorrect, preferredLangId)
+        // Translate options to preferred language and sanitize
+        if (ex.options && ex.options.length > 0) {
+          const translatedOpts = ex.options.map((opt) => {
+            const optStr = typeof opt === 'string' ? opt : opt.text || opt.word || opt.label || ''
+            return preferredLangId !== 'en' ? translateMeaning(optStr, preferredLangId) : optStr
+          })
+          const translatedCorrect = preferredLangId !== 'en'
+            ? translateMeaning(ex.correctAnswer, preferredLangId)
+            : ex.correctAnswer
+
+          localized.options = sanitizeLanguageOptions(translatedOpts, translatedCorrect, preferredLangId)
+          localized.correctAnswer = digitToLanguageWord(translatedCorrect, preferredLangId)
+        }
       }
     } else if (ex.type === 'translation') {
       const match = ex.prompt.match(/["'](.*?)["']/)
@@ -128,7 +190,14 @@ export function localizeLesson(lesson, targetLangId, preferredLangId = 'en') {
     } else if (ex.type === 'sentence-order') {
       localized.prompt = getPromptText('sentence_order', preferredLangId, targetLangName, ex.sentence || ex.correctAnswer)
     } else if (ex.type === 'fill-blank') {
-      localized.prompt = getPromptText('fill_blank', preferredLangId, targetLangName)
+      const instruction = getPromptText('fill_blank', preferredLangId, targetLangName)
+      localized.instruction = instruction
+      const blanked = ex.blankedSentence || ex.sentence || (ex.prompt && ex.prompt.includes('___') ? ex.prompt : '')
+      if (blanked) {
+        localized.blankedSentence = blanked
+        localized.sentence = blanked
+      }
+      localized.prompt = instruction
     } else if (ex.type === 'reading') {
       localized.prompt = getPromptText('reading', preferredLangId, targetLangName)
     }

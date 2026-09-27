@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-apple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1F2"/>
+      <stop offset="100%" stop-color="#FFE4E6"/>
+    </linearGradient>
+    <linearGradient id="apple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#BE123C"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-apple)"/>
+  <g transform="translate(35, 30)">
+    <!-- Apple Body -->
+    <path d="M45 28 C30 24 12 36 12 62 C12 92 34 105 45 105 C56 105 78 92 78 62 C78 36 60 24 45 28 Z" fill="url(#apple-grad)" stroke="#9F1239" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Highlight -->
+    <path d="M24 40 C20 48 20 62 25 72" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    <!-- Stem -->
+    <path d="M45 28 Q50 16 56 12" fill="none" stroke="#78350F" stroke-width="4" stroke-linecap="round"/>
+    <!-- Green Leaf -->
+    <path d="M47 24 C55 18 68 20 65 28 C57 32 46 26 47 24 Z" fill="#22C55E" stroke="#15803D" stroke-width="2"/>
+  </g>
+</svg>

@@ -19,7 +19,8 @@ import CelebrationModal from '../../components/CelebrationModal/CelebrationModal
 import { audioFX } from '../../utils/audioFX'
 import SentenceOrderExercise from '../../components/SentenceOrderExercise/SentenceOrderExercise'
 import ReadingExercise from '../../components/ReadingExercise/ReadingExercise'
-import { digitToLanguageWord, sanitizeLanguageOptions } from '../../data/translations.js'
+import { digitToLanguageWord, sanitizeLanguageOptions, getPromptText, getLocalizedTopicName } from '../../data/translations.js'
+import { localizeLesson, translateMeaning } from '../../data/lessons/index'
 import { Sparkles, Crown, Brain, Lightbulb } from 'lucide-react'
 import { triggerConfetti } from '../../utils/confetti'
 import { ttsService } from '../../services/audio/AudioService'
@@ -90,7 +91,9 @@ export default function Lesson() {
 
       if (cancelled) return
 
-      setLesson(loadedLesson)
+      // Ensure all exercises, prompts, options, and word meanings are 100% localized to preferred language
+      const localizedLesson = localizeLesson(loadedLesson, user.learningLanguage, preferredLang)
+      setLesson(localizedLesson || loadedLesson)
       setCurrentExercise(0)
       setAnswers([])
       setShowResult(false)
@@ -137,9 +140,11 @@ export default function Lesson() {
       const isTarget = currentExerciseData.type === 'fill-blank' || (currentExerciseData.word && currentExerciseData.correctAnswer === currentExerciseData.word)
       const optLang = isTarget ? user.learningLanguage : (user?.preferredLanguage || 'en')
       const cleanAns = digitToLanguageWord(currentExerciseData.correctAnswer, optLang)
+      const translatedAns = (!isTarget && optLang !== 'en') ? translateMeaning(cleanAns, optLang) : cleanAns
       isCorrect =
         String(answer).trim().toLowerCase() === String(currentExerciseData.correctAnswer).trim().toLowerCase() ||
-        String(answer).trim().toLowerCase() === String(cleanAns).trim().toLowerCase()
+        String(answer).trim().toLowerCase() === String(cleanAns).trim().toLowerCase() ||
+        String(answer).trim().toLowerCase() === String(translatedAns).trim().toLowerCase()
     }
 
     // Record attempt in authoritative Learner Model
@@ -278,8 +283,48 @@ export default function Lesson() {
   const handleSkipSpeaking = () => handleAnswer('', { skipped: true })
 
   const getCorrectAnswerLabel = (exercise) => {
+    if (!exercise) return ''
     if (exercise.type === 'matching') return t('match_words_meanings') || 'Match every word with its meaning'
-    return exercise.targetWord || exercise.correctAnswer
+    const prefCode = user?.preferredLanguage || 'en'
+    const isTarget = exercise.type === 'fill-blank' || (exercise.word && exercise.correctAnswer === exercise.word)
+    if (!isTarget && prefCode !== 'en') {
+      const cleanAns = digitToLanguageWord(exercise.correctAnswer, prefCode)
+      return translateMeaning(cleanAns, prefCode)
+    }
+    return exercise.correctAnswer || exercise.targetWord || ''
+  }
+
+  const getExerciseHeader = () => {
+    const curEx = lesson?.exercises?.[currentExercise]
+    const prefLang = user?.preferredLanguage || 'en'
+
+    // Skill / Category detection
+    const cat = (curEx?.category || curEx?.skill || curEx?.type || '').toLowerCase()
+    let categoryKey = 'vocabulary'
+    if (cat === 'grammar' || cat === 'sentence-order' || cat === 'fill-blank') {
+      categoryKey = 'grammar'
+    } else if (cat === 'listening') {
+      categoryKey = 'listening_practice'
+    } else if (cat === 'speaking') {
+      categoryKey = 'speaking_practice'
+    } else if (cat === 'reading') {
+      categoryKey = 'reading_practice'
+    } else {
+      categoryKey = 'vocabulary'
+    }
+
+    const localizedCategory = t(categoryKey) || (categoryKey === 'vocabulary' ? 'Vocabulary' : 'Grammar & Syntax')
+
+    // Localized topic if available
+    let localizedTopic = ''
+    if (lesson?.topicId || lesson?.topic) {
+      localizedTopic = getLocalizedTopicName(lesson.topicId || lesson.topic, prefLang)
+    }
+
+    if (localizedTopic && localizedTopic.toLowerCase() !== localizedCategory.toLowerCase()) {
+      return `${localizedTopic} • ${localizedCategory}`
+    }
+    return localizedCategory
   }
 
   const renderExercise = () => {
@@ -328,17 +373,32 @@ export default function Lesson() {
         const optionLang = isTarget ? langCode : prefCode
         const cleanCorrect = digitToLanguageWord(exercise.correctAnswer, optionLang)
         const rawOptions = (exercise.options && exercise.options.length > 0)
-          ? exercise.options.map((opt) => (typeof opt === 'string' ? opt : opt?.word || opt?.text || opt?.label || ''))
+          ? exercise.options.map((opt) => {
+              const optStr = typeof opt === 'string' ? opt : opt?.word || opt?.text || opt?.label || ''
+              return (optionLang !== 'en' && !isTarget) ? translateMeaning(optStr, optionLang) : optStr
+            })
           : []
-        const sanitizedOptions = sanitizeLanguageOptions(rawOptions, cleanCorrect, optionLang)
+        const translatedCorrect = (!isTarget && optionLang !== 'en')
+          ? translateMeaning(cleanCorrect, optionLang)
+          : cleanCorrect
+        const sanitizedOptions = sanitizeLanguageOptions(rawOptions, translatedCorrect, optionLang)
+
+        const targetLangObj = getLanguageById(langCode)
+        const targetLangName = targetLangObj?.nativeName || targetLangObj?.name || 'target language'
 
         let displayPrompt = exercise.prompt || ''
-        if (/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i.test(displayPrompt)) {
-          const match = displayPrompt.match(/select\s+(the\s+)?(correct\s+)?image\s+for\s+["']?(.*?)["']?/i)
-          const target = match ? match[3] : ''
-          const targetLangObj = getLanguageById(langCode)
-          const targetLangName = targetLangObj?.name || 'target language'
-          displayPrompt = `What is "${target}" in ${targetLangName}?`
+        const quotedMatch = displayPrompt.match(/["'](.*?)["']/)
+        const extractedWord = quotedMatch ? quotedMatch[1] : (exercise.targetWord || exercise.word || exercise.translation || '')
+
+        if (isTarget) {
+          // Meaning -> Target Word question: prompt word MUST be in learner's preferred language (e.g. "बहीण", never English "Sister")
+          const rawMeaning = exercise.translation || extractedWord
+          const translatedSource = prefCode !== 'en' ? translateMeaning(rawMeaning, prefCode) : rawMeaning
+          displayPrompt = getPromptText('translate_to_target', prefCode, targetLangName, translatedSource)
+        } else {
+          // Target Word -> Meaning question: prompt word is target script (e.g. "બહેન")
+          const targetWord = exercise.targetWord || exercise.word || extractedWord
+          displayPrompt = getPromptText('meaning', prefCode, targetLangName, targetWord)
         }
 
         return (
@@ -348,7 +408,7 @@ export default function Lesson() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {sanitizedOptions.map((option, index) => {
-                const isMatch = option === cleanCorrect || option === exercise.correctAnswer
+                const isMatch = option === translatedCorrect || option === cleanCorrect || option === exercise.correctAnswer
                 return (
                   <motion.button
                     key={index}
@@ -459,12 +519,64 @@ export default function Lesson() {
           />
         )
 
-      case 'fill-blank':
+      case 'fill-blank': {
+        const instructionText = exercise.instruction || exercise.prompt || t('fill_blank') || 'Fill in the blank with the correct word'
+
+        let sentenceWithBlank = exercise.blankedSentence || exercise.sentence || ''
+        if (!sentenceWithBlank && exercise.sentenceContext && (exercise.word || exercise.correctAnswer)) {
+          const w = exercise.word || exercise.correctAnswer
+          sentenceWithBlank = exercise.sentenceContext.replace(w, '___')
+        }
+        if (!sentenceWithBlank && exercise.example && (exercise.word || exercise.correctAnswer)) {
+          const w = exercise.word || exercise.correctAnswer
+          sentenceWithBlank = exercise.example.replace(w, '___')
+        }
+        if (!sentenceWithBlank && exercise.prompt && exercise.prompt.includes('___')) {
+          sentenceWithBlank = exercise.prompt.includes(':')
+            ? exercise.prompt.split(':').slice(1).join(':').trim()
+            : exercise.prompt
+        }
+        if (!sentenceWithBlank) {
+          sentenceWithBlank = `... ___ ...`
+        }
+
+        const segments = sentenceWithBlank.split('___')
+
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] dark:text-white mb-6">
-              {exercise.prompt}
+          <div className="space-y-6">
+            <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] dark:text-white">
+              {instructionText}
             </h3>
+
+            {/* Sentence Callout Card with Interactive Blank */}
+            <div className="p-6 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center my-4">
+              <p className="text-2xl md:text-3xl font-bold tracking-wide text-slate-900 dark:text-white leading-relaxed">
+                {segments.map((segment, idx) => (
+                  <span key={idx}>
+                    {segment}
+                    {idx < segments.length - 1 && (
+                      <span className={`inline-block min-w-[90px] px-3 py-1 mx-2 border-b-4 text-center font-black transition-all ${
+                        showResult
+                          ? selectedAnswer === exercise.correctAnswer
+                            ? 'border-[#2F9E69] text-[#2F9E69] bg-[#2F9E69]/10 rounded-lg'
+                            : 'border-[#D84B42] text-[#D84B42] bg-[#D84B42]/10 rounded-lg'
+                          : selectedAnswer
+                            ? 'border-[#0B8F62] text-[#0B8F62] bg-[#0B8F62]/10 rounded-lg'
+                            : 'border-amber-400 text-amber-500 bg-amber-500/10 rounded-lg animate-pulse'
+                      }`}>
+                        {selectedAnswer || '______'}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </p>
+              {exercise.audioText && (
+                <div className="mt-4 flex justify-center">
+                  <AudioButton text={exercise.audioText} languageId={user?.learningLanguage || 'gu'} />
+                </div>
+              )}
+            </div>
+
             {exercise.options && exercise.options.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {exercise.options.map((option, index) => (
@@ -516,6 +628,7 @@ export default function Lesson() {
             )}
           </div>
         )
+      }
 
       default: {
         return (
@@ -632,7 +745,7 @@ export default function Lesson() {
           
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-[#77736B] dark:text-slate-400">
-              {lesson.name}
+              {getExerciseHeader()}
             </span>
           </div>
 

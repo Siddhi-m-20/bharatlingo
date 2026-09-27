@@ -16,6 +16,7 @@
 
 import { getLessonsForLanguage } from '../data/lessons/index.js'
 import { getLanguageById } from '../data/languages.js'
+import { getPromptText, getLocalizedTopicName } from '../data/translations.js'
 import {
   getLearnerProfile,
   getWeakAreas,
@@ -83,7 +84,7 @@ const TOPIC_KEYWORDS = {
   weather:    /rain|sun|wind|cold|hot|season|cloud|storm|snow|weather/i,
   emotions:   /happy|sad|angry|love|fear|surprise|joy|worry|calm|excited/i,
   culture:    /festival|tradition|dance|music|art|celebration|culture|religion/i,
-  grammar:    /is|are|am|was|were|will|want|have|need/i,
+  grammar:    /verb|sentence|grammar|is|are|am|was|were|will|want|have|need|eat|drink|go|come|speak|read|write|do|make|can|see|i\b|you\b|he\b|she\b|we\b|they\b|this\b|that\b/i,
 }
 
 // ── Extract Vocabulary matching a topic ──────────────────────────────────────
@@ -184,12 +185,16 @@ function generatePedagogicalRationale({ topic, weakAreas, reviewCandidates, prof
  * CORE: Generate a single 10–12 exercise Adaptive Lesson
  */
 export function generateAdaptiveLesson({
-  langId = 'hi',
-  preferredLang = 'en',
+  langId: propLangId,
+  languageId: propLanguageId,
+  preferredLang: propPreferredLang,
+  preferredLanguage: propPreferredLanguage,
   topicId = null,
   level = 'beginner',
   goal = 'conversation',
 }) {
+  const langId = propLangId || propLanguageId || 'hi'
+  const preferredLang = propPreferredLang || propPreferredLanguage || 'en'
   const targetLangMeta = getLanguageById(langId) || { name: 'Hindi', nativeName: 'हिन्दी' }
   const targetLangName = `${targetLangMeta.name} (${targetLangMeta.nativeName})`
 
@@ -274,7 +279,7 @@ export function generateAdaptiveLesson({
     challengeExercises.push({
       id: `ex_read_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       type: 'reading',
-      prompt: 'Read the short passage and answer the question',
+      prompt: getPromptText('reading', preferredLang, targetLangName),
       passage: p.passage,
       passageTranslation: p.translation,
       question: p.question,
@@ -313,12 +318,15 @@ export function generateAdaptiveLesson({
   }
 
   const sessionId = `${langId}-adaptive-${topic.id}-${Date.now()}`
+  const localizedTopicTitle = getLocalizedTopicName(topic.id, preferredLang) || topic.name
 
   return {
     id: sessionId,
-    name: `${topic.name}`,
+    name: localizedTopicTitle,
+    title: localizedTopicTitle,
     nameNative: targetLangMeta.nativeName,
     topicId: topic.id,
+    topic: topic.id,
     topicIcon: topic.icon,
     description: rationale,
     rationale,

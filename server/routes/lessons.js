@@ -12,7 +12,8 @@ const router = express.Router()
 router.get('/lessons/adaptive', (req, res) => {
   try {
     const { languageId = 'hi', goal = 'conversation', ageRange = 'adult', level = 'beginner', topicId = null } = req.query
-    const lesson = getAdaptiveLesson({ languageId, goal, ageRange, level, topicId })
+    const preferredLanguage = req.query.preferredLanguage || req.query.preferredLang || 'en'
+    const lesson = getAdaptiveLesson({ languageId, goal, ageRange, level, topicId, preferredLanguage })
     res.json(lesson)
   } catch (err) {
     console.error('Adaptive lesson error:', err)

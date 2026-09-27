@@ -154,7 +154,15 @@ export default function Assessment() {
       navigate('/onboarding')
       return
     }
-    if (user.hasCompletedAssessment || user.assessmentScore !== null && user.assessmentScore !== undefined) {
+    const isExistingLearner = Boolean(
+      user.hasCompletedAssessment ||
+      (Array.isArray(user.completedLessons) && user.completedLessons.length > 0) ||
+      (Number(user.xp) || 0) > 0 ||
+      user.learningPlan ||
+      (user.assessmentScore !== null && user.assessmentScore !== undefined)
+    )
+    if (isExistingLearner) {
+      sessionStorage.removeItem('bharatlingo_assessment_required')
       navigate('/dashboard', { replace: true })
       return
     }

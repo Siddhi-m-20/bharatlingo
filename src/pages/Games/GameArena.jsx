@@ -567,15 +567,43 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white">
-                      Match the Image
+                      {t('match_visual') || 'Match the Image'}
                     </h2>
                     <p className="text-xs text-[#77736B] dark:text-slate-400">
-                      Select the target language word that matches this visual.
+                      {t('select_word_for_concept') || 'Select the target language word for this concept.'}
                     </p>
                   </div>
 
-                  <div className="w-24 h-24 mx-auto rounded-3xl bg-white dark:bg-slate-900 border-2 border-[#E8E6E0] dark:border-slate-800 flex items-center justify-center text-5xl shadow-sm">
-                    {currentRound.emoji}
+                  {/* Visual Presentation Card */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-36 h-36 mx-auto rounded-3xl bg-white dark:bg-slate-900 border-2 border-[#E8E6E0] dark:border-slate-800 flex items-center justify-center p-3 shadow-md hover:shadow-lg transition-all overflow-hidden relative group">
+                      <img
+                        src={currentRound.image || '/images/vocab/default.svg'}
+                        alt={currentRound.meaning || 'Vocabulary Illustration'}
+                        className="w-full h-full object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = '/images/vocab/default.svg'
+                        }}
+                      />
+                    </div>
+
+                    {/* Prominent Concept Clue Badge so learner always clearly understands what the image is asking */}
+                    {currentRound.meaning && (
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 shadow-xs">
+                        <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wide">
+                          {t('concept_meaning') || 'Meaning'}:
+                        </span>
+                        <span className="text-base font-black text-emerald-800 dark:text-emerald-300">
+                          {currentRound.meaning}
+                        </span>
+                        {currentRound.pronunciation && (
+                          <span className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
+                            ({currentRound.pronunciation})
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -880,9 +908,9 @@ export default function GameArena() {
                   +{rewards.xpEarned}
                 </p>
               </div>
-              <div className="p-3 bg-cyan-50 dark:bg-cyan-950/40 rounded-2xl border border-cyan-200 dark:border-cyan-900/60 text-center">
-                <p className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400 uppercase">Gems</p>
-                <p className="text-lg font-black text-cyan-700 dark:text-cyan-400 mt-0.5">
+              <div className="p-3 bg-sky-50 dark:bg-sky-950/40 rounded-2xl border border-sky-200 dark:border-sky-900/60 text-center">
+                <p className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase">Gems</p>
+                <p className="text-lg font-black text-sky-700 dark:text-sky-400 mt-0.5">
                   +{rewards.gemsEarned}
                 </p>
               </div>

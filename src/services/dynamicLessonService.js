@@ -42,7 +42,14 @@ export async function fetchNextAdaptiveLesson({
 }) {
   // 1. Try server
   try {
-    const params = new URLSearchParams({ languageId, goal, level, ...(topicId ? { topicId } : {}) })
+    const params = new URLSearchParams({
+      languageId,
+      goal,
+      level,
+      preferredLanguage: preferredLang,
+      preferredLang,
+      ...(topicId ? { topicId } : {}),
+    })
     const data = await apiFetch(`/lessons/adaptive?${params}`)
     if (data && data.exercises && data.exercises.length > 0) return data
   } catch {

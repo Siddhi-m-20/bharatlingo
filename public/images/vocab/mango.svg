@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-mango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF9C3"/>
+      <stop offset="100%" stop-color="#FEF08A"/>
+    </linearGradient>
+    <linearGradient id="mango-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FACC15"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-mango)"/>
+  <g transform="translate(35, 30)">
+    <!-- Mango Shape -->
+    <path d="M45 22 C25 22 15 42 15 65 C15 90 35 105 52 105 C75 105 82 80 80 62 C78 40 65 22 45 22 Z" fill="url(#mango-grad)" stroke="#B45309" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Highlight -->
+    <path d="M28 38 C22 48 22 68 28 80" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    <!-- Stem -->
+    <path d="M45 22 Q42 12 40 8" fill="none" stroke="#78350F" stroke-width="4" stroke-linecap="round"/>
+    <!-- Leaf -->
+    <path d="M42 18 C30 12 20 22 28 26 C36 28 42 20 42 18 Z" fill="#16A34A" stroke="#14532D" stroke-width="2"/>
+  </g>
+</svg>

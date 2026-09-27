@@ -254,6 +254,78 @@ export class SpeechRecognitionService {
         this._recognition.stop()
       } catch (_) {}
     }
+    if (this._state === REC_STATE.RECORDING || this._state === REC_STATE.REQUESTING) {
+      this._setState(REC_STATE.IDLE)
+    }
+  }
+
+  stopRecording() {
+    return this.stop()
+  }
+
+  stopListening() {
+    return this.stop()
+  }
+
+  // ── Flexible start methods ────────────────────────────────────────────────
+  startRecording(langId, arg2, arg3) {
+    let callbacks = {}
+    let targetText = ''
+    if (typeof arg2 === 'string') {
+      targetText = arg2
+      callbacks = arg3 || {}
+    } else if (typeof arg2 === 'object' && arg2 !== null) {
+      callbacks = arg2
+      targetText = typeof arg3 === 'string' ? arg3 : ''
+    }
+    return this.start(langId, targetText, callbacks)
+  }
+
+  startListening(options = {}) {
+    const { languageId = 'hi', targetWord = '', onResult, onError, onStateChange } = options
+    const wrappedCallbacks = {
+      onResult: (res) => {
+        if (onResult) {
+          onResult(res.transcript, true)
+        }
+      },
+      onError: (err) => {
+        if (onError) onError(err)
+      },
+      onStateChange: (st) => {
+        if (onStateChange) onStateChange(st)
+      },
+    }
+    return this.start(languageId, targetWord, wrappedCallbacks)
+  }
+
+  // ── Static methods for class consumers (e.g. GameArena.jsx) ───────────────
+  static start(langId, targetText, callbacks) {
+    return speechRecognitionService.start(langId, targetText, callbacks)
+  }
+
+  static startRecording(langId, arg2, arg3) {
+    return speechRecognitionService.startRecording(langId, arg2, arg3)
+  }
+
+  static startListening(options) {
+    return speechRecognitionService.startListening(options)
+  }
+
+  static stop() {
+    return speechRecognitionService.stop()
+  }
+
+  static stopRecording() {
+    return speechRecognitionService.stopRecording()
+  }
+
+  static stopListening() {
+    return speechRecognitionService.stopListening()
+  }
+
+  static isSupported() {
+    return speechRecognitionService.isSupported()
   }
 
   // ── Cleanup ───────────────────────────────────────────────────────────────

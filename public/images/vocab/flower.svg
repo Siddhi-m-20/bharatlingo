@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-flower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF2F8"/>
+      <stop offset="100%" stop-color="#FCE7F3"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-flower)"/>
+  <g transform="translate(35, 25)">
+    <!-- Stem -->
+    <path d="M45 65 Q48 90 45 110" fill="none" stroke="#16A34A" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- Stem Leaf -->
+    <path d="M47 85 C60 80 65 90 50 95 Z" fill="#22C55E" stroke="#15803D" stroke-width="2"/>
+    <!-- Petals -->
+    <circle cx="45" cy="30" r="14" fill="#EC4899" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="60" cy="45" r="14" fill="#EC4899" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="45" cy="60" r="14" fill="#EC4899" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="30" cy="45" r="14" fill="#EC4899" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="34" cy="34" r="14" fill="#F472B6" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="56" cy="34" r="14" fill="#F472B6" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="56" cy="56" r="14" fill="#F472B6" stroke="#BE185D" stroke-width="2.5"/>
+    <circle cx="34" cy="56" r="14" fill="#F472B6" stroke="#BE185D" stroke-width="2.5"/>
+    <!-- Center disk -->
+    <circle cx="45" cy="45" r="13" fill="#FBBF24" stroke="#D97706" stroke-width="3"/>
+  </g>
+</svg>

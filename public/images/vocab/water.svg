@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-water" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BAE6FD"/>
+    </linearGradient>
+    <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="24" fill="url(#bg-water)"/>
+  <!-- Glass Tumbler with Water -->
+  <g transform="translate(45, 30)">
+    <!-- Glass body background -->
+    <path d="M12 20 L58 20 L51 105 C50 110 44 114 38 114 L32 114 C26 114 20 110 19 105 Z" fill="#FFFFFF" opacity="0.6" stroke="#0284C7" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Water liquid fill -->
+    <path d="M15 45 Q35 38 55 45 L51 105 C50 110 44 114 38 114 L32 114 C26 114 20 110 19 105 Z" fill="url(#water-grad)"/>
+    <!-- Surface wave highlight -->
+    <path d="M15 45 Q35 38 55 45 Q35 52 15 45 Z" fill="#7DD3FC" opacity="0.8"/>
+    <!-- Glass shine reflection -->
+    <path d="M22 28 L24 100" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+    <!-- Droplet -->
+    <path d="M35 10 C35 10 43 20 43 25 C43 29 39 32 35 32 C31 32 27 29 27 25 C27 20 35 10 35 10 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+  </g>
+</svg>

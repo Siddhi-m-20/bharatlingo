@@ -30,7 +30,13 @@ function mapProfileToUser(profile, authUser) {
     dailyGoal: profile?.daily_goal || 10,
     ageRange: profile?.age_range || 'adult',
     assessmentScore: profile?.assessment_score ?? null,
-    hasCompletedAssessment: profile?.has_completed_assessment ?? (profile?.assessment_score !== null && profile?.assessment_score !== undefined || existingCompleted.length > 0),
+    hasCompletedAssessment: Boolean(
+      profile?.has_completed_assessment ||
+      (profile?.assessment_score !== null && profile?.assessment_score !== undefined) ||
+      existingCompleted.length > 0 ||
+      (Number(profile?.xp) || 0) > 0 ||
+      profile?.learning_plan
+    ),
     learningPlan: profile?.learning_plan || null,
     xp: Number(profile?.xp) || 0,
     gems: profile?.gems !== undefined ? Number(profile.gems) : 100,
@@ -51,6 +57,14 @@ function mergeUserProfiles(remoteProfile, localProfile) {
   if (!remoteProfile && !localProfile) return null
   if (!remoteProfile) return localProfile
   if (!localProfile) return remoteProfile
+
+  const isSameUser =
+    (remoteProfile.id && localProfile.id && String(remoteProfile.id) === String(localProfile.id)) ||
+    (remoteProfile.email && localProfile.email && remoteProfile.email.toLowerCase() === localProfile.email.toLowerCase())
+
+  if (!isSameUser) {
+    return remoteProfile
+  }
 
   const mergedCompleted = Array.from(
     new Set([
@@ -441,6 +455,88 @@ function runStateTransitionTests() {
       mergedRehydratedState,
       {},
       ['xp', 'gems', 'streak', 'completedLessons', 'legendaryCompleted', 'achievements', 'learningLanguage']
+    )
+  }
+
+  // -------------------------------------------------------------
+  // ACTIVITY 8: User Switching & Identity Isolation (Zero XP Leakage)
+  // -------------------------------------------------------------
+  {
+    // Local session belongs to User A who has high progress
+    const userALocalSession = {
+      id: 'usr_1',
+      name: 'Rohan',
+      email: 'rohan@example.com',
+      learningLanguage: 'hi',
+      xp: 250,
+      gems: 180,
+      streak: 5,
+      completedLessons: ['hi-greetings-1', 'hi-greetings-2'],
+      hasCompletedAssessment: true,
+    }
+
+    // User B with zero progress logs into the same browser
+    const userBServerProfile = {
+      id: 'usr_2',
+      name: 'Priya',
+      email: 'priya@example.com',
+      learning_language: 'gu',
+      xp: 0,
+      gems: 100,
+      streak: 0,
+      completed_lessons: [],
+      has_completed_assessment: false,
+    }
+
+    const mappedUserB = mapProfileToUser(userBServerProfile, { id: 'usr_2' })
+    const resolvedUserB = mergeUserProfiles(mappedUserB, userALocalSession)
+
+    assertState(
+      'User Switch Identity Isolation (User B with 0 XP NEVER Inherits User A Progress)',
+      userALocalSession,
+      resolvedUserB,
+      {
+        id: 'usr_2',
+        name: 'Priya',
+        email: 'priya@example.com',
+        learningLanguage: 'gu',
+        xp: 0,
+        streak: 0,
+        completedLessons: [],
+        hasCompletedAssessment: false,
+      },
+      []
+    )
+  }
+
+  // -------------------------------------------------------------
+  // ACTIVITY 9: Assessment Completion Invariance (SQL default false does not wipe active learner)
+  // -------------------------------------------------------------
+  {
+    // Existing learner in DB where has_completed_assessment is SQL default false
+    const existingLearnerDB = {
+      id: 'usr_3',
+      name: 'Aarav',
+      email: 'aarav@example.com',
+      learning_language: 'mr',
+      xp: 120,
+      gems: 150,
+      streak: 3,
+      completed_lessons: ['mr-basics-1'],
+      has_completed_assessment: false, // Default from SQL column
+    }
+
+    const mapped = mapProfileToUser(existingLearnerDB, { id: 'usr_3' })
+
+    assertState(
+      'Existing Learner Assessment Completion (xp > 0 and lessons > 0 marks hasCompletedAssessment true)',
+      existingLearnerDB,
+      mapped,
+      {
+        hasCompletedAssessment: true,
+        learningLanguage: 'mr',
+      },
+      ['xp', 'streak']
     )
   }
 

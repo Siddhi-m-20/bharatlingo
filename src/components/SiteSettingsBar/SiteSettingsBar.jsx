@@ -38,14 +38,14 @@ export default function SiteSettingsBar({ inline = false }) {
         whileTap={{ scale: 0.95 }}
         className={
           inline
-            ? 'flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-all shadow-xs cursor-pointer'
+            ? 'flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-all shadow-xs cursor-pointer'
             : 'flex items-center gap-2 px-3.5 py-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-[#E8E6E0] dark:border-slate-700 shadow-xl rounded-full text-xs font-black text-[#25231F] dark:text-white transition-all hover:shadow-2xl'
         }
         title={t('theme_language')}
       >
-        <Palette size={15} className="text-[#0B8F62] dark:text-[#34D399]" />
-        <Globe size={15} className="text-[#3B82F6]" />
-        <span>{t('theme_language')}</span>
+        <Palette size={15} className="text-[#0B8F62] dark:text-[#34D399] shrink-0" />
+        <Globe size={15} className="text-[#3B82F6] shrink-0" />
+        <span className="hidden md:inline">{t('theme_language')}</span>
       </motion.button>
 
       {/* Settings Popover */}

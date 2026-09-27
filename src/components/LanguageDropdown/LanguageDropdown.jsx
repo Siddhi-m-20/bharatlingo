@@ -36,6 +36,7 @@ export default function LanguageDropdown() {
   const handleSelectPreferred = (langId) => {
     if (langId !== user?.preferredLanguage) {
       updateUser({ preferredLanguage: langId })
+      setSiteLanguage(langId)
     }
   }
 

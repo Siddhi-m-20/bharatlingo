@@ -11,6 +11,7 @@ import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import LanguageFlag from '../../components/LanguageFlag/LanguageFlag'
 import Button from '../../components/Button'
+import ActivityChart from '../../components/ActivityChart/ActivityChart'
 import {
   Award,
   Flame,
@@ -247,7 +248,7 @@ export default function Profile() {
           )}
         </AnimatePresence>
 
-        {/* ── View Profile Card / Edit Profile Card ── */}
+        {/* View Profile Card / Edit Profile Card */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-6 shadow-sm">
           {!isEditing ? (
             /* View Mode */
@@ -559,6 +560,9 @@ export default function Profile() {
             </form>
           )}
         </div>
+
+        {/* Shared 14-Day Activity Chart */}
+        <ActivityChart activity={analytics.activity} />
 
         {/* Learning Plan Summary (if available) */}
         {user?.learningPlan && (

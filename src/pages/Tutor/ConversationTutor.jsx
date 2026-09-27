@@ -245,7 +245,7 @@ export default function ConversationTutor() {
         </div>
 
         {/* Chat Transcript Area */}
-        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-5 shadow-sm overflow-y-auto space-y-4 min-h-[380px] max-h-[500px]">
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-4 sm:p-5 shadow-sm overflow-y-auto space-y-4 min-h-[220px] max-h-[520px]">
           {chatHistory.map((msg) => {
             const isTutor = msg.sender === 'tutor'
             return (

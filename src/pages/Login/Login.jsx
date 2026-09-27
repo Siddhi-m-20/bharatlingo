@@ -9,7 +9,7 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const { login, loginWithGoogle } = useAuth()
-  const { t } = useTheme()
+  const { t, setSiteLanguage } = useTheme()
   
   const successMessage = location.state?.successMessage
   const prefillEmail = location.state?.email || ''
@@ -20,6 +20,10 @@ export default function Login() {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setSiteLanguage('en')
+  }, [setSiteLanguage])
 
   useEffect(() => {
     if (prefillEmail) {
