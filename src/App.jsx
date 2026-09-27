@@ -5,6 +5,7 @@ import { ProgressProvider } from './services/progress'
 import { ThemeProvider } from './services/themeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
+import PWAInstallPrompt from './components/PWAInstallPrompt/PWAInstallPrompt'
 
 // Eagerly loaded entry pages
 import Welcome from './pages/Welcome'
@@ -202,6 +203,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          <PWAInstallPrompt />
         </ErrorBoundary>
           </ProgressProvider>
         </AuthProvider>

@@ -3,6 +3,7 @@ const CACHE_NAME = 'bharatlingo-shell-v1'
 
 const PRECACHE_ASSETS = [
   '/',
+  '/index.html',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/icon-192.png',
@@ -54,11 +55,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Navigation requests: Try network, fall back to cached shell
+  // Navigation requests: Try network, fall back to cached SPA shell
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(async () => {
-        const cached = await caches.match('/')
+        const cached = (await caches.match('/index.html')) || (await caches.match('/'))
         return cached || new Response('Offline', { status: 503, statusText: 'Offline' })
       })
     )

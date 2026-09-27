@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js')
+      .register('/sw.js', { scope: '/' })
       .then((reg) => {
         // SW registered
       })
