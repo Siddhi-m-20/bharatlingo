@@ -634,10 +634,16 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     if (isSupabaseConfigured() && supabase) {
       try {
+        const redirectOrigin =
+          typeof window !== 'undefined' && window.location?.origin
+            ? window.location.origin.replace(/\/$/, '')
+            : 'https://bharatlingo.vercel.app'
+        const redirectToUrl = `${redirectOrigin}/onboarding`
+
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/onboarding`,
+            redirectTo: redirectToUrl,
           },
         })
         if (error) {

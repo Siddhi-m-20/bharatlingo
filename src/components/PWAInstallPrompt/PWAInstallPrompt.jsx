@@ -16,6 +16,8 @@ export default function PWAInstallPrompt() {
     }
   })
 
+  const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -28,38 +30,60 @@ export default function PWAInstallPrompt() {
     setIsStandalone(standaloneMode)
     if (standaloneMode) return
 
-    // 2. Detect iOS device where beforeinstallprompt is unavailable
+    // 2. Check for early captured beforeinstallprompt event on window
+    if (window.__BHARATLINGO_DEFERRED_PROMPT__) {
+      setDeferredPrompt(window.__BHARATLINGO_DEFERRED_PROMPT__)
+    }
+
+    // 3. Detect mobile devices (iOS / Android)
     const ua = window.navigator.userAgent.toLowerCase()
     const isIosDevice = /iphone|ipad|ipod/.test(ua) && !window.MSStream
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
     setIsIOS(isIosDevice)
+    setIsMobile(isMobileDevice)
 
-    // 3. Capture beforeinstallprompt event for Android Chrome & supported browsers
+    // 4. Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault()
+      window.__BHARATLINGO_DEFERRED_PROMPT__ = e
       setDeferredPrompt(e)
+    }
+
+    const handleCustomPromptEvent = () => {
+      if (window.__BHARATLINGO_DEFERRED_PROMPT__) {
+        setDeferredPrompt(window.__BHARATLINGO_DEFERRED_PROMPT__)
+      }
     }
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null)
+      window.__BHARATLINGO_DEFERRED_PROMPT__ = null
       setIsStandalone(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('bharatlingo_beforeinstallprompt', handleCustomPromptEvent)
     window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('bharatlingo_beforeinstallprompt', handleCustomPromptEvent)
       window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
+    const promptEvent = deferredPrompt || window.__BHARATLINGO_DEFERRED_PROMPT__
+    if (!promptEvent) return
+
+    setDeferredPrompt(null)
+    window.__BHARATLINGO_DEFERRED_PROMPT__ = null
+
     try {
-      const choiceResult = await deferredPrompt.userChoice
-      if (choiceResult.outcome === 'accepted') {
-        setDeferredPrompt(null)
+      promptEvent.prompt()
+      const choiceResult = await promptEvent.userChoice
+      if (choiceResult?.outcome === 'accepted') {
+        setIsStandalone(true)
       }
     } catch (err) {
       console.warn('[PWA] Prompt outcome error:', err)
@@ -80,8 +104,8 @@ export default function PWAInstallPrompt() {
     return null
   }
 
-  // Show banner when beforeinstallprompt is ready OR when on iOS
-  const shouldShow = Boolean(deferredPrompt || isIOS)
+  // Show banner when beforeinstallprompt is ready OR on mobile devices
+  const shouldShow = Boolean(deferredPrompt || isMobile || isIOS)
   if (!shouldShow) return null
 
   return (

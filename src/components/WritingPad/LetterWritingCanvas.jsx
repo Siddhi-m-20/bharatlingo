@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, RotateCcw, Check, Sparkles, ArrowRight } from 'lucide-react'
 import { AudioService } from '../../services/audio/AudioService'
 import { getStrokesForCharacter } from '../../data/strokeData'
+import { useTheme } from '../../services/themeContext'
 
 export default function LetterWritingCanvas({
   character = 'अ',
@@ -16,6 +17,7 @@ export default function LetterWritingCanvas({
   onClose,
   showTopBar = true,
 }) {
+  const { t } = useTheme()
   const strokes = getStrokesForCharacter(character, languageId)
   const hasStrokes = Boolean(strokes && strokes.length > 0)
   
@@ -336,7 +338,7 @@ export default function LetterWritingCanvas({
           <button
             onClick={handleReset}
             className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Reset letter"
+            title={t('reset_letter') || 'Reset Letter'}
           >
             <RotateCcw size={16} />
           </button>
@@ -347,26 +349,34 @@ export default function LetterWritingCanvas({
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="text-left">
           <h2 className="text-lg sm:text-xl font-black text-[#25231F] dark:text-white tracking-tight leading-tight">
-            Trace the character
+            {t('trace_character') || 'Trace the character'}
           </h2>
           {example && (
             <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium mt-0.5">
-              Example: <span className="font-bold text-[#25231F] dark:text-slate-200">{example}</span>
+              {t('example') || 'Example'}: <span className="font-bold text-[#25231F] dark:text-slate-200">{example}</span>
             </p>
           )}
         </div>
 
-        {/* Compact Character & Audio Speaker Capsule */}
-        <div className="flex items-center gap-2 bg-[#F7F5EF] dark:bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/70 shadow-xs shrink-0">
+        {/* Compact Character & Audio Speaker Capsule + Reset Button */}
+        <div className="flex items-center gap-1.5 bg-[#F7F5EF] dark:bg-slate-800/90 p-1.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-700/70 shadow-xs shrink-0">
           <button
             type="button"
             onClick={handlePlayAudio}
             className="w-8 h-8 rounded-xl bg-[#1CB0F6] hover:bg-[#0ea5e9] active:scale-95 text-white flex items-center justify-center shadow-xs transition-all cursor-pointer shrink-0"
-            title="Listen to character pronunciation"
+            title={t('listen_pronunciation') || 'Listen to character pronunciation'}
           >
             <Volume2 size={16} className="fill-current" />
           </button>
-          <div className="flex flex-col text-left pr-1">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 active:scale-95 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-xs transition-all cursor-pointer shrink-0"
+            title={t('reset_letter') || 'Reset Letter'}
+          >
+            <RotateCcw size={15} />
+          </button>
+          <div className="flex flex-col text-left pr-1 pl-1">
             <span className="text-2xl font-black text-[#25231F] dark:text-white leading-none">
               {character}
             </span>
@@ -388,10 +398,10 @@ export default function LetterWritingCanvas({
               {roman}
             </span>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold mb-2">
-              <span>Tracing unavailable for this character</span>
+              <span>{t('tracing_unavailable_character') || 'Tracing unavailable for this character'}</span>
             </div>
             <p className="text-[11px] text-[#77736B] dark:text-slate-400 max-w-[210px] leading-relaxed">
-              Authentic stroke guides are currently active for Hindi, Marathi, and English.
+              {t('writing_unavailable_msg') || 'Interactive writing practice is not yet available for this script.'}
             </p>
           </div>
         ) : (
@@ -577,7 +587,7 @@ export default function LetterWritingCanvas({
                 <Check size={32} strokeWidth={3.5} />
               </motion.div>
               <span className="text-sm font-black text-[#58CC02] uppercase tracking-wider">
-                Nicely Traced!
+                {t('nicely_traced') || 'Nicely Traced!'}
               </span>
             </motion.div>
           )}
@@ -592,7 +602,7 @@ export default function LetterWritingCanvas({
             onClick={onNext || handlePlayAudio}
             className="w-full py-3 rounded-2xl uppercase tracking-wider font-black text-sm flex items-center justify-center gap-2 bg-[#1CB0F6] hover:bg-[#0ea5e9] active:translate-y-0.5 text-white shadow-[0_3px_0_#0284c7] cursor-pointer transition-all"
           >
-            <span>Next Letter</span>
+            <span>{t('next_letter') || 'Next Letter'}</span>
             <ArrowRight size={16} strokeWidth={3} />
           </button>
         ) : (
@@ -606,7 +616,7 @@ export default function LetterWritingCanvas({
                 : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
             }`}
           >
-            <span>{isCompleted ? 'Check' : 'Check'}</span>
+            <span>{t('check_answer') || t('continue') || 'Check'}</span>
             {isCompleted && <ArrowRight size={16} strokeWidth={3} />}
           </button>
         )}
