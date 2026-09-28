@@ -111,8 +111,10 @@ export default function Dashboard() {
   const getLocalizedRationale = useCallback((rationale) => {
     if (!rationale) return t('lesson_rationale_general') || 'Personalized exercise sequence aligned with your goals.'
     const norm = String(rationale).toLowerCase()
+    if (norm.includes('spaced review')) return t('lesson_rationale_spaced_review') || rationale
+    if (norm.includes('targeted practice')) return t('lesson_rationale_targeted_practice') || rationale
+    if (norm.includes('mastery path') || norm.includes('mastery')) return t('lesson_rationale_mastery') || rationale
     if (norm.includes('travel')) return t('lesson_rationale_travel') || rationale
-    if (norm.includes('conversation')) return t('lesson_rationale_conversation') || rationale
     return t('lesson_rationale_general') || rationale
   }, [t])
 

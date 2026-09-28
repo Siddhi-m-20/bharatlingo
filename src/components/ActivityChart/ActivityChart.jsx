@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Activity, Flame, Zap, Clock } from 'lucide-react'
+import { useTheme } from '../../services/themeContext'
 
 function getDateKey(date) {
   const d = new Date(date)
@@ -14,6 +15,7 @@ function formatDuration(seconds) {
 }
 
 export default function ActivityChart({ activity = [], className = '' }) {
+  const { t, siteLanguage } = useTheme()
   const todayKey = useMemo(() => getDateKey(new Date()), [])
 
   const activityByDate = useMemo(() => {
@@ -43,10 +45,13 @@ export default function ActivityChart({ activity = [], className = '' }) {
       d.setDate(d.getDate() - (13 - index))
       const key = getDateKey(d)
       const act = activityByDate[key] || { exercises_completed: 0, xp_earned: 0, session_duration_seconds: 0 }
+      const locale = siteLanguage || 'en'
+      let formattedDay = d.toLocaleDateString(locale, { weekday: 'short' })
+      if (formattedDay.length > 4) formattedDay = formattedDay.slice(0, 3)
       return {
         date: d,
         dateKey: key,
-        dayName: d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2),
+        dayName: formattedDay,
         dayNum: d.getDate(),
         exercises: Number(act.exercises_completed) || 0,
         xp: Number(act.xp_earned) || 0,
@@ -54,12 +59,14 @@ export default function ActivityChart({ activity = [], className = '' }) {
         isToday: key === todayKey,
       }
     })
-  }, [activityByDate, todayKey])
+  }, [activityByDate, todayKey, siteLanguage])
 
   const totalExercises14 = past14Days.reduce((sum, d) => sum + d.exercises, 0)
   const totalXP14 = past14Days.reduce((sum, d) => sum + d.xp, 0)
   const totalSeconds14 = past14Days.reduce((sum, d) => sum + d.seconds, 0)
   const maxExercises14 = Math.max(...past14Days.map((d) => d.exercises), 1)
+
+  const exsLabel = t('exs_count') || 'exs'
 
   return (
     <div className={`bg-white dark:bg-slate-900 rounded-3xl border-2 border-[#E8E6E0] dark:border-slate-800 p-5 shadow-sm space-y-4 ${className}`}>
@@ -71,10 +78,10 @@ export default function ActivityChart({ activity = [], className = '' }) {
           </div>
           <div>
             <h3 className="text-sm font-black text-[#25231F] dark:text-white uppercase tracking-wider">
-              14-Day Practice Activity
+              {t('practice_activity_14day') || '14-Day Practice Activity'}
             </h3>
             <p className="text-[11px] text-[#77736B] dark:text-slate-400">
-              Daily exercise volume and consistency trend
+              {t('practice_activity_subtitle') || 'Daily exercise volume and consistency trend'}
             </p>
           </div>
         </div>
@@ -83,7 +90,7 @@ export default function ActivityChart({ activity = [], className = '' }) {
         <div className="flex items-center gap-3 text-xs font-bold">
           <span className="flex items-center gap-1 text-[#0B8F62] bg-[#0B8F62]/10 px-2.5 py-1 rounded-full">
             <Flame size={13} />
-            {totalExercises14} exs
+            {totalExercises14} {exsLabel}
           </span>
           <span className="flex items-center gap-1 text-[#F39A45] bg-[#F39A45]/10 px-2.5 py-1 rounded-full">
             <Zap size={13} />
@@ -106,7 +113,7 @@ export default function ActivityChart({ activity = [], className = '' }) {
                 {/* Tooltip on Hover */}
                 <div className="absolute -top-10 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                   <div className="bg-[#25231F] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-lg whitespace-nowrap">
-                    {day.dayName} {day.dayNum}: {day.exercises} exs ({day.xp} XP)
+                    {day.dayName} {day.dayNum}: {day.exercises} {exsLabel} ({day.xp} XP)
                   </div>
                   <div className="w-1.5 h-1.5 bg-[#25231F] rotate-45 -mt-1" />
                 </div>
@@ -136,4 +143,5 @@ export default function ActivityChart({ activity = [], className = '' }) {
       </div>
     </div>
   )
+}
 }
