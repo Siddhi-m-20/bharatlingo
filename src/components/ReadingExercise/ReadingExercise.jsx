@@ -39,7 +39,7 @@ export default function ReadingExercise({
             type="button"
             onClick={playPassageAudio}
             className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 transition-all shadow-sm"
-            title="Listen to story passage"
+            title={t('listen_to_passage')}
           >
             <Volume2 className="w-4 h-4" />
           </button>

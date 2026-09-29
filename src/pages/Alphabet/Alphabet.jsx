@@ -142,7 +142,7 @@ export default function Alphabet() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl mb-6">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> Script & Alphabet Mastery
+              <Sparkles className="w-3.5 h-3.5" /> {t('script_alphabet_mastery')}
             </div>
             <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
               {scriptData.scriptName}
@@ -166,7 +166,7 @@ export default function Alphabet() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {scriptData.vowelsTitle || 'Vowels'}
+            {scriptData.vowelsTitle || t('vowels_tab')}
           </button>
 
           <button
@@ -177,7 +177,7 @@ export default function Alphabet() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {scriptData.consonantsTitle || 'Consonants'}
+            {scriptData.consonantsTitle || t('consonants_tab')}
           </button>
 
           <button
@@ -189,7 +189,7 @@ export default function Alphabet() {
             }`}
           >
             <PenTool size={13} />
-            <span>Letter Writing</span>
+            <span>{t('letter_writing')}</span>
           </button>
 
           <button
@@ -200,7 +200,7 @@ export default function Alphabet() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            Practice Quiz
+            {t('practice_quiz')}
           </button>
         </div>
 
@@ -243,7 +243,7 @@ export default function Alphabet() {
               <div className="flex items-center gap-1.5 text-xs font-black text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-3 py-1.5 rounded-xl">
                 <CheckCircle2 size={15} />
                 <span>
-                  {masteredLetters.length} / {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} Mastered
+                  {masteredLetters.length} / {(scriptData.vowels?.length || 0) + (scriptData.consonants?.length || 0)} {t('mastered_count')}
                 </span>
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function Alphabet() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm">
               <div className="flex items-center justify-between gap-2 mb-2 px-1">
                 <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Pick Character ({writingIndex + 1}/{writingList.length})
+                  {t('pick_character')} ({writingIndex + 1}/{writingList.length})
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -321,7 +321,7 @@ export default function Alphabet() {
         {activeTab === 'practice' && (
           <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-lg text-center">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-xs font-bold text-slate-500">Letter Recognition Test</span>
+              <span className="text-xs font-bold text-slate-500">{t('letter_recognition_test')}</span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 font-bold text-xs">
                 <Award className="w-3.5 h-3.5" /> Score: {score}
               </span>
@@ -330,14 +330,14 @@ export default function Alphabet() {
             {quizItem && (
               <div className="space-y-6">
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-                  Listen to the audio and choose the matching letter:
+                  {t('listen_choose_letter')}
                 </p>
 
                 <button
                   type="button"
                   onClick={() => playCharAudio(quizItem.char)}
                   className="w-20 h-20 mx-auto rounded-3xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
-                  title="Play pronunciation"
+                  title={t('play_pronunciation')}
                 >
                   <Volume2 className="w-8 h-8" />
                 </button>
@@ -381,13 +381,13 @@ export default function Alphabet() {
                 {quizFeedback !== null && (
                   <div className="pt-4 flex flex-col items-center gap-3 animate-in fade-in duration-200">
                     <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                      Word Example: <span className="text-emerald-600 dark:text-emerald-400 font-black">{quizItem.example}</span> ({quizItem.roman})
+                      {t('word_example_label')} <span className="text-emerald-600 dark:text-emerald-400 font-black">{quizItem.example}</span> ({quizItem.roman})
                     </div>
                     <button
                       onClick={startNewQuizQuestion}
                       className="px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
                     >
-                      Next Letter →
+                      {t('next_letter')}
                     </button>
                   </div>
                 )}

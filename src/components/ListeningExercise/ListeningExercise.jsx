@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import AudioButton from '../AudioButton/AudioButton'
 import { ttsService, AUDIO_STATE } from '../../services/audio/AudioService'
 import { Headphones, Sparkles, AlertCircle, Eye } from 'lucide-react'
+import { useTheme } from '../../services/themeContext'
 
 export default function ListeningExercise({
   prompt,
@@ -34,6 +35,7 @@ export default function ListeningExercise({
   level = 2,        // 1 | 2 | 3 | 4
   comprehensionQuestion,
 }) {
+  const { t } = useTheme()
   // Support both field names
   const textToSpeak = audioText || audioTarget || correctAnswer || ''
   const [hasPlayed, setHasPlayed] = useState(false)
@@ -169,7 +171,7 @@ export default function ListeningExercise({
             >
               <p className="text-xs font-medium text-amber-700 dark:text-amber-300 flex items-center justify-center gap-1.5">
                 <AlertCircle size={14} />
-                <span>Audio generation unavailable for this phrase.</span>
+                <span>{t('audio_unavailable') || 'Audio generation unavailable for this phrase.'}</span>
               </p>
               <button
                 type="button"
@@ -177,7 +179,7 @@ export default function ListeningExercise({
                 className="text-xs font-bold text-[#0B8F62] hover:underline flex items-center justify-center gap-1 mx-auto"
               >
                 <Eye size={13} />
-                <span>Reveal text to practice without penalty</span>
+                <span>{t('reveal_text_practice') || 'Reveal text to practice without penalty'}</span>
               </button>
             </motion.div>
           )}
@@ -190,7 +192,7 @@ export default function ListeningExercise({
             animate={{ opacity: 1, scale: 1 }}
             className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center max-w-md mx-auto"
           >
-            <p className="text-xs text-[#77736B] uppercase font-bold tracking-wider mb-1">Spoken phrase:</p>
+            <p className="text-xs text-[#77736B] uppercase font-bold tracking-wider mb-1">{t('spoken_phrase') || 'Spoken phrase:'}</p>
             <p className="text-lg font-bold text-[#0B8F62]">{textToSpeak}</p>
           </motion.div>
         )}

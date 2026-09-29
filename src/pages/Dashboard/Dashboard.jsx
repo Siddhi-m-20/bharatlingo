@@ -460,7 +460,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setShowPlanBanner(false)}
                   className="absolute top-2.5 right-3 text-white/70 hover:text-white text-lg font-bold"
-                  aria-label="Dismiss"
+                  aria-label={t('dismiss')}
                 >
                   ×
                 </button>
@@ -885,7 +885,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setShowStreakDetails(false)}
                   className="rounded-lg p-1.5 text-[#77736B] hover:bg-[#F7F5EF] dark:hover:bg-slate-800 cursor-pointer"
-                  aria-label="Close streak details"
+                  aria-label={t('close')}
                 >
                   <X size={18} />
                 </button>

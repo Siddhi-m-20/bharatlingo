@@ -5,6 +5,7 @@ import { useAuth } from '../../services/auth'
 import { languages } from '../../data/languages'
 import LanguageCard from '../../components/LanguageCard'
 import Button from '../../components/Button'
+import { useTheme } from '../../services/themeContext'
 
 const STEPS = {
   AGE:                0,
@@ -14,21 +15,21 @@ const STEPS = {
 }
 
 const AGE_RANGES = [
-  { id: 'child',       label: 'Under 13',  icon: '🌱', desc: 'Simple words, playful lessons' },
-  { id: 'teen',        label: '13–17',      icon: '🎮', desc: 'Casual, engaging exercises' },
-  { id: 'young-adult', label: '18–25',      icon: '💬', desc: 'Conversational & practical' },
-  { id: 'adult',       label: '26–49',      icon: '💼', desc: 'Goal-focused, efficient' },
-  { id: 'senior',      label: '50+',        icon: '🌸', desc: 'Clear pace, larger text' },
+  { id: 'child',       labelKey: 'age_under_13',  icon: '🌱', descKey: 'age_under_13_desc' },
+  { id: 'teen',        labelKey: 'age_13_17',      icon: '🎮', descKey: 'age_13_17_desc' },
+  { id: 'young-adult', labelKey: 'age_18_25',      icon: '💬', descKey: 'age_18_25_desc' },
+  { id: 'adult',       labelKey: 'age_26_49',      icon: '💼', descKey: 'age_26_49_desc' },
+  { id: 'senior',      labelKey: 'age_50_plus',    icon: '🌸', descKey: 'age_50_plus_desc' },
 ]
 
 const GOALS = [
-  { id: 'travel',       name: 'Travel',       icon: '✈️' },
-  { id: 'conversation', name: 'Conversation', icon: '💬' },
-  { id: 'work',         name: 'Work',         icon: '💼' },
-  { id: 'study',        name: 'Study',        icon: '📚' },
-  { id: 'family',       name: 'Family',       icon: '👨‍👩‍👧‍👦' },
-  { id: 'culture',      name: 'Culture',      icon: '🎭' },
-  { id: 'fun',          name: 'Just for fun', icon: '🎮' },
+  { id: 'travel',       key: 'goal_travel',       icon: '✈️' },
+  { id: 'conversation', key: 'goal_conversation', icon: '💬' },
+  { id: 'work',         key: 'goal_work',         icon: '💼' },
+  { id: 'study',        key: 'goal_study',        icon: '📚' },
+  { id: 'family',       key: 'goal_family',       icon: '👨‍👩‍👧‍👦' },
+  { id: 'culture',      key: 'goal_culture',      icon: '🎭' },
+  { id: 'fun',          key: 'goal_fun',          icon: '🎮' },
 ]
 
 const TOTAL_STEPS = Object.keys(STEPS).length
@@ -36,6 +37,7 @@ const TOTAL_STEPS = Object.keys(STEPS).length
 export default function Onboarding() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
+  const { t } = useTheme()
   const [currentStep, setCurrentStep] = useState(STEPS.AGE)
   const [selectedAge, setSelectedAge]               = useState(user?.ageRange || '')
   const [selectedPreferredLang, setSelectedPreferredLang] = useState(user?.preferredLanguage || 'en')
@@ -81,13 +83,6 @@ export default function Onboarding() {
     }
   }
 
-  const stepTitles = [
-    'How old are you?',
-    'What\'s your preferred language?',
-    'What do you want to learn?',
-    'What\'s your goal?',
-  ]
-
   const renderStep = () => {
     switch (currentStep) {
       case STEPS.AGE:
@@ -99,11 +94,10 @@ export default function Onboarding() {
             exit={{ opacity: 0, x: -50 }}
           >
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
-              How old are you?
+              {t('how_old_are_you')}
             </h2>
             <p className="text-[#77736B] dark:text-slate-400 mb-6">
-              This helps us tailor vocabulary, pacing, and lesson complexity just for you.
-              We use your age only to personalize learning — never to restrict features.
+              {t('age_desc')}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {AGE_RANGES.map((range) => (
@@ -122,8 +116,8 @@ export default function Onboarding() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className="text-2xl mb-1">{range.icon}</div>
-                  <p className="font-bold text-[#25231F] dark:text-white text-sm">{range.label}</p>
-                  <p className="text-xs text-[#77736B] dark:text-slate-400 mt-0.5">{range.desc}</p>
+                  <p className="font-bold text-[#25231F] dark:text-white text-sm">{t(range.labelKey)}</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400 mt-0.5">{t(range.descKey)}</p>
                   {selectedAge === range.id && (
                     <div className="mt-2 w-5 h-5 bg-[#0B8F62] rounded-full flex items-center justify-center">
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,10 +140,10 @@ export default function Onboarding() {
             exit={{ opacity: 0, x: -50 }}
           >
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
-              What's your preferred language?
+              {t('what_preferred_language')}
             </h2>
             <p className="text-[#77736B] dark:text-slate-400 mb-6">
-              We'll show instructions, buttons, and explanations in this language.
+              {t('preferred_lang_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {languages.map((lang) => (
@@ -173,10 +167,10 @@ export default function Onboarding() {
             exit={{ opacity: 0, x: -50 }}
           >
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
-              What do you want to learn?
+              {t('what_want_to_learn')}
             </h2>
             <p className="text-[#77736B] dark:text-slate-400 mb-6">
-              Pick one language to start. You can add more later.
+              {t('target_lang_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {languages
@@ -202,10 +196,10 @@ export default function Onboarding() {
             exit={{ opacity: 0, x: -50 }}
           >
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
-              What's your goal?
+              {t('whats_your_goal')}
             </h2>
             <p className="text-[#77736B] dark:text-slate-400 mb-6">
-              This customizes your learning path, vocabulary, and example sentences.
+              {t('goal_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {GOALS.map((goal) => (
@@ -224,7 +218,7 @@ export default function Onboarding() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className="text-3xl mb-2">{goal.icon}</div>
-                  <p className="font-semibold text-[#25231F] dark:text-white">{goal.name}</p>
+                  <p className="font-semibold text-[#25231F] dark:text-white">{t(goal.key)}</p>
                 </motion.button>
               ))}
             </div>
@@ -246,7 +240,7 @@ export default function Onboarding() {
               भा
             </div>
             <div className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
-              Step {currentStep + 1} of {TOTAL_STEPS}
+              {t('step_x_of_y', { current: currentStep + 1, total: TOTAL_STEPS })}
             </div>
           </div>
           {/* Progress bar */}
@@ -282,13 +276,13 @@ export default function Onboarding() {
           <div className="flex justify-between mt-8">
             {currentStep > STEPS.AGE ? (
               <Button variant="ghost" onClick={handleBack}>
-                ← Back
+                {t('back')}
               </Button>
             ) : (
               <div />
             )}
             <Button onClick={handleNext} disabled={!isStepValid()}>
-              {currentStep === STEPS.GOAL ? 'Find My Level →' : 'Continue →'}
+              {currentStep === STEPS.GOAL ? t('find_my_level') : t('continue')}
             </Button>
           </div>
         </div>
@@ -296,3 +290,4 @@ export default function Onboarding() {
     </div>
   )
 }
+

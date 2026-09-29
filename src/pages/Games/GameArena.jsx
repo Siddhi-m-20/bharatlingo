@@ -249,7 +249,7 @@ export default function GameArena() {
             type="button"
             onClick={() => navigate('/games')}
             className="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            aria-label="Exit Game"
+            aria-label={t('exit_game')}
           >
             <X size={22} />
           </button>

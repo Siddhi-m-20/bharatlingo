@@ -52,6 +52,7 @@ function MicWaveform({ active }) {
 
 // ── Score display with Word-Level Phonetic Analysis ───────────────────────────
 function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], wordsToImprove = [], feedbackMessage }) {
+  const { t } = useTheme()
   const gradeColor = {
     'Excellent':       'text-[#2F9E69]',
     'Great':           'text-[#0B8F62]',
@@ -83,7 +84,7 @@ function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], 
       {wordResults && wordResults.length > 0 && (
         <div className="pt-2 border-t border-current/20">
           <p className="text-[11px] font-bold text-[#77736B] uppercase mb-1.5 text-left">
-            Word-by-Word Analysis:
+            {t('word_by_word_analysis') || 'Word-by-Word Analysis:'}
           </p>
           <div className="flex flex-wrap gap-1.5 justify-center">
             {wordResults.map((item, idx) => {
@@ -113,7 +114,7 @@ function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], 
       {/* Words to improve alert */}
       {wordsToImprove && wordsToImprove.length > 0 && (
         <div className="p-2.5 bg-white/70 dark:bg-slate-900/70 rounded-xl border border-current/20 text-xs text-left">
-          <span className="font-bold text-[#D84B42]">Focus on these words: </span>
+          <span className="font-bold text-[#D84B42]">{t('focus_on_words') || 'Focus on these words:'} </span>
           <span className="font-semibold text-[#25231F] dark:text-white">
             {wordsToImprove.map((w) => `"${w}"`).join(', ')}
           </span>
@@ -122,11 +123,11 @@ function ScoreDisplay({ score, grade, transcript, targetText, wordResults = [], 
 
       <div className="space-y-1 pt-1 text-xs text-left text-[#77736B]">
         <p>
-          <span className="font-semibold">Heard:</span>{' '}
+          <span className="font-semibold">{t('heard_label') || 'Heard:'}</span>{' '}
           <span className="text-[#25231F] dark:text-white font-medium">{transcript || '—'}</span>
         </p>
         <p>
-          <span className="font-semibold">Target:</span>{' '}
+          <span className="font-semibold">{t('target_label') || 'Target:'}</span>{' '}
           <span className="text-[#25231F] dark:text-white font-medium">{targetText}</span>
         </p>
       </div>

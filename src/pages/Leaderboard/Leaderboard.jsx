@@ -7,6 +7,7 @@ import TopNavbar from '../../components/Navigation/TopNavbar'
 import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import { Trophy, Flame, Zap, ShieldCheck, Clock, ArrowUp, ArrowDown } from 'lucide-react'
+import { useTheme } from '../../services/themeContext'
 
 const LEAGUES = [
   { id: 'bronze', name: 'Bronze League', emoji: '🥉', color: 'from-amber-700 to-amber-900', minXP: 0 },
@@ -63,6 +64,7 @@ const DEMO_USERS_BY_LEAGUE = {
 export default function Leaderboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useTheme()
 
   // Determine user's current league based on their total XP
   const userXP = user?.xp || 0
@@ -144,7 +146,7 @@ export default function Leaderboard() {
                 <span>{league.emoji}</span>
                 <span>{league.name.replace(' League', '')}</span>
                 {isCurrent && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 ml-1" title="Your Current League" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 ml-1" title={t('current_league_tooltip')} />
                 )}
               </button>
             )
@@ -155,13 +157,13 @@ export default function Leaderboard() {
         <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-r ${currentLeagueMeta.color} p-6 md:p-8 text-white shadow-xl flex items-center justify-between`}>
           <div className="space-y-1 relative z-10">
             <span className="text-[11px] font-black uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full">
-              Weekly League Tournament
+              {t('weekly_league_tournament')}
             </span>
             <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2">
               <span>{currentLeagueMeta.emoji}</span> {currentLeagueMeta.name}
             </h1>
             <p className="text-xs md:text-sm text-white/90 flex items-center gap-1.5 pt-1">
-              <Clock className="w-3.5 h-3.5" /> 3 days remaining • Top 3 promote to higher tier!
+              <Clock className="w-3.5 h-3.5" /> {t('days_remaining_promote')}
             </p>
           </div>
           <div className="text-6xl md:text-7xl opacity-30 select-none">
@@ -177,13 +179,13 @@ export default function Leaderboard() {
                 #{userRank}
               </span>
               <div>
-                <p className="text-sm font-black text-slate-900 dark:text-white">{user.name} (You)</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">{user.xp || 0} Total XP</p>
+                <p className="text-sm font-black text-slate-900 dark:text-white">{user.name} {t('you_suffix')}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">{user.xp || 0} {t('total_xp_suffix')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
               <Flame className="w-4 h-4 fill-current" />
-              <span>{user.streak || 0} Day Streak</span>
+              <span>{user.streak || 0} {t('day_streak_suffix')}</span>
             </div>
           </div>
         )}
@@ -227,17 +229,17 @@ export default function Leaderboard() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-bold ${learner.isDemo ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
-                        {learner.name} {isMe && '(You)'}
+                        {learner.name} {isMe && t('you_suffix')}
                         {learner.isDemo && <span className="ml-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 normal-case">(demo)</span>}
                       </span>
                       {isPromotion && (
                         <span className="flex items-center text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded-full">
-                          <ArrowUp className="w-2.5 h-2.5" /> Promotion
+                          <ArrowUp className="w-2.5 h-2.5" /> {t('promotion')}
                         </span>
                       )}
                       {isDemotion && (
                         <span className="flex items-center text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950 px-1.5 py-0.5 rounded-full">
-                          <ArrowDown className="w-2.5 h-2.5" /> Demotion
+                          <ArrowDown className="w-2.5 h-2.5" /> {t('demotion')}
                         </span>
                       )}
                     </div>

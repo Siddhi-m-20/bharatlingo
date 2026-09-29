@@ -19,6 +19,7 @@ import { digitToLanguageWord, sanitizeLanguageOptions } from '../../data/transla
 
 // ── Personalized Plan Screen ─────────────────────────────────────────────────
 function PersonalizedPlanScreen({ plan, user, onContinue }) {
+  const { t } = useTheme()
   const language = getLanguageById(user?.learningLanguage)
   const levelColors = {
     Beginner: 'text-[#0B8F62] bg-[#0B8F62]/10',
@@ -27,6 +28,18 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
     Advanced: 'text-[#8B5CF6] bg-[#8B5CF6]/10',
   }
   const levelStyle = levelColors[plan?.startingLevel] || levelColors.Beginner
+
+  const getLocalizedLevel = (lvl) => {
+    if (!lvl) return t('level_beginner')
+    const key = `level_${lvl.toLowerCase()}`
+    return t(key) || lvl
+  }
+
+  const getLocalizedGoal = (g) => {
+    if (!g) return t('goal_conversation')
+    const key = `goal_${g.toLowerCase()}`
+    return t(key) || g
+  }
 
   return (
     <motion.div
@@ -45,10 +58,10 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
           🎯
         </motion.div>
         <h2 className="text-2xl font-black text-[#25231F] dark:text-white">
-          Your Personalized Learning Plan
+          {t('personalized_plan_title')}
         </h2>
         <p className="text-[#77736B] dark:text-slate-400 text-sm">
-          Tailored for you based on your answers and goals
+          {t('personalized_plan_subtitle')}
         </p>
       </div>
 
@@ -58,17 +71,17 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white dark:bg-slate-900 rounded-xl p-3 text-center border border-[#E8E6E0] dark:border-slate-700">
             <span className={`text-xs font-black px-2 py-0.5 rounded-full ${levelStyle}`}>
-              {plan?.startingLevel || 'Beginner'}
+              {getLocalizedLevel(plan?.startingLevel)}
             </span>
-            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">Starting Level</p>
+            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">{t('starting_level')}</p>
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-xl p-3 text-center border border-[#E8E6E0] dark:border-slate-700">
-            <p className="text-sm font-black text-[#0B8F62]">{plan?.goal || 'Conversation'}</p>
-            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">Goal</p>
+            <p className="text-sm font-black text-[#0B8F62]">{getLocalizedGoal(plan?.goal)}</p>
+            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">{t('goal')}</p>
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-xl p-3 text-center border border-[#E8E6E0] dark:border-slate-700">
             <p className="text-sm font-black text-[#3B82F6]">{plan?.dailyPractice || '10 min'}</p>
-            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">Daily Practice</p>
+            <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1 font-medium">{t('daily_practice')}</p>
           </div>
         </div>
 
@@ -77,7 +90,9 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
           <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-[#E8E6E0] dark:border-slate-700">
             <span className="text-3xl">{language.flag}</span>
             <div>
-              <p className="font-bold text-[#25231F] dark:text-white text-sm">Learning {language.name}</p>
+              <p className="font-bold text-[#25231F] dark:text-white text-sm">
+                {t('learning_lang_label', { language: language.name })}
+              </p>
               <p className="text-xs text-[#77736B] dark:text-slate-400">{language.nativeName}</p>
             </div>
           </div>
@@ -86,7 +101,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
         {/* Focus areas */}
         <div>
           <p className="text-xs font-black text-[#25231F] dark:text-white uppercase tracking-wider mb-2">
-            Focus Areas
+            {t('focus_areas')}
           </p>
           <div className="space-y-1.5">
             {(plan?.focusAreas || []).map((area, i) => (
@@ -111,7 +126,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
         {/* Next lesson recommendation */}
         <div className="p-3 bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 rounded-xl border border-[#0B8F62]/20">
           <p className="text-xs font-black text-[#0B8F62] uppercase tracking-wider mb-1">
-            Recommended First Lesson
+            {t('recommended_first_lesson')}
           </p>
           <p className="font-bold text-[#25231F] dark:text-white text-sm">
             🎓 {plan?.recommendedFirstLesson || 'Greetings & Introductions'}
@@ -120,7 +135,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
       </div>
 
       <Button onClick={onContinue} className="w-full justify-center">
-        Start Learning →
+        {t('start_learning_btn')}
       </Button>
     </motion.div>
   )
@@ -459,7 +474,7 @@ export default function Assessment() {
               onChange={(e) => setSelectedAnswer(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && selectedAnswer && !showResult && handleAnswer(selectedAnswer)}
               className="w-full px-4 py-3 border-2 border-[#E8E6E0] dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-[#25231F] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:border-[#0B8F62]"
-              placeholder="Type or select words below..."
+              placeholder={t('type_or_select_words')}
               disabled={showResult}
             />
             {q.wordBank && q.wordBank.length > 0 && (
@@ -484,13 +499,13 @@ export default function Assessment() {
                     onClick={() => setSelectedAnswer('')}
                     className="px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold cursor-pointer"
                   >
-                    Clear
+                    {t('clear')}
                   </button>
                 )}
               </div>
             )}
             <Button onClick={() => handleAnswer(selectedAnswer)} disabled={!selectedAnswer || showResult}>
-              Check Answer
+              {t('check_answer')}
             </Button>
           </div>
         )
@@ -568,11 +583,11 @@ export default function Assessment() {
     return (
       <div className={`mt-4 p-4 rounded-xl border-2 text-center ${last.isCorrect ? 'border-[#2F9E69] bg-[#2F9E69]/10' : 'border-[#D84B42] bg-[#D84B42]/10'}`}>
         <p className={`text-lg font-bold ${last.isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}>
-          {last.isCorrect ? '✓ Correct!' : '✗ Not quite'}
+          {last.isCorrect ? t('excellent') : t('not_quite')}
         </p>
         {!last.isCorrect && q.correctAnswer && q.correctAnswer !== 'matched_all' && (
           <p className="text-sm text-[#77736B] dark:text-slate-400 mt-1">
-            Correct answer: <span className="font-bold text-[#25231F] dark:text-white">{q.correctAnswer}</span>
+            {t('correct_answer_is')} <span className="font-bold text-[#25231F] dark:text-white">{q.correctAnswer}</span>
           </p>
         )}
       </div>
@@ -590,7 +605,7 @@ export default function Assessment() {
             className="w-12 h-12 border-4 border-[#0B8F62] border-t-transparent rounded-full mx-auto"
           />
           <p className="text-[#77736B] dark:text-slate-400 font-medium">
-            Finding your starting level...
+            {t('finding_starting_level')}
           </p>
         </div>
       </div>
@@ -603,7 +618,7 @@ export default function Assessment() {
         <div className="text-center space-y-4 max-w-sm">
           <div className="text-4xl">⚠️</div>
           <p className="text-[#D84B42] font-semibold">{loadError}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <Button onClick={() => window.location.reload()}>{t('try_again')}</Button>
         </div>
       </div>
     )
@@ -619,7 +634,7 @@ export default function Assessment() {
             className="w-12 h-12 border-4 border-[#0B8F62] border-t-transparent rounded-full mx-auto"
           />
           <p className="text-[#77736B] dark:text-slate-400 font-medium">
-            Generating your personalized lesson plan...
+            {t('generating_personalized_plan')}
           </p>
         </div>
       </div>
@@ -642,8 +657,8 @@ export default function Assessment() {
     return (
       <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-[#77736B] dark:text-slate-400">No questions available.</p>
-          <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
+          <p className="text-[#77736B] dark:text-slate-400">{t('no_questions_available')}</p>
+          <Button onClick={() => navigate('/dashboard')}>{t('go_to_dashboard')}</Button>
         </div>
       </div>
     )
@@ -658,12 +673,12 @@ export default function Assessment() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-xl font-black text-[#25231F] dark:text-white">Find Your Starting Level</h1>
+              <h1 className="text-xl font-black text-[#25231F] dark:text-white">{t('find_your_starting_level')}</h1>
               {language && (
                 <p className="text-xs text-[#77736B] dark:text-slate-400 flex items-center gap-1 mt-0.5">
                   <span>{language.flag}</span>
-                  <span>Learning: {language.name}</span>
-                  <span className="ml-2 font-semibold text-[#0B8F62]">Questions in: {getLanguageById(user?.preferredLanguage || 'en')?.name || 'English'}</span>
+                  <span>{t('learning_prefix')} {language.nativeName || language.name}</span>
+                  <span className="ml-2 font-semibold text-[#0B8F62]">{t('questions_in_prefix')} {getLanguageById(user?.preferredLanguage || 'en')?.nativeName || getLanguageById(user?.preferredLanguage || 'en')?.name}</span>
                 </p>
               )}
             </div>
@@ -684,51 +699,51 @@ export default function Assessment() {
                 : 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-800'
             }`}>
               {currentQuestion < 5
-                ? '🌱 Stage 1: Fundamentals'
+                ? t('stage_1_fundamentals')
                 : currentQuestion < 10
-                ? '⚡ Stage 2: Applied Language'
-                : '⭐ Stage 3: Fluency & Syntax'}
+                ? t('stage_2_applied_language')
+                : t('stage_3_fluency_syntax')}
             </span>
 
             {/* Exercise type badge */}
             {q?.type === 'listening' && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                🎧 Listening
+                {t('badge_listening')}
               </span>
             )}
             {q?.type === 'speaking' && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                🎤 Speaking
+                {t('badge_speaking')}
               </span>
             )}
             {(q?.type === 'sentence-order' || q?.type === 'sentence_order') && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                🧩 Sentence Order
+                {t('badge_sentence_order')}
               </span>
             )}
             {q?.type === 'matching' && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                🔄 Matching
+                {t('badge_matching')}
               </span>
             )}
             {(q?.type === 'picture_choice' || q?.type === 'picture-choice') && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                📖 Word Meaning
+                {t('badge_word_meaning')}
               </span>
             )}
             {(q?.type === 'multiple-choice' || q?.type === 'fill-blank') && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
-                ✏️ {q?.type === 'fill-blank' ? 'Grammar Cloze' : 'Vocabulary'}
+                {q?.type === 'fill-blank' ? t('badge_grammar_cloze') : t('badge_vocabulary')}
               </span>
             )}
             {q?.type === 'translation' && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
-                🔤 Translation
+                {t('badge_translation')}
               </span>
             )}
             {q?.type === 'challenge' && (
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                🏆 Mastery Challenge
+                {t('badge_mastery_challenge')}
               </span>
             )}
           </div>
@@ -753,10 +768,11 @@ export default function Assessment() {
         {/* Next button */}
         <div className="flex justify-end mt-5">
           <Button onClick={handleNext} disabled={!showResult}>
-            {currentQuestion === questions.length - 1 ? 'See My Learning Plan →' : 'Next →'}
+            {currentQuestion === questions.length - 1 ? t('see_my_learning_plan') : t('next_btn')}
           </Button>
         </div>
       </div>
     </div>
   )
 }
+

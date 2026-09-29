@@ -98,7 +98,7 @@ export default function SiteSettingsBar({ inline = false }) {
                       >
                         <Icon size={12} />
                       </div>
-                      <span className="truncate flex-1">{th.name}</span>
+                      <span className="truncate flex-1">{t(`theme_${th.id}`) || th.name}</span>
                       {isSelected && <Check size={13} />}
                     </button>
                   )

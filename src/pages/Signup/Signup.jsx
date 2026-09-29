@@ -3,10 +3,12 @@ import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, getNextAuthRedirect } from '../../services/auth'
 import Button from '../../components/Button'
+import { useTheme } from '../../services/themeContext'
 
 export default function Signup() {
   const navigate = useNavigate()
   const { signup, loginWithGoogle } = useAuth()
+  const { t } = useTheme()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,23 +22,23 @@ export default function Signup() {
     const newErrors = {}
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = t('name_required')
     }
     
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('email_required')
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
+      newErrors.email = t('email_invalid')
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t('password_required')
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = t('password_min_6')
     }
     
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = t('passwords_dont_match')
     }
     
     setErrors(newErrors)
@@ -50,7 +52,7 @@ export default function Signup() {
       const destination = getNextAuthRedirect(loggedUser)
       navigate(destination)
     } catch (error) {
-      setErrors({ general: error.message || 'Google sign-in failed' })
+      setErrors({ general: error.message || t('google_signin_failed') })
     } finally {
       setLoading(false)
     }
@@ -66,12 +68,12 @@ export default function Signup() {
       await signup(formData.name, formData.email, formData.password)
       navigate('/login', {
         state: {
-          successMessage: 'Account created successfully! Please log in with your credentials.',
+          successMessage: t('account_created_success'),
           email: formData.email,
         },
       })
     } catch (error) {
-      setErrors({ general: error.message || 'Failed to create account. Please try again.' })
+      setErrors({ general: error.message || t('failed_create_account') })
     } finally {
       setLoading(false)
     }
@@ -82,7 +84,6 @@ export default function Signup() {
       ...formData,
       [e.target.name]: e.target.value,
     })
-    // Clear error for this field when user starts typing
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -104,8 +105,8 @@ export default function Signup() {
             <div className="w-16 h-16 rounded-full bg-[#0B8F62] flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
               भा
             </div>
-            <h1 className="text-2xl font-bold text-[#25231F] mb-2">Create account</h1>
-            <p className="text-[#77736B]">Start your Indian language journey</p>
+            <h1 className="text-2xl font-bold text-[#25231F] mb-2">{t('create_account')}</h1>
+            <p className="text-[#77736B]">{t('start_journey')}</p>
           </div>
 
           {errors.general && (
@@ -117,7 +118,7 @@ export default function Signup() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-[#25231F] mb-1">
-                Name
+                {t('name') || t('enter_name')}
               </label>
               <input
                 type="text"
@@ -128,14 +129,14 @@ export default function Signup() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.name ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Enter your name"
+                placeholder={t('enter_name')}
               />
               {errors.name && <p className="mt-1 text-sm text-[#D84B42]">{errors.name}</p>}
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-[#25231F] mb-1">
-                Email
+                {t('email')}
               </label>
               <input
                 type="email"
@@ -146,14 +147,14 @@ export default function Signup() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.email ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Enter your email"
+                placeholder={t('enter_email')}
               />
               {errors.email && <p className="mt-1 text-sm text-[#D84B42]">{errors.email}</p>}
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-[#25231F] mb-1">
-                Password
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -164,14 +165,14 @@ export default function Signup() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.password ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Create a password"
+                placeholder={t('create_password')}
               />
               {errors.password && <p className="mt-1 text-sm text-[#D84B42]">{errors.password}</p>}
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#25231F] mb-1">
-                Confirm Password
+                {t('confirm_password')}
               </label>
               <input
                 type="password"
@@ -182,13 +183,13 @@ export default function Signup() {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B8F62] ${
                   errors.confirmPassword ? 'border-[#D84B42]' : 'border-[#E8E6E0]'
                 }`}
-                placeholder="Confirm your password"
+                placeholder={t('confirm_password')}
               />
               {errors.confirmPassword && <p className="mt-1 text-sm text-[#D84B42]">{errors.confirmPassword}</p>}
             </div>
 
             <Button type="submit" size="large" loading={loading} className="w-full">
-              Create account
+              {t('create_account')}
             </Button>
 
             <div className="relative">
@@ -196,7 +197,7 @@ export default function Signup() {
                 <div className="w-full border-t border-[#E8E6E0]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-[#77736B]">Or continue with</span>
+                <span className="px-2 bg-white text-[#77736B]">{t('or_continue_with')}</span>
               </div>
             </div>
 
@@ -225,14 +226,14 @@ export default function Signup() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Continue with Google</span>
+              <span>{t('continue_with_google')}</span>
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-[#77736B]">
-            Already have an account?{' '}
+            {t('already_have_account')}{' '}
             <Link to="/login" className="text-[#0B8F62] font-medium hover:underline">
-              Log in
+              {t('log_in')}
             </Link>
           </p>
         </div>
@@ -240,3 +241,4 @@ export default function Signup() {
     </div>
   )
 }
+

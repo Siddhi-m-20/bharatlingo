@@ -7,9 +7,11 @@ import BharatLingoLogo from '../../components/Logo/BharatLingoLogo'
 import BharatMascot from '../../components/Mascot/BharatMascot'
 import { languages, getGreetingByLanguageId, TOTAL_LANGUAGES_COUNT } from '../../data/languages'
 import { ttsService, AUDIO_STATE } from '../../services/audio/AudioService'
+import { useTheme } from '../../services/themeContext'
 import './Welcome.css'
 
 export default function Welcome() {
+  const { t } = useTheme()
   const [selectedLangId, setSelectedLangId] = useState('hi')
   const [isSpeaking, setIsSpeaking] = useState(false)
 
@@ -57,27 +59,27 @@ export default function Welcome() {
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 text-[#0B8F62] dark:text-[#34D399] text-xs font-black uppercase tracking-wider">
                 <span>🦚</span>
-                <span>{TOTAL_LANGUAGES_COUNT} Languages Supported</span>
+                <span>{TOTAL_LANGUAGES_COUNT} {t('languages_supported')}</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#25231F] dark:text-white leading-tight">
-                The free, fun way to learn{' '}
-                <span className="text-[#0B8F62] dark:text-[#34D399]">Indian Languages!</span>
+                {t('welcome_title_prefix')}{' '}
+                <span className="text-[#0B8F62] dark:text-[#34D399]">{t('welcome_title_highlight')}</span>
               </h1>
               
               <p className="text-sm sm:text-base text-[#77736B] dark:text-slate-400 max-w-lg leading-relaxed">
-                Meet <span className="font-bold text-[#0B8F62]">Mayur</span>, your friendly peacock companion. Learn Hindi, Marathi, Tamil, Telugu, Bengali, Punjabi, Gujarati & English with bite-sized, gamified lessons!
+                {t('welcome_subtitle')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link to="/signup">
                   <Button size="large" className="w-full sm:w-auto font-black shadow-lg shadow-[#0B8F62]/30 px-7 py-3 text-base">
-                    Get Started Free →
+                    {t('get_started_free')}
                   </Button>
                 </Link>
                 <Link to="/login">
                   <Button variant="outline" size="large" className="w-full sm:w-auto font-bold px-7 py-3 text-base border-2">
-                    I Already Have an Account
+                    {t('i_already_have_account')}
                   </Button>
                 </Link>
               </div>
@@ -106,7 +108,7 @@ export default function Welcome() {
                       className={`relative bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 border-2 border-[#0B8F62]/40 dark:border-[#34D399]/40 rounded-2xl px-5 py-2.5 shadow-md max-w-[340px] w-full cursor-pointer hover:scale-105 active:scale-95 transition-all ${
                         isSpeaking ? 'ring-4 ring-[#0B8F62]/30 dark:ring-[#34D399]/30' : ''
                       }`}
-                      title="Click to hear greeting"
+                      title={t('click_to_hear_greeting')}
                     >
                       {/* Greeting Text in Native Script (Extra Bold) */}
                       <div className="flex items-center justify-center gap-2">
@@ -143,14 +145,14 @@ export default function Welcome() {
                     transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut' }}
                     onClick={() => handleLanguageSelect(selectedLangId)}
                     className="py-0.5 cursor-pointer"
-                    title="Click Mayur to hear greeting"
+                    title={t('click_mayur_greeting')}
                   >
                     <BharatMascot size={160} mood={isSpeaking ? 'speaking' : 'waving'} showFeathers={true} />
                   </motion.div>
 
                   {/* Instruction */}
                   <p className="text-xs font-bold text-[#77736B] dark:text-slate-400">
-                    Tap a language to hear Mayur greet you:
+                    {t('tap_language_instruction')}
                   </p>
 
                   {/* Interactive Language Selector Pills for all 8 languages */}
@@ -180,7 +182,7 @@ export default function Welcome() {
                   {/* Verified Features Footer */}
                   <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800 w-full">
                     <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
-                      {TOTAL_LANGUAGES_COUNT} Languages Supported • Smart AI Tutor • Real-Time Voice Practice
+                      {t('verified_features_footer')}
                     </p>
                   </div>
 
@@ -194,8 +196,9 @@ export default function Welcome() {
 
       {/* ── Footer ────────────────────────────────────────────────── */}
       <footer className="p-3 sm:p-4 text-center text-[#77736B] dark:text-slate-500 text-xs shrink-0">
-        <p>© {new Date().getFullYear()} BharatLingo. Learn Indian languages with confidence.</p>
+        <p>{t('copyright_footer')}</p>
       </footer>
     </div>
   )
 }
+

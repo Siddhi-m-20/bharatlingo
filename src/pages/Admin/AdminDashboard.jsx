@@ -159,7 +159,7 @@ export default function AdminDashboard() {
               onClick={() => loadData(true)}
               disabled={refreshing}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-[#1E2B3E] hover:bg-[#283B54] text-gray-200 border border-gray-700 transition-all disabled:opacity-50"
-              title="Refresh live metrics from database"
+              title={t('refresh_metrics')}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-emerald-400' : ''}`} />
               {refreshing ? 'Syncing...' : 'Refresh Telemetry'}

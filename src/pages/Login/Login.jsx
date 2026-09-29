@@ -21,27 +21,17 @@ export default function Login() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    setSiteLanguage('en')
-  }, [setSiteLanguage])
-
-  useEffect(() => {
-    if (prefillEmail) {
-      setFormData(prev => ({ ...prev, email: prefillEmail }))
-    }
-  }, [prefillEmail])
-
   const validate = () => {
     const newErrors = {}
     
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('email_required')
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
+      newErrors.email = t('email_invalid')
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t('password_required')
     }
     
     setErrors(newErrors)
@@ -55,7 +45,7 @@ export default function Login() {
       const destination = getNextAuthRedirect(loggedUser)
       navigate(destination)
     } catch (error) {
-      setErrors({ general: error.message || 'Google sign-in failed' })
+      setErrors({ general: error.message || t('google_signin_failed') })
     } finally {
       setLoading(false)
     }
@@ -72,7 +62,7 @@ export default function Login() {
       const destination = getNextAuthRedirect(loggedUser)
       navigate(destination)
     } catch (error) {
-      setErrors({ general: error.message || 'Invalid email or password' })
+      setErrors({ general: error.message || t('invalid_email_password') })
     } finally {
       setLoading(false)
     }
@@ -171,7 +161,7 @@ export default function Login() {
             </div>
 
             <Button type="submit" size="large" loading={loading} className="w-full">
-              Log in
+              {t('log_in')}
             </Button>
 
             <div className="relative">
@@ -179,7 +169,7 @@ export default function Login() {
                 <div className="w-full border-t border-[#E8E6E0]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-[#77736B]">{t('continue')}</span>
+                <span className="px-2 bg-white text-[#77736B]">{t('or_continue_with')}</span>
               </div>
             </div>
 
@@ -213,9 +203,9 @@ export default function Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-[#77736B]">
-            Don't have an account?{' '}
+            {t('dont_have_account')}{' '}
             <Link to="/signup" className="text-[#0B8F62] font-medium hover:underline">
-              Sign up
+              {t('sign_up')}
             </Link>
           </p>
         </div>

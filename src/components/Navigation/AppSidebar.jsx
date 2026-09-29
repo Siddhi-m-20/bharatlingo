@@ -53,14 +53,14 @@ export default function AppSidebar() {
 
   // Secondary modules shown inside the "More" bottom drawer on mobile
   const moreNavItems = [
-    { to: '/practice', label: t('practice') || 'Practice', icon: Target, desc: 'Targeted drills & grammar' },
-    { to: '/stories', label: t('stories') || 'Stories', icon: BookOpen, desc: 'Bite-sized conversational tales' },
-    { to: '/tutor', label: t('tutor') || 'AI Tutor', icon: Bot, desc: 'Interactive voice companion' },
-    { to: '/writing', label: t('writing') || 'Writing', icon: PenTool, desc: 'Stroke tracing & handwriting' },
-    { to: '/letters', label: t('letters') || 'Script / Letters', icon: BookA, desc: 'Vowels, consonants & phonics' },
-    { to: '/leaderboard', label: t('leaderboard') || 'Leaderboards', icon: Trophy, desc: 'Weekly leagues & ranking' },
-    { to: '/profile', label: t('profile') || 'Profile', icon: User, desc: 'Badges, statistics & streak' },
-    { to: '/settings', label: t('settings') || 'Settings', icon: Settings, desc: 'Sound, reminders & account' },
+    { to: '/practice', label: t('practice'), icon: Target, desc: t('nav_practice_desc') },
+    { to: '/stories', label: t('stories'), icon: BookOpen, desc: t('nav_stories_desc') },
+    { to: '/tutor', label: t('tutor'), icon: Bot, desc: t('nav_tutor_desc') },
+    { to: '/writing', label: t('writing'), icon: PenTool, desc: t('nav_writing_desc') },
+    { to: '/letters', label: t('letters'), icon: BookA, desc: t('nav_letters_desc') },
+    { to: '/leaderboard', label: t('leaderboard'), icon: Trophy, desc: t('nav_leaderboard_desc') },
+    { to: '/profile', label: t('profile'), icon: User, desc: t('nav_profile_desc') },
+    { to: '/settings', label: t('settings'), icon: Settings, desc: t('nav_settings_desc') },
   ]
 
   return (
@@ -129,7 +129,7 @@ export default function AppSidebar() {
           }
         >
           <Home size={21} />
-          <span className="text-[10px] mt-0.5">{t('learn') || 'Learn'}</span>
+          <span className="text-[10px] mt-0.5">{t('learn')}</span>
         </NavLink>
 
         {/* Tab 2: Speaking */}
@@ -142,7 +142,7 @@ export default function AppSidebar() {
           }
         >
           <Mic size={21} />
-          <span className="text-[10px] mt-0.5">{t('speaking') || 'Speaking'}</span>
+          <span className="text-[10px] mt-0.5">{t('speaking')}</span>
         </NavLink>
 
         {/* Tab 3: Review */}
@@ -155,7 +155,7 @@ export default function AppSidebar() {
           }
         >
           <RotateCcw size={21} />
-          <span className="text-[10px] mt-0.5">{t('review') || 'Review'}</span>
+          <span className="text-[10px] mt-0.5">{t('review')}</span>
         </NavLink>
 
         {/* Tab 4: Games */}
@@ -168,7 +168,7 @@ export default function AppSidebar() {
           }
         >
           <Gamepad2 size={21} />
-          <span className="text-[10px] mt-0.5">{t('games') || 'Games'}</span>
+          <span className="text-[10px] mt-0.5">{t('games')}</span>
         </NavLink>
 
         {/* Tab 5: More (Expands bottom drawer with all remaining features) */}
@@ -182,7 +182,7 @@ export default function AppSidebar() {
           }`}
         >
           <MoreHorizontal size={21} />
-          <span className="text-[10px] mt-0.5">{t('more') || 'More'}</span>
+          <span className="text-[10px] mt-0.5">{t('more')}</span>
           {isMoreActive && (
             <span className="absolute top-1 right-2.5 w-1.5 h-1.5 rounded-full bg-[#0B8F62] dark:bg-[#34D399] animate-pulse" />
           )}
@@ -219,10 +219,10 @@ export default function AppSidebar() {
               <div className="flex items-center justify-between pb-2 border-b border-[#E8E6E0] dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="font-black text-sm text-[#25231F] dark:text-white uppercase tracking-wider">
-                    {t('more') || 'More Features'}
+                    {t('more')}
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-[10px] font-black text-[#0B8F62] dark:text-emerald-400">
-                    {moreNavItems.length} modules
+                    {t('modules_count', { count: moreNavItems.length })}
                   </span>
                 </div>
                 <button

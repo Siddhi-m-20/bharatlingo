@@ -68,7 +68,7 @@ export default function SentenceOrderExercise({
             type="button"
             onClick={playAudio}
             className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 transition-all shadow-sm"
-            title="Listen to sentence"
+            title={t('listen_to_sentence')}
           >
             <Volume2 className="w-5 h-5" />
           </button>

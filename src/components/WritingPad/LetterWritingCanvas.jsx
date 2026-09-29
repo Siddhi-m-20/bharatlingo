@@ -317,7 +317,7 @@ export default function LetterWritingCanvas({
             <button
               onClick={onClose}
               className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label="Close"
+              aria-label={t('close')}
             >
               ✕
             </button>

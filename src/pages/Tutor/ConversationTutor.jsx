@@ -15,11 +15,13 @@ import AppSidebar from '../../components/Navigation/AppSidebar'
 import RightSidebar from '../../components/RightSidebar/RightSidebar'
 import Button from '../../components/Button'
 import { MessageSquare, Volume2, Mic, MicOff, Send, Sparkles, CheckCircle2, ChevronRight, BookOpen, Award, ArrowLeft } from 'lucide-react'
+import { useTheme } from '../../services/themeContext'
 
 export default function ConversationTutor() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addXP, updateStreak } = useProgress()
+  const { t } = useTheme()
 
   const [scenarios, setScenarios] = useState([])
   const [selectedScenario, setSelectedScenario] = useState(null)
@@ -268,7 +270,7 @@ export default function ConversationTutor() {
                       <button
                         onClick={() => handlePlayTutorAudio(msg.text)}
                         className="p-1 rounded-lg bg-white/80 dark:bg-slate-700 text-[#0B8F62] hover:scale-110 transition-transform shadow-xs"
-                        title="Pronounce"
+                        title={t('pronounce')}
                       >
                         <Volume2 size={16} />
                       </button>
@@ -319,14 +321,14 @@ export default function ConversationTutor() {
                 <span className={feedbackData.isAcceptable ? 'text-[#2F9E69]' : 'text-[#D84B42]'}>
                   {feedbackData.praise} (Naturalness Score: {feedbackData.score}%)
                 </span>
-                <span className="text-[10px] uppercase font-bold text-[#77736B]">Tutor Analysis</span>
+                <span className="text-[10px] uppercase font-bold text-[#77736B]">{t('tutor_analysis') || 'Tutor Analysis'}</span>
               </div>
 
               <p className="text-[#77736B] dark:text-slate-300 font-medium">{feedbackData.feedback}</p>
 
               {feedbackData.naturalAlternative && (
                 <div className="pt-1 text-[11px]">
-                  <span className="font-bold text-[#0B8F62]">Native phrasing example: </span>
+                  <span className="font-bold text-[#0B8F62]">{t('native_phrasing_example') || 'Native phrasing example:'} </span>
                   <span className="font-bold text-[#25231F] dark:text-white">"{feedbackData.naturalAlternative}"</span>
                 </div>
               )}
@@ -338,7 +340,7 @@ export default function ConversationTutor() {
         {!isCompleted && selectedScenario?.turns[currentTurnIdx]?.suggestedReplies && (
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wider">
-              Suggested Phrasings (Tap to send):
+              {t('suggested_phrasings') || 'Suggested Phrasings (Tap to send):'}
             </p>
             <div className="flex flex-wrap gap-2">
               {selectedScenario.turns[currentTurnIdx].suggestedReplies.map((reply, idx) => (
@@ -380,7 +382,7 @@ export default function ConversationTutor() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder={`Reply in ${learningLang.name} script or English...`}
+              placeholder={t('reply_tutor_placeholder') || `Reply in ${learningLang.name} script...`}
               disabled={isEvaluating}
               className="flex-1 text-sm font-medium px-3 py-2 bg-transparent focus:outline-none dark:text-white"
             />
@@ -396,9 +398,9 @@ export default function ConversationTutor() {
         ) : (
           <div className="bg-gradient-to-r from-[#0B8F62] to-[#2F9E69] rounded-3xl p-6 text-white text-center space-y-3 shadow-lg">
             <Award size={36} className="mx-auto text-amber-300" />
-            <h3 className="text-xl font-black">Scenario Completed! +35 XP</h3>
+            <h3 className="text-xl font-black">{t('scenario_completed') || 'Scenario Completed!'} +35 XP</h3>
             <p className="text-xs text-white/90 max-w-sm mx-auto">
-              You successfully held a full native conversation in {learningLang.name}!
+              {t('scenario_completed_desc') || `You successfully held a full native conversation!`}
             </p>
             <div className="flex justify-center gap-3 pt-2">
               <Button variant="outline" className="!text-white !border-white" onClick={() => setSelectedScenario(scenarios[0])}>

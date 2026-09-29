@@ -315,7 +315,7 @@ export default function Speaking() {
                         type="button"
                         onClick={() => handlePlayAudio(true)}
                         className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black transition-colors cursor-pointer"
-                        title="Play Slowly"
+                        title={t('play_slowly')}
                       >
                         <span>🐢</span>
                         <span>{t('slow') || 'Slow'}</span>
@@ -331,7 +331,7 @@ export default function Speaking() {
                             type="button"
                             onClick={handleStopRecording}
                             className="w-24 h-24 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/30 cursor-pointer animate-pulse ring-8 ring-rose-200 dark:ring-rose-950/60"
-                            title="Tap to Stop"
+                            title={t('tap_to_stop')}
                           >
                             <MicOff size={36} />
                           </button>
@@ -354,7 +354,7 @@ export default function Speaking() {
                             type="button"
                             onClick={handleStartRecording}
                             className="w-20 h-20 rounded-full bg-[#0B8F62] hover:bg-[#09734e] text-white flex items-center justify-center shadow-lg shadow-[#0B8F62]/20 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-4 ring-emerald-100 dark:ring-emerald-950/50"
-                            title="Tap to Speak"
+                            title={t('tap_to_speak')}
                           >
                             <Mic size={32} />
                           </button>

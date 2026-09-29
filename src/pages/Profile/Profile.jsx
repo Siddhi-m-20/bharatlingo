@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
@@ -40,6 +40,7 @@ import {
   unsubscribeFromPush,
   sendPushNotificationTest,
 } from '../../services/notificationService.js'
+import { useTheme } from '../../services/themeContext'
 
 const AGE_LABELS = {
   child: 'Under 13',
@@ -79,6 +80,7 @@ function formatMinutes(seconds) {
 export default function Profile() {
   const navigate = useNavigate()
   const { user, updateUser, logout } = useAuth()
+  const { t } = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [analytics, setAnalytics] = useState({ activity: [], lessonAttempts: [], longestStreak: 0 })
@@ -133,16 +135,16 @@ export default function Profile() {
   const mastery = masteryTopics.length > 0
     ? Math.round(masteryTopics.reduce((sum, topic) => sum + (Number(topic.masteryLevel) || 0), 0) / masteryTopics.length / 5 * 100)
     : 0
-  const statItems = [
-    ['Learning time', formatMinutes(activitySummary.seconds)],
-    ['Exercises completed', activitySummary.exercises],
-    ['XP earned', activitySummary.xp],
-    ['Accuracy', `${displaySkills.overall}%`],
-    ['Current streak', user?.streak || 0],
-    ['Longest streak', Math.max(analytics.longestStreak, user?.streak || 0)],
-    ['Mastery', `${mastery}%`],
-    ['Listening', `${displaySkills.listening}%`],
-    ['Speaking', `${displaySkills.speaking}%`],
+  const makeStatItems = () => [
+    [t('stat_learning_time'), formatMinutes(activitySummary.seconds)],
+    [t('stat_exercises'), activitySummary.exercises],
+    [t('stat_xp_earned'), activitySummary.xp],
+    [t('stat_accuracy'), `${displaySkills.overall}%`],
+    [t('stat_current_streak'), user?.streak || 0],
+    [t('stat_longest_streak'), Math.max(analytics.longestStreak, user?.streak || 0)],
+    [t('stat_mastery'), `${mastery}%`],
+    [t('stat_listening'), `${displaySkills.listening}%`],
+    [t('stat_speaking'), `${displaySkills.speaking}%`],
   ]
   const unlockedAchievements = user
     ? achievements.filter((achievement) => achievement.condition(user))
@@ -196,13 +198,13 @@ export default function Profile() {
       const res = await unsubscribeFromPush(user)
       if (res.success) {
         setNotificationState('default')
-        setNotificationMsg('Streak reminders turned off.')
+        setNotificationMsg(t('reminders_off'))
       }
     } else {
       const res = await subscribeToPush(user)
       if (res.success) {
         setNotificationState('granted')
-        setNotificationMsg(res.message || 'Streak reminders enabled!')
+        setNotificationMsg(res.message || t('reminders_enabled'))
       } else {
         setNotificationState(getNotificationPermission())
         setNotificationMsg(res.message || 'Could not enable notifications.')
@@ -239,7 +241,7 @@ export default function Profile() {
               className="bg-[#0B8F62] text-white px-4 py-3 rounded-2xl flex items-center justify-between text-xs font-bold shadow-md"
             >
               <span className="flex items-center gap-2">
-                <Check size={16} /> Profile details successfully updated!
+                <Check size={16} /> {t('profile_saved')}
               </span>
               <button onClick={() => setSavedSuccess(false)} className="text-white/80 hover:text-white">
                 <X size={14} />
@@ -277,12 +279,12 @@ export default function Profile() {
                     <div className="flex flex-wrap items-center gap-2 mt-3 text-xs font-bold">
                       <span className="flex items-center gap-1 text-[#0B8F62] bg-[#0B8F62]/10 px-2.5 py-1 rounded-full">
                         <Calendar size={12} />
-                        Joined {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
+                        {t('joined_label')} {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
                       </span>
                       {activeCourse && (
                         <span className="flex items-center gap-1.5 text-[#3B82F6] bg-[#3B82F6]/10 px-2.5 py-1 rounded-full">
                           <LanguageFlag languageId={activeCourse.id} size={14} />
-                          Learning {activeCourse.name}
+                          {t('learning_label')} {activeCourse.name}
                         </span>
                       )}
                     </div>
@@ -296,7 +298,7 @@ export default function Profile() {
                   className="flex items-center gap-1.5 font-black text-xs self-start"
                 >
                   <Edit3 size={14} />
-                  Edit Profile
+                  {t('edit_profile')}
                 </Button>
               </div>
 
@@ -308,7 +310,7 @@ export default function Profile() {
                     <span>{user?.xp || 0}</span>
                   </div>
                   <p className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase mt-0.5">
-                    Total XP
+                    {t('total_xp')}
                   </p>
                 </div>
 
@@ -318,7 +320,7 @@ export default function Profile() {
                     <span>{user?.streak || 0}</span>
                   </div>
                   <p className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase mt-0.5">
-                    Day Streak
+                    {t('day_streak')}
                   </p>
                 </div>
 
@@ -328,17 +330,17 @@ export default function Profile() {
                     <span>{user?.completedLessons?.length || 0}</span>
                   </div>
                   <p className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase mt-0.5">
-                    Mastered
+                    {t('stat_mastered')}
                   </p>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-[#E8E6E0] dark:border-slate-800 space-y-3">
                 <h2 className="text-xs font-black text-[#25231F] dark:text-white uppercase tracking-wider">
-                  Learner Statistics
+                  {t('learner_statistics')}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {statItems.map(([label, value]) => (
+                  {makeStatItems().map(([label, value]) => (
                     <div key={label} className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
                       <p className="text-[10px] font-bold text-[#77736B] dark:text-slate-400">{label}</p>
                       <p className="text-sm font-black text-[#25231F] dark:text-white">{value}</p>
@@ -353,7 +355,7 @@ export default function Profile() {
               <div className="flex items-center justify-between pb-3 border-b border-[#E8E6E0] dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <Edit3 size={18} className="text-[#0B8F62]" />
-                  <h2 className="text-lg font-black text-[#25231F] dark:text-white">Edit Profile</h2>
+                  <h2 className="text-lg font-black text-[#25231F] dark:text-white">{t('edit_profile')}</h2>
                 </div>
                 <button
                   type="button"
@@ -367,7 +369,7 @@ export default function Profile() {
               {/* Avatar Selector */}
               <div>
                 <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-                  Choose Avatar Style
+                  {t('choose_avatar')}
                 </label>
                 <div className="flex items-center gap-4 mb-3">
                   <img
@@ -380,11 +382,11 @@ export default function Profile() {
                       type="text"
                       value={avatarSeed}
                       onChange={(e) => setAvatarSeed(e.target.value)}
-                      placeholder="Custom avatar seed or nickname"
+                      placeholder={t('avatar_seed_placeholder')}
                       className="w-full px-3.5 py-2 text-xs font-bold bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white"
                     />
                     <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-1">
-                      Type any word or pick a preset character below:
+                      {t('avatar_hint')}
                     </p>
                   </div>
                 </div>
@@ -420,7 +422,7 @@ export default function Profile() {
               {/* Display Name */}
               <div>
                 <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Full Name / Display Name *
+                  {t('full_name_label')}
                 </label>
                 <input
                   type="text"
@@ -428,7 +430,7 @@ export default function Profile() {
                   maxLength={30}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
+                  placeholder={t('enter_name_placeholder')}
                   className="w-full px-4 py-2.5 text-sm font-bold bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white"
                 />
               </div>
@@ -436,7 +438,7 @@ export default function Profile() {
               {/* Bio / About */}
               <div>
                 <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Bio / Learning Motto (Optional)
+                  {t('bio_label')}
                 </label>
                 <textarea
                   rows={2}
@@ -455,7 +457,7 @@ export default function Profile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Learning Language
+                    {t('learning_language_label')}
                   </label>
                   <select
                     value={learningLang}
@@ -472,7 +474,7 @@ export default function Profile() {
 
                 <div>
                   <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Interface Language
+                    {t('interface_language_label')}
                   </label>
                   <select
                     value={preferredLang}
@@ -492,7 +494,7 @@ export default function Profile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Primary Goal
+                    {t('primary_goal_label')}
                   </label>
                   <select
                     value={goal}
@@ -509,7 +511,7 @@ export default function Profile() {
 
                 <div>
                   <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Age Group
+                    {t('age_group_label')}
                   </label>
                   <select
                     value={ageRange}
@@ -528,7 +530,7 @@ export default function Profile() {
               {/* Daily Goal */}
               <div>
                 <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Daily Study Target
+                  {t('daily_study_target')}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[5, 10, 15, 20].map((mins) => (
@@ -551,10 +553,10 @@ export default function Profile() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" className="flex-1 font-bold" onClick={handleCancelEditing}>
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button type="submit" variant="primary" className="flex-1 font-bold flex items-center justify-center gap-1.5">
-                  <Check size={16} /> Save Changes
+                  <Check size={16} /> {t('save_changes')}
                 </Button>
               </div>
             </form>
@@ -570,28 +572,28 @@ export default function Profile() {
             <div className="flex items-center gap-2">
               <Target size={18} className="text-[#0B8F62]" />
               <h3 className="text-base font-black text-[#25231F] dark:text-white uppercase tracking-wider">
-                My Learning Plan
+                {t('my_learning_plan')}
               </h3>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
                 <p className="font-black text-sm text-[#0B8F62]">{user.learningPlan.startingLevel}</p>
-                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Level</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">{t('plan_level_label')}</p>
               </div>
               <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
                 <p className="font-black text-sm text-[#3B82F6]">
                   {GOAL_OPTIONS.find((g) => g.id === (user.goal || user.learningPlan.goal))?.label || user.learningPlan.goal}
                 </p>
-                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Goal</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">{t('plan_goal_label')}</p>
               </div>
               <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
                 <p className="font-black text-sm text-[#F39A45]">{user.dailyGoal || 10} mins</p>
-                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">Daily Goal</p>
+                <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">{t('plan_daily_goal_label')}</p>
               </div>
             </div>
             {user.ageRange && (
               <p className="text-xs text-[#77736B] dark:text-slate-400">
-                Age group: <span className="font-bold text-[#25231F] dark:text-white">{AGE_LABELS[user.ageRange] || user.ageRange}</span>
+                {t('age_group_display')} <span className="font-bold text-[#25231F] dark:text-white">{AGE_LABELS[user.ageRange] || user.ageRange}</span>
               </p>
             )}
             <div className="flex flex-wrap gap-1.5">
@@ -610,7 +612,7 @@ export default function Profile() {
             <div className="flex items-center gap-2">
               <Award size={20} className="text-[#F39A45]" />
               <h3 className="text-base font-black text-[#25231F] dark:text-white uppercase tracking-wider">
-                Achievements & Badges ({unlockedAchievements.length})
+                {t('achievements_badges')} ({unlockedAchievements.length})
               </h3>
             </div>
           </div>
@@ -618,7 +620,7 @@ export default function Profile() {
           {unlockedAchievements.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-xs text-[#77736B] dark:text-slate-400">
-                Complete lessons and maintain daily streaks to unlock prestigious badges!
+                {t('achievements_empty')}
               </p>
             </div>
           ) : (
@@ -649,10 +651,10 @@ export default function Profile() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-[#25231F] dark:text-white">
-                  Daily Streak Reminders
+                  {t('daily_streak_reminders')}
                 </h3>
                 <p className="text-[11px] text-[#77736B] dark:text-slate-400">
-                  {isPushSupported() ? 'Gentle push alerts so you never lose momentum.' : 'Push alerts supported in modern browsers.'}
+                  {isPushSupported() ? t('push_alert_tagline') : t('push_not_supported')}
                 </p>
               </div>
             </div>
@@ -666,7 +668,7 @@ export default function Profile() {
                   : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
               }`}
             >
-              {notificationState === 'granted' ? '✓ Active' : notificationState === 'denied' ? 'Blocked' : 'Off'}
+              {notificationState === 'granted' ? t('notif_active') : notificationState === 'denied' ? t('notif_blocked') : t('notif_off')}
             </span>
           </div>
 
@@ -686,12 +688,12 @@ export default function Profile() {
               ) : notificationState === 'granted' ? (
                 <>
                   <BellOff size={14} />
-                  <span>Turn Off Reminders</span>
+                  <span>{t('turn_off_reminders')}</span>
                 </>
               ) : (
                 <>
                   <BellRing size={14} />
-                  <span>Enable Reminders</span>
+                  <span>{t('enable_reminders')}</span>
                 </>
               )}
             </button>
@@ -701,9 +703,9 @@ export default function Profile() {
                 type="button"
                 onClick={handleSendTestAlert}
                 className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
-                title="Send a sample reminder to test your device"
+                title={t('test_reminder_tooltip')}
               >
-                <span>Test Alert</span>
+                <span>{t('test_alert')}</span>
               </button>
             )}
           </div>
@@ -718,7 +720,7 @@ export default function Profile() {
         {/* Log Out Action */}
         <div className="pt-2">
           <Button variant="danger" className="w-full font-bold" onClick={handleLogout}>
-            Log Out Account
+            {t('log_out_account')}
           </Button>
         </div>
         </div>

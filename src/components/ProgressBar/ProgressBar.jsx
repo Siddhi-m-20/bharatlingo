@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTheme } from '../../services/themeContext'
 
 export default function ProgressBar({ 
   progress = 0, 
@@ -7,6 +8,7 @@ export default function ProgressBar({
   className = '',
   color = '#0B8F62'
 }) {
+  const { t } = useTheme()
   const safeProgress = Number.isFinite(Number(progress))
     ? Math.min(100, Math.max(0, Number(progress)))
     : 0
@@ -20,7 +22,7 @@ export default function ProgressBar({
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium text-[#77736B]">Progress</span>
+          <span className="text-sm font-medium text-[#77736B]">{t('progress') || 'Progress'}</span>
           <span className="text-sm font-semibold text-[#25231F]">{Math.round(safeProgress)}%</span>
         </div>
       )}

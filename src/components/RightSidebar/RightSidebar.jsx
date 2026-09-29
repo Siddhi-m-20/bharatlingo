@@ -60,7 +60,7 @@ export default function RightSidebar({ onStreakClick }) {
               type="text"
               value={queryText}
               onChange={(e) => setQueryText(e.target.value)}
-              placeholder={t('translator_placeholder') || `Type in ${preferredLang.name}...`}
+              placeholder={t('translator_placeholder')}
               className="w-full text-xs font-medium px-3 py-2 pr-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-emerald-500 dark:text-white"
             />
             <button
@@ -97,11 +97,11 @@ export default function RightSidebar({ onStreakClick }) {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            {t('quests') || 'Daily Quests'}
+            {t('quests')}
           </h4>
           <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1">
             <Zap size={12} fill="currentColor" />
-            <span>{t('rewards') || 'Rewards'}</span>
+            <span>{t('rewards')}</span>
           </span>
         </div>
 
@@ -109,11 +109,11 @@ export default function RightSidebar({ onStreakClick }) {
           {quests.map((quest) => {
             const questTitle =
               quest.id === 'xp_30'
-                ? (t('quest_xp_30') || quest.title)
+                ? t('quest_xp_30')
                 : quest.id === 'lessons_2'
-                ? (t('quest_lessons_2') || quest.title)
+                ? t('quest_lessons_2')
                 : quest.id === 'practice_5'
-                ? (t('quest_practice_5') || quest.title)
+                ? t('quest_practice_5')
                 : quest.title
 
             return (
@@ -136,10 +136,10 @@ export default function RightSidebar({ onStreakClick }) {
                   onClick={() => claimQuestReward(quest.id)}
                   className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] shadow-sm hover:scale-105 active:scale-95 transition-all shrink-0"
                 >
-                  {t('claim_reward') || 'Claim!'}
+                  {t('claim_reward')}
                 </button>
               ) : quest.claimed ? (
-                <span className="text-[10px] font-bold text-emerald-500 shrink-0">{t('claimed') || 'Done ✓'}</span>
+                <span className="text-[10px] font-bold text-emerald-500 shrink-0">{t('claimed')}</span>
               ) : (
                 <span className="font-bold text-amber-500 text-[10px] shrink-0">
                   +{quest.rewardXP} XP
@@ -162,15 +162,15 @@ export default function RightSidebar({ onStreakClick }) {
               <Trophy size={14} fill="currentColor" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('leaderboard') || 'Leaderboard'}</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('leaderboard')}</p>
               <p className="text-[10px] text-slate-400">
-                {user?.rank ? `Rank #${user.rank}` : `${user?.xp || 0} XP`} • {t('rank_top_3') || 'Top 3 Advance'}
+                {user?.rank ? `#${user.rank}` : `${user?.xp || 0} XP`} • {t('rank_top_3')}
               </p>
             </div>
           </div>
         </div>
         <div className="w-full py-1.5 mt-1.5 bg-amber-500/10 group-hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs text-center rounded-lg transition-colors">
-          {t('view_leaderboard') || 'View Leaderboard →'}
+          {t('view_leaderboard')}
         </div>
       </div>
 
@@ -185,12 +185,12 @@ export default function RightSidebar({ onStreakClick }) {
               <ShieldCheck size={14} />
             </div>
             <div className="flex-1">
-              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Admin Console</p>
-              <p className="text-[10px] text-slate-400">System Telemetry & Content Health</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('admin_console')}</p>
+              <p className="text-[10px] text-slate-400">{t('admin_desc')}</p>
             </div>
           </div>
           <div className="w-full py-1 mt-2 bg-emerald-500/10 group-hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] text-center rounded-lg transition-colors">
-            Open Admin Dashboard →
+            {t('open_admin_dashboard')}
           </div>
         </div>
       )}

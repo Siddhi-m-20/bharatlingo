@@ -24,6 +24,7 @@ import { AudioService } from '../../services/audio/AudioService'
 import AudioButton from '../../components/AudioButton/AudioButton'
 import SpeakingExercise from '../../components/SpeakingExercise/SpeakingExercise'
 import { ArrowLeft, Volume2, Sparkles, CheckCircle2, XCircle, Trophy, Mic } from 'lucide-react'
+import { useTheme } from '../../services/themeContext'
 
 // ── Word meaning tooltip ──────────────────────────────────────────────────────
 function WordPill({ word, meaning, languageId }) {
@@ -59,6 +60,7 @@ function WordPill({ word, meaning, languageId }) {
 
 // ── Speaking practice segment ─────────────────────────────────────────────────
 function SpeakingSegment({ segment, languageId, onComplete }) {
+  const { t } = useTheme()
   const [done, setDone] = useState(false)
   const handleSubmit = (answer) => {
     setDone(true)
@@ -81,7 +83,7 @@ function SpeakingSegment({ segment, languageId, onComplete }) {
           className="text-center py-6 space-y-2"
         >
           <div className="text-4xl">🎤</div>
-          <p className="font-bold text-purple-600 dark:text-purple-400">Great practice!</p>
+          <p className="font-bold text-purple-600 dark:text-purple-400">{t('great_practice') || 'Great practice!'}</p>
         </motion.div>
       ) : (
         <SpeakingExercise
@@ -104,6 +106,7 @@ export default function StoryReader() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
   const { addXP, addGems } = useProgress()
+  const { t } = useTheme()
 
   const story = getStoryById(storyId)
 
@@ -129,12 +132,12 @@ export default function StoryReader() {
   if (!story) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-        <h2 className="text-xl font-bold mb-4">Story not found</h2>
+        <h2 className="text-xl font-bold mb-4">{t('story_not_found') || 'Story not found'}</h2>
         <button
           onClick={() => navigate('/stories')}
           className="px-6 py-2.5 rounded-full bg-amber-500 text-white font-bold"
         >
-          Back to Stories
+          {t('back_to_stories') || 'Back to Stories'}
         </button>
       </div>
     )
@@ -220,7 +223,7 @@ export default function StoryReader() {
           <button
             onClick={() => navigate('/stories')}
             className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Back to Stories"
+            aria-label={t('back_to_stories')}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>

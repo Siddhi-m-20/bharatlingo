@@ -35,7 +35,6 @@ export default function GamesHub() {
   const { user } = useAuth()
   const { streak, gems } = useProgress()
   const { t } = useTheme()
-
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   const learningLang = getLanguageById(user?.learningLanguage) || { name: 'Hindi', nativeName: 'हिन्दी', id: 'hi' }
@@ -43,12 +42,12 @@ export default function GamesHub() {
   const persistedStreak = Number(user?.streak) || Number(streak) || 0
 
   const categories = [
-    { id: 'all', label: 'All Games', count: GAME_MODES.length },
-    { id: 'vocabulary', label: 'Vocabulary', count: GAME_MODES.filter((g) => g.category === 'vocabulary').length },
-    { id: 'grammar', label: 'Grammar', count: GAME_MODES.filter((g) => g.category === 'grammar').length },
-    { id: 'audio', label: 'Listening & Voice', count: GAME_MODES.filter((g) => g.category === 'audio').length },
-    { id: 'speed', label: 'Speed & Memory', count: GAME_MODES.filter((g) => g.category === 'speed').length },
-    { id: 'reading', label: 'Script & Reading', count: GAME_MODES.filter((g) => g.category === 'reading').length },
+    { id: 'all', label: t('cat_all') || 'All Games', count: GAME_MODES.length },
+    { id: 'vocabulary', label: t('cat_vocabulary') || 'Vocabulary', count: GAME_MODES.filter((g) => g.category === 'vocabulary').length },
+    { id: 'grammar', label: t('cat_grammar') || 'Grammar', count: GAME_MODES.filter((g) => g.category === 'grammar').length },
+    { id: 'audio', label: t('cat_audio') || 'Listening & Voice', count: GAME_MODES.filter((g) => g.category === 'audio').length },
+    { id: 'speed', label: t('cat_speed') || 'Speed & Memory', count: GAME_MODES.filter((g) => g.category === 'speed').length },
+    { id: 'reading', label: t('cat_reading') || 'Script & Reading', count: GAME_MODES.filter((g) => g.category === 'reading').length },
   ]
 
   const filteredModes = selectedCategory === 'all'
@@ -57,9 +56,9 @@ export default function GamesHub() {
 
   const getDifficultyStars = (level) => {
     switch (level) {
-      case 3: return '⭐⭐⭐ Hard'
-      case 2: return '⭐⭐ Medium'
-      default: return '⭐ Easy'
+      case 3: return `⭐⭐⭐ ${t('diff_hard') || 'Hard'}`
+      case 2: return `⭐⭐ ${t('diff_medium') || 'Medium'}`
+      default: return `⭐ ${t('diff_easy') || 'Easy'}`
     }
   }
 
@@ -82,7 +81,7 @@ export default function GamesHub() {
                   type="button"
                   onClick={() => navigate('/dashboard')}
                   className="p-1.5 -ml-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-[#77736B] dark:text-slate-400 cursor-pointer"
-                  title="Back to Dashboard"
+                  title={t('back_to_dashboard')}
                 >
                   <ArrowLeft size={18} />
                 </button>
@@ -92,7 +91,7 @@ export default function GamesHub() {
                 </div>
               </div>
               <h1 className="text-xl md:text-2xl font-black text-[#25231F] dark:text-white">
-                Practice {learningLang.name} Through Play
+                {t('practice_through_play_prefix') || 'Practice'} {learningLang.name} {t('practice_through_play_suffix') || 'Through Play'}
               </h1>
               <p className="text-xs text-[#77736B] dark:text-slate-400 max-w-xl">
                 {t('games_subtitle') || 'Play educational games to reinforce vocabulary, grammar, and pronunciation with authentic language data.'}
@@ -141,7 +140,7 @@ export default function GamesHub() {
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        {mode.category}
+                        {t(`cat_${mode.category}`) || mode.category}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400">
                         {getDifficultyStars(mode.difficulty)}
@@ -152,10 +151,10 @@ export default function GamesHub() {
                   {/* Title & Description */}
                   <div>
                     <h3 className="font-black text-base text-[#25231F] dark:text-white group-hover:text-[#0B8F62] dark:group-hover:text-[#34D399] transition-colors">
-                      {mode.title}
+                      {t(`game_${mode.id}_title`) || mode.title}
                     </h3>
                     <p className="text-xs text-[#77736B] dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
-                      {mode.description}
+                      {t(`game_${mode.id}_desc`) || mode.description}
                     </p>
                   </div>
                 </div>

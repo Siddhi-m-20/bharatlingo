@@ -74,8 +74,8 @@ export default function PictureChoiceExercise({
               type="button"
               onClick={(e) => handlePlayAudio(e, audioText)}
               className="w-10 h-10 rounded-xl bg-[#0B8F62] hover:bg-[#09734e] text-white flex items-center justify-center transition-transform active:scale-95 shadow-md flex-shrink-0"
-              title="Listen to word"
-              aria-label="Listen to word"
+              title={t('listen_to_word')}
+              aria-label={t('listen_to_word')}
             >
               <Volume2 size={20} />
             </button>

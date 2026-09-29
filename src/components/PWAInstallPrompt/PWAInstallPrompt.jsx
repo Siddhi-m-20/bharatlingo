@@ -136,7 +136,7 @@ export default function PWAInstallPrompt() {
           <button
             type="button"
             onClick={handleDismiss}
-            aria-label="Close"
+            aria-label={t('close')}
             className="p-1 rounded-lg text-[#77736B] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
           >
             <X size={18} />
