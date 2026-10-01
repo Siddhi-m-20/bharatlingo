@@ -237,12 +237,14 @@ export function generateAdaptiveLesson({
         ...createWordToMeaningMCQ(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName),
         isReview: true,
         reviewReason: candidate.reason,
+        difficulty: 2,
       })
     } else {
       reviewExercises.push({
         ...createListeningExercise(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName),
         isReview: true,
         reviewReason: candidate.reason,
+        difficulty: 2,
       })
     }
   }
@@ -250,20 +252,38 @@ export function generateAdaptiveLesson({
   // --- PART B: NEW CONCEPTS (30% ~ 3-4 items) ---
   const newVocabItems = topicVocab.slice(0, Math.min(3, topicVocab.length))
   for (const item of newVocabItems) {
-    newExercises.push(createWordToMeaningMCQ(item, allSeedVocab, langId, preferredLang, targetLangName))
-    newExercises.push(createMeaningToWordMCQ(item, allSeedVocab, langId, preferredLang, targetLangName))
+    newExercises.push({
+        ...createWordToMeaningMCQ(item, allSeedVocab, langId, preferredLang, targetLangName),
+        difficulty: 1,
+      })
+    newExercises.push({
+        ...createMeaningToWordMCQ(item, allSeedVocab, langId, preferredLang, targetLangName),
+        difficulty: 1,
+      })
   }
 
   // --- PART C: ACTIVE PRACTICE (30% ~ 3-4 items) ---
   for (const item of topicVocab.slice(1, 4)) {
-    practiceExercises.push(createTranslationExercise(item, allSeedVocab, langId, preferredLang, targetLangName))
-    practiceExercises.push(createSpeakingExercise(item, allSeedVocab, langId, preferredLang, targetLangName))
+    practiceExercises.push({
+        ...createTranslationExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
+        difficulty: 2,
+      })
+    practiceExercises.push({
+        ...createSpeakingExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
+        difficulty: 2,
+      })
     if (item.example) {
-      practiceExercises.push(createFillBlankExercise(item, allSeedVocab, langId, preferredLang, targetLangName))
+      practiceExercises.push({
+        ...createFillBlankExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
+        difficulty: 2,
+      })
     }
   }
   if (topicVocab.length >= 3) {
-    practiceExercises.push(createMatchingExercise(topicVocab.slice(0, 4), langId, preferredLang, targetLangName))
+    practiceExercises.push({
+        ...createMatchingExercise(topicVocab.slice(0, 4), langId, preferredLang, targetLangName),
+        difficulty: 2,
+      })
   }
 
   // --- PART D: CHALLENGE & READING (15% ~ 1-2 items) ---
@@ -299,7 +319,8 @@ export function generateAdaptiveLesson({
   const selectedChallenge = pickRandom(challengeExercises, Math.min(2, Math.max(1, challengeExercises.length)))
   
   // Remaining slots for practice
-  const slotsRemaining = 11 - (selectedReview.length + selectedNew.length + selectedChallenge.length)
+  let slotsRemaining = 15 - (selectedReview.length + selectedNew.length + selectedChallenge.length)
+      if (slotsRemaining < 2) slotsRemaining = 2
   const selectedPractice = pickRandom(practiceExercises, Math.max(2, slotsRemaining))
 
   // Scaffolding progression: New Scaffolding -> Active Practice -> Spaced Review -> Challenge/Reading
@@ -312,15 +333,20 @@ export function generateAdaptiveLesson({
 
 
   // Fallback pad if pool was small
-  while (finalExercises.length < 10 && topicVocab.length > 0) {
-    const v = topicVocab[finalExercises.length % topicVocab.length]
-    finalExercises.push(createWordToMeaningMCQ(v, allSeedVocab, langId, preferredLang, targetLangName))
+  while (finalExercises.length < 15 && topicVocab.length > 0) {
+        const v = topicVocab[finalExercises.length % topicVocab.length]
+        finalExercises.push({
+          ...createWordToMeaningMCQ(v, allSeedVocab, langId, preferredLang, targetLangName),
+          difficulty: 1,
+        })
+      }
+
   }
 
   const sessionId = `${langId}-adaptive-${topic.id}-${Date.now()}`
   const localizedTopicTitle = getLocalizedTopicName(topic.id, preferredLang) || topic.name
 
-  return {
+return {
     id: sessionId,
     name: localizedTopicTitle,
     title: localizedTopicTitle,
@@ -338,7 +364,8 @@ export function generateAdaptiveLesson({
     generatedAt: new Date().toISOString(),
     _isAdaptive: true,
   }
-}
+  
+
 
 /**
  * Backward compatibility shims

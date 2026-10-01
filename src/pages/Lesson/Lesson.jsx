@@ -655,20 +655,20 @@ export default function Lesson() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className={`text-2xl font-bold ${wasSkipped ? 'text-[#77736B]' : isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}
+            className={`text-2xl font-bold ${wasSkipped ? 'text-gray-600 dark:text-gray-300' : isCorrect ? 'text-[#2F9E69]' : 'text-[#D84B42]'}`}
           >
             {wasSkipped ? (t('speaking_skipped') || 'Speaking skipped') : isCorrect ? (t('excellent') || '✓ Excellent!') : (t('not_quite') || '✗ Not quite right')}
           </motion.div>
         </div>
 
         {wasSkipped && (
-          <p className="text-sm font-medium text-[#77736B] dark:text-slate-400 mt-1">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-1">
             {t('no_xp_skipped_speaking') || 'No XP earned for this skipped speaking exercise.'}
           </p>
         )}
 
         {!isCorrect && !wasSkipped && (
-          <p className="text-sm font-medium text-[#77736B] dark:text-slate-400 mt-1">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-1">
             {t('correct_answer_is') || 'Correct answer:'} <span className="font-bold text-[#25231F] dark:text-white">{getCorrectAnswerLabel(exercise)}</span>
           </p>
         )}
@@ -689,7 +689,7 @@ export default function Lesson() {
   if (!lesson) {
     return (
       <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center">
-        <p className="text-[#77736B] dark:text-slate-400 font-medium">{t('generating_personalized_lesson') || 'Generating your personalized lesson...'}</p>
+        <p className="text-gray-600 dark:text-gray-300 font-medium">{t('generating_personalized_lesson') || 'Generating your personalized lesson...'}</p>
       </div>
     )
   }
@@ -744,7 +744,7 @@ export default function Lesson() {
           </button>
           
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#77736B] dark:text-slate-400">
+            <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
               {getExerciseHeader()}
             </span>
           </div>
@@ -782,7 +782,7 @@ export default function Lesson() {
       {/* Bottom Footer Controls */}
       <div className="w-full max-w-2xl mx-auto flex justify-between items-center pt-2">
         <div className="flex items-center gap-3">
-          <div className="text-xs text-[#77736B] dark:text-slate-400 font-bold">
+          <div className="text-xs text-gray-600 dark:text-gray-300 font-bold">
             {t('exercise_counter') || 'Exercise'} {currentExercise + 1} {t('of_word') || 'of'} {lesson.exercises.length}
           </div>
           {!showResult && (
