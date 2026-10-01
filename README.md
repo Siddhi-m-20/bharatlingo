@@ -271,6 +271,8 @@ INDICCONFORMER_URL=http://127.0.0.1:8001
 
 ---
 
-## 📜 License
+## License
 
-This project is created for educational and language preservation purposes. Respect attribution, dataset, and model licenses when using external resources.
+BharatLingo is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Siddhi Manjarekar.
