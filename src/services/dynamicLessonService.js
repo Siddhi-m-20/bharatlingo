@@ -12,11 +12,28 @@ import {
   generateNextLesson,
   generateLessonSequence,
 } from './lessonEngine.js'
-import { getLearnerProfile, getSkillProficiencies } from './learnerModel.js'
+import { getLearnerProfile, getSkillProficiencies, TOPIC_CATEGORIES } from './learnerModel.js'
 import { generateAssessmentSuite } from './exercisePool.js'
+import { getLocalizedTopicName } from '../data/translations.js'
 
 
 const API_BASE = '/api'
+
+/**
+ * Stable, replayable entries for the lesson library. The IDs deliberately map
+ * to fetchLessonById's adaptive route so each entry always opens a full lesson,
+ * not a shortened static seed lesson.
+ */
+export function getLessonLibrary({ languageId, siteLanguage = 'en' }) {
+  return TOPIC_CATEGORIES.map((topic) => ({
+    id: `${languageId}-adaptive-${topic.id}`,
+    topicId: topic.id,
+    title: getLocalizedTopicName(topic.id, siteLanguage) || topic.name,
+    targetLanguageId: languageId,
+    questionCount: 15,
+    difficulty: 3,
+  }))
+}
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

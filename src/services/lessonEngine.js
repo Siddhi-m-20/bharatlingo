@@ -35,7 +35,6 @@ import {
   createFillBlankExercise,
   createSentenceOrderExercise,
   createChallengeExercise,
-  shuffle,
   pickRandom,
 } from './exercisePool.js'
 
@@ -182,7 +181,7 @@ function generatePedagogicalRationale({ topic, weakAreas, reviewCandidates, prof
 }
 
 /**
- * CORE: Generate a single 10–12 exercise Adaptive Lesson
+ * CORE: Generate a single 15-question adaptive lesson
  */
 export function generateAdaptiveLesson({
   langId: propLangId,
@@ -220,127 +219,133 @@ export function generateAdaptiveLesson({
     accuracy: profile.overallAccuracy,
   })
 
-  // ── 5. Build 4-Part Adaptive Mix (NEW + PRACTICE + REVIEW + CHALLENGE) ────────
-  const reviewExercises = []
-  const newExercises = []
-  const practiceExercises = []
-  const challengeExercises = []
+  // ── 5. Build a fixed, pedagogical 15-question progression ─────────────────
+  // The order is intentional and invariant: Q1–5 Easy, Q6–10 Medium, Q11–15
+  // Hard.  Hard questions use contextual syntax, cloze, reading and challenge
+  // patterns; they are never medium questions with a different label.
+  const uniqueVocab = []
+  const seenWords = new Set()
+  for (const item of [...topicVocab, ...allSeedVocab]) {
+    if (item?.word && item?.translation && !seenWords.has(item.word)) {
+      seenWords.add(item.word)
+      uniqueVocab.push(item)
+    }
+  }
+  if (uniqueVocab.length < 15) {
+    throw new Error(`Not enough unique vocabulary to build a lesson for ${langId}`)
+  }
 
-  // --- PART A: REVIEW (25% ~ 2-3 items from mistakes & SM-2) ---
+  const withTier = (exercise, difficulty, tier) => ({ ...exercise, difficulty, tier })
+  const questionSignature = (exercise) => [
+    exercise.type,
+    exercise.targetWord || exercise.word || '',
+    exercise.sentence || exercise.question || exercise.passage || '',
+  ].join('|')
+
+  // Keep the existing review-candidate source, priority, and metadata intact:
+  // due SM-2 items are returned first by getReviewCandidates, followed by mistakes.
+  // Review exercises occupy Medium slots so the fixed progression remains intact.
+  const reviewExercises = []
+  const reviewAlternates = new Map()
   for (const candidate of reviewCandidates.slice(0, 3)) {
     const vocabMatch = allSeedVocab.find((v) => v.word === candidate.word) || {
       word: candidate.word,
       translation: candidate.translation,
     }
-    if (Math.random() > 0.5) {
-      reviewExercises.push({
-        ...createWordToMeaningMCQ(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName),
-        isReview: true,
-        reviewReason: candidate.reason,
-        difficulty: 2,
-      })
-    } else {
-      reviewExercises.push({
-        ...createListeningExercise(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName),
-        isReview: true,
-        reviewReason: candidate.reason,
-        difficulty: 2,
-      })
+    const makeReviewExercise = (useListening) => ({
+      ...(useListening
+        ? createListeningExercise(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName)
+        : createWordToMeaningMCQ(vocabMatch, allSeedVocab, langId, preferredLang, targetLangName)),
+      isReview: true,
+      reviewReason: candidate.reason,
+      difficulty: 2,
+      tier: 'medium',
+    })
+    const useListening = Math.random() <= 0.5
+    const reviewExercise = makeReviewExercise(useListening)
+    reviewExercises.push(reviewExercise)
+    reviewAlternates.set(reviewExercise.id, makeReviewExercise(!useListening))
+  }
+  const easy = [
+    withTier(createWordToMeaningMCQ(uniqueVocab[0], uniqueVocab, langId, preferredLang, targetLangName), 1, 'easy'),
+    withTier(createMeaningToWordMCQ(uniqueVocab[1], uniqueVocab, langId, preferredLang, targetLangName), 1, 'easy'),
+    withTier(createWordToMeaningMCQ(uniqueVocab[2], uniqueVocab, langId, preferredLang, targetLangName), 1, 'easy'),
+    withTier(createListeningExercise(uniqueVocab[3], uniqueVocab, langId, preferredLang, targetLangName), 1, 'easy'),
+    withTier(createMeaningToWordMCQ(uniqueVocab[4], uniqueVocab, langId, preferredLang, targetLangName), 1, 'easy'),
+  ]
+
+  const medium = [
+    withTier(createTranslationExercise(uniqueVocab[5], uniqueVocab, langId, preferredLang, targetLangName), 2, 'medium'),
+    withTier(createSpeakingExercise(uniqueVocab[6], uniqueVocab, langId, preferredLang, targetLangName), 2, 'medium'),
+    withTier(createFillBlankExercise(uniqueVocab[7], uniqueVocab, langId, preferredLang, targetLangName), 2, 'medium'),
+    withTier(createMatchingExercise(uniqueVocab.slice(8, 12), langId, preferredLang, targetLangName), 2, 'medium'),
+    withTier(createListeningExercise(uniqueVocab[12], uniqueVocab, langId, preferredLang, targetLangName), 2, 'medium'),
+  ]
+
+  const sentenceCandidates = []
+  const seenSentences = new Set()
+  const scaffoldWords = new Set(uniqueVocab.slice(0, 13).map((item) => item.word))
+  for (const item of uniqueVocab) {
+    const sentence = item.example?.trim()
+    if (!scaffoldWords.has(item.word) && sentence && sentence.split(/\s+/).length >= 3 && !seenSentences.has(sentence)) {
+      seenSentences.add(sentence)
+      sentenceCandidates.push(item)
     }
   }
-
-  // --- PART B: NEW CONCEPTS (30% ~ 3-4 items) ---
-  const newVocabItems = topicVocab.slice(0, Math.min(3, topicVocab.length))
-  for (const item of newVocabItems) {
-    newExercises.push({
-        ...createWordToMeaningMCQ(item, allSeedVocab, langId, preferredLang, targetLangName),
-        difficulty: 1,
-      })
-    newExercises.push({
-        ...createMeaningToWordMCQ(item, allSeedVocab, langId, preferredLang, targetLangName),
-        difficulty: 1,
-      })
+  const clozeCandidate = sentenceCandidates.find((item) =>
+    item.example.includes(item.word)
+      && ![sentenceCandidates[0]?.word, sentenceCandidates[1]?.word].includes(item.word)
+  )
+  const challengeCandidate = sentenceCandidates.find((item) =>
+    ![sentenceCandidates[0]?.word, sentenceCandidates[1]?.word, clozeCandidate?.word].includes(item.word)
+  )
+  if (!clozeCandidate || !challengeCandidate) {
+    throw new Error(`Not enough sentence content to build hard exercises for ${langId}`)
   }
-
-  // --- PART C: ACTIVE PRACTICE (30% ~ 3-4 items) ---
-  for (const item of topicVocab.slice(1, 4)) {
-    practiceExercises.push({
-        ...createTranslationExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
-        difficulty: 2,
-      })
-    practiceExercises.push({
-        ...createSpeakingExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
-        difficulty: 2,
-      })
-    if (item.example) {
-      practiceExercises.push({
-        ...createFillBlankExercise(item, allSeedVocab, langId, preferredLang, targetLangName),
-        difficulty: 2,
-      })
-    }
-  }
-  if (topicVocab.length >= 3) {
-    practiceExercises.push({
-        ...createMatchingExercise(topicVocab.slice(0, 4), langId, preferredLang, targetLangName),
-        difficulty: 2,
-      })
-  }
-
-  // --- PART D: CHALLENGE & READING (15% ~ 1-2 items) ---
-  const sentenceItem = topicVocab.find((v) => v.example && v.example.split(' ').length >= 3)
-  if (sentenceItem) {
-    const ch = createChallengeExercise(sentenceItem, allSeedVocab, langId, preferredLang, targetLangName)
-    if (ch) challengeExercises.push(ch)
-  }
-
-  const passages = READING_PASSAGES[langId] || READING_PASSAGES['hi']
-  if (passages && passages.length > 0) {
-    const p = passages[Math.floor(Math.random() * passages.length)]
-    challengeExercises.push({
-      id: `ex_read_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+  const passages = READING_PASSAGES[langId] || READING_PASSAGES.hi
+  const reading = passages[0]
+  const hard = [
+    withTier(createSentenceOrderExercise(sentenceCandidates[0], langId, preferredLang, targetLangName), 3, 'hard'),
+    withTier(createSentenceOrderExercise(sentenceCandidates[1], langId, preferredLang, targetLangName), 3, 'hard'),
+    withTier(createFillBlankExercise(clozeCandidate, uniqueVocab, langId, preferredLang, targetLangName), 3, 'hard'),
+    withTier(createChallengeExercise(challengeCandidate, uniqueVocab, langId, preferredLang, targetLangName), 3, 'hard'),
+    {
+      id: `ex_read_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       type: 'reading',
       prompt: getPromptText('reading', preferredLang, targetLangName),
-      passage: p.passage,
-      passageTranslation: p.translation,
-      question: p.question,
-      options: p.options,
-      correctAnswer: p.correctAnswer,
-      xp: 20,
+      passage: reading.passage,
+      passageTranslation: reading.translation,
+      question: reading.question,
+      options: reading.options,
+      correctAnswer: reading.correctAnswer,
+      xp: 25,
       category: 'reading',
       skill: 'reading',
       difficulty: 3,
-    })
-  }
-
-  // ── 6. Assemble Balanced 10–12 Exercise Set with Scaffolding Ordering ────────
-  // Quotas: Review (up to 2), New (3), Practice (4), Challenge/Reading (1-2)
-  const selectedReview = pickRandom(reviewExercises, Math.min(2, reviewExercises.length))
-  const selectedNew = pickRandom(newExercises, Math.min(3, newExercises.length))
-  const selectedChallenge = pickRandom(challengeExercises, Math.min(2, Math.max(1, challengeExercises.length)))
-  
-  // Remaining slots for practice
-  let slotsRemaining = 15 - (selectedReview.length + selectedNew.length + selectedChallenge.length)
-      if (slotsRemaining < 2) slotsRemaining = 2
-  const selectedPractice = pickRandom(practiceExercises, Math.max(2, slotsRemaining))
-
-  // Scaffolding progression: New Scaffolding -> Active Practice -> Spaced Review -> Challenge/Reading
-  const finalExercises = [
-    ...shuffle(selectedNew),
-    ...shuffle(selectedPractice),
-    ...shuffle(selectedReview),
-    ...shuffle(selectedChallenge),
+      tier: 'hard',
+      isChallenge: true,
+    },
   ]
 
+  // This is the original review selection cap (two of the top three candidates),
+  // placed in the last Medium positions rather than appended after the hard tier.
+  const selectedReview = pickRandom(reviewExercises, Math.min(2, reviewExercises.length))
+  const retainedMedium = medium.slice(0, medium.length - selectedReview.length)
+  const occupiedSignatures = new Set([...easy, ...retainedMedium, ...hard].map(questionSignature))
+  const integratedReviews = selectedReview.map((reviewExercise) => {
+    const alternate = reviewAlternates.get(reviewExercise.id)
+    const chosen = occupiedSignatures.has(questionSignature(reviewExercise)) ? alternate : reviewExercise
+    if (!chosen || occupiedSignatures.has(questionSignature(chosen))) {
+      throw new Error('Adaptive review selection produced a duplicate question')
+    }
+    occupiedSignatures.add(questionSignature(chosen))
+    return chosen
+  })
 
-  // Fallback pad if pool was small
-  while (finalExercises.length < 15 && topicVocab.length > 0) {
-        const v = topicVocab[finalExercises.length % topicVocab.length]
-        finalExercises.push({
-          ...createWordToMeaningMCQ(v, allSeedVocab, langId, preferredLang, targetLangName),
-          difficulty: 1,
-        })
-      }
-
+  const finalExercises = [...easy, ...retainedMedium, ...integratedReviews, ...hard]
+  const questionSignatures = finalExercises.map(questionSignature)
+  if (new Set(questionSignatures).size !== finalExercises.length) {
+    throw new Error('Adaptive lesson generation produced duplicate questions')
   }
 
   const sessionId = `${langId}-adaptive-${topic.id}-${Date.now()}`
@@ -364,7 +369,7 @@ return {
     generatedAt: new Date().toISOString(),
     _isAdaptive: true,
   }
-  
+}
 
 
 /**

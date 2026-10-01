@@ -6,3 +6,10 @@ dist
 .vscode
 .idea
 .vercel
+
+# AI coding agent local config
+.kilo/
+.claude/
+.cursor/
+.agent/
+.agents/

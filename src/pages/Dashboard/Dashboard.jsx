@@ -18,10 +18,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
-import { fetchNextAdaptiveLesson } from '../../services/dynamicLessonService'
+import { fetchNextAdaptiveLesson, getLessonLibrary } from '../../services/dynamicLessonService'
 import { fetchLearningAnalytics } from '../../services/dbService'
 import { getLanguageById } from '../../data/languages'
-import { getLessonsForLanguage, translateMeaning } from '../../data/lessons/index'
+import { translateMeaning } from '../../data/lessons/index'
 import {
   getSkillProficiencies,
   getWeakAreas,
@@ -95,18 +95,6 @@ export default function Dashboard() {
 
   const learningLang = getLanguageById(user?.learningLanguage) || { name: 'Hindi', nativeName: 'हिन्दी', id: 'hi' }
   const preferredLang = getLanguageById(user?.preferredLanguage || 'en') || { name: 'English', id: 'en' }
-
-  const getLocalizedLessonTitle = useCallback((name) => {
-    if (!name) return ''
-    const norm = String(name).toLowerCase()
-    if (norm.includes('greet') || norm.includes('salutation')) return t('topic_greetings') || name
-    if (norm.includes('essential')) return t('topic_everyday') || name
-    if (norm.includes('number')) return t('topic_numbers') || name
-    if (norm.includes('food') || norm.includes('thali') || norm.includes('dining')) return t('topic_food') || name
-    if (norm.includes('family') || norm.includes('relation')) return t('topic_family') || name
-    if (norm.includes('travel') || norm.includes('direction')) return t('topic_travel') || name
-    return name
-  }, [t])
 
   const getLocalizedRationale = useCallback((rationale) => {
     if (!rationale) return t('lesson_rationale_general') || 'Personalized exercise sequence aligned with your goals.'
@@ -380,6 +368,14 @@ export default function Dashboard() {
 
   const [showAllLessons, setShowAllLessons] = useState(false)
 
+  // Stable library index for the current adaptive lesson (1-based position of
+  // its topic in the lesson library). Adaptive lessons carry no fixed unit
+  // number, so this is derived from the topic rather than a hardcoded glyph.
+  const lessonIndex = useMemo(() => {
+    const idx = TOPIC_CATEGORIES.findIndex((t) => t.id === nextLesson?.topicId)
+    return idx >= 0 ? idx + 1 : 1
+  }, [nextLesson?.topicId])
+
   // ── 5. Continue Learning Navigation ───────────────────────────────────────
   const handleStartLesson = (topicId = null, lessonId = null) => {
     if (lessonId) {
@@ -394,10 +390,11 @@ export default function Dashboard() {
     }
   }
 
-  // All authentic curriculum lessons for current target language
+  // Stable adaptive lessons for the current target language. Site language only
+  // localizes this library's UI; target language determines lesson content.
   const allCurriculumLessons = useMemo(() => {
-    return getLessonsForLanguage(learningLang.id, preferredLang.id)
-  }, [learningLang.id, preferredLang.id])
+    return getLessonLibrary({ languageId: learningLang.id, siteLanguage })
+  }, [learningLang.id, siteLanguage])
 
   const completedLessonsSet = useMemo(() => {
     return new Set(completedLessonsList)
@@ -553,31 +550,31 @@ export default function Dashboard() {
                       <span>{t('start_greetings') || 'Start Greetings'}</span>
                     </button>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B8F62] to-[#10B981] flex items-center justify-center text-white text-xl font-black shadow-md shadow-[#0B8F62]/20 shrink-0">
-                        {nextLesson?.unitNumber || '1'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">
-                            {t('adaptive_lesson') || 'Adaptive Lesson'}
-                          </span>
-                          {nextLesson?.difficultyLabel && (
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-                              {nextLesson.difficultyLabel}
-                            </span>
-                          )}
+) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B8F62] to-[#10B981] flex items-center justify-center text-white text-xl font-black shadow-md shadow-[#0B8F62]/20 shrink-0">
+                          {lessonIndex}
                         </div>
-                        <h3 className="text-base md:text-lg font-black text-[#25231F] dark:text-white truncate mt-0.5">
-                          {getLocalizedLessonTitle(nextLesson?.name) || 'Everyday Essentials'}
-                        </h3>
-                        <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
-                          {nextLesson?.nameNative || learningLang.nativeName}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">
+                              {t('adaptive_lesson') || 'Adaptive Lesson'}
+                            </span>
+                            {nextLesson?.difficultyLabel && (
+                              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                {nextLesson.difficultyLabel}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-base md:text-lg font-black text-[#25231F] dark:text-white truncate mt-0.5">
+                            {nextLesson?.name || 'Everyday Essentials'}
+                          </h3>
+                          <p className="text-xs text-[#77736B] dark:text-slate-400 font-medium">
+                            {nextLesson?.nameNative || learningLang.nativeName}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
                     <div className="bg-white/80 dark:bg-slate-800/80 rounded-xl p-2.5 border border-[#E8E6E0] dark:border-slate-700 flex items-start gap-2 text-xs">
                       <Brain size={16} className="text-[#0B8F62] shrink-0 mt-0.5" />
@@ -710,7 +707,7 @@ export default function Dashboard() {
                           <span>{learningLang.name} {t('lessons_library_title') || 'Lessons Library'}</span>
                         </h2>
                         <p className="text-[11px] text-[#77736B] dark:text-slate-400 font-medium">
-                          {t('lessons_library_subtitle') || 'All foundational & conversational units are unlocked and replayable'}
+                          {t('lessons_library_subtitle')}
                         </p>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]">
@@ -719,53 +716,40 @@ export default function Dashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {(showAllLessons ? allCurriculumLessons : allCurriculumLessons.slice(0, 6)).map((lesson, idx) => {
+                      {(showAllLessons ? allCurriculumLessons : allCurriculumLessons.slice(0, 6)).map((lesson) => {
                         const isCompleted = completedLessonsSet.has(lesson.id)
-                        const exCount = lesson.exercises?.length || 5
-                        const getUnitLabel = (unitStr) => {
-                          if (!unitStr) return `Lesson ${idx + 1}`
-                          const norm = String(unitStr).toLowerCase()
-                          if (norm.includes('unit 1') || norm.includes('fundamentals')) return t('unit_1_fundamentals') || unitStr
-                          if (norm.includes('unit 2') || norm.includes('daily life')) return t('unit_2_daily_life') || unitStr
-                          if (norm.includes('unit 3') || norm.includes('food')) return t('unit_3_food_dining') || unitStr
-                          if (norm.includes('unit 4') || norm.includes('family')) return t('unit_4_family_relations') || unitStr
-                          if (norm.includes('unit 5') || norm.includes('travel')) return t('unit_5_travel_places') || unitStr
-                          return unitStr
-                        }
                         return (
                           <div
-                            key={lesson.id || idx}
+                            key={lesson.id}
                             className="p-3.5 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800/40 flex flex-col justify-between space-y-2.5 hover:border-[#0B8F62]/60 transition-all"
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <span className="text-[9px] font-black uppercase tracking-wider text-[#77736B] dark:text-slate-400 block truncate">
-                                  {getUnitLabel(lesson.unit)}
+                                  {t('lesson_id_label')}: {lesson.id}
                                 </span>
                                 <h3 className="font-black text-xs text-[#25231F] dark:text-white truncate mt-0.5">
-                                  {getLocalizedLessonTitle(lesson.name)}
+                                  {lesson.title}
                                 </h3>
-                                {lesson.nameNative && (
-                                  <p className="text-[10px] text-[#0B8F62] dark:text-[#34D399] font-bold truncate">
-                                    {lesson.nameNative}
-                                  </p>
-                                )}
+                                <p className="text-[10px] text-[#0B8F62] dark:text-[#34D399] font-bold truncate">
+                                  {learningLang.name} · {t('lesson_difficulty_hard')}
+                                </p>
                               </div>
                               {isCompleted ? (
                                 <span className="shrink-0 flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                                   <CheckCircle2 size={12} />
-                                  <span>{t('done') || 'Done'}</span>
+                                  <span>{t('lesson_status_complete')}</span>
                                 </span>
                               ) : (
                                 <span className="shrink-0 text-[10px] text-slate-400 font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                                  {exCount} {t('exs_short') || 'exs'}
+                                  {t('lesson_status_not_started')}
                                 </span>
                               )}
                             </div>
 
                             <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
                               <span className="text-[10px] text-[#77736B] dark:text-slate-400">
-                                {lesson.vocabulary?.length ? `${lesson.vocabulary.length} ${t('vocab_words') || 'vocab words'}` : `${exCount} ${t('exercises') || 'exercises'}`}
+                                {lesson.questionCount} {t('questions')} · {isCompleted ? `${lesson.questionCount}/${lesson.questionCount}` : `0/${lesson.questionCount}`}
                               </span>
                               <button
                                 type="button"
@@ -776,7 +760,7 @@ export default function Dashboard() {
                                     : 'bg-[#0B8F62] hover:bg-[#097b54] text-white shadow-xs'
                                 }`}
                               >
-                                <span>{isCompleted ? (t('review') || 'Review') : (t('start') || 'Start')}</span>
+                                <span>{isCompleted ? t('replay') : t('open_lesson')}</span>
                                 <Play size={10} className="fill-current" />
                               </button>
                             </div>
