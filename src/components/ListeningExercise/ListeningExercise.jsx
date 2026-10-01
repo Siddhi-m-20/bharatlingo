@@ -52,17 +52,17 @@ export default function ListeningExercise({
   )
 
   const levelInfo = {
-    1: { name: 'Level 1: Single Word', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    2: { name: 'Level 2: Short Phrase', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    3: { name: 'Level 3: Full Sentence', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
-    4: { name: 'Level 4: Mini Dialogue', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  }[inferredLevel] || { name: 'Listening Practice', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' }
+    1: { name: t('level_1_single_word') || 'Level 1: Single Word', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+    2: { name: t('level_2_short_phrase') || 'Level 2: Short Phrase', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    3: { name: t('level_3_full_sentence') || 'Level 3: Full Sentence', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
+    4: { name: t('level_4_mini_dialogue') || 'Level 4: Mini Dialogue', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  }[inferredLevel] || { name: t('listening_practice') || 'Listening Practice', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' }
 
   // Show "tap to listen" hint after 1.5s if user hasn't played yet
   useEffect(() => {
     if (!hasPlayed) {
-      const t = setTimeout(() => setShowHint(true), 1500)
-      return () => clearTimeout(t)
+      const timer = setTimeout(() => setShowHint(true), 1500)
+      return () => clearTimeout(timer)
     }
     setShowHint(false)
   }, [hasPlayed])
@@ -97,8 +97,8 @@ export default function ListeningExercise({
   if (!textToSpeak) {
     return (
       <div className="text-center py-8 text-[#D84B42]">
-        <p className="font-semibold">⚠ Listening exercise: missing audio text</p>
-        <p className="text-sm mt-1 text-[#77736B]">This exercise needs an audioText field.</p>
+        <p className="font-semibold">⚠ {t('listening_exercise_missing') || 'Listening exercise: missing audio text'}</p>
+        <p className="text-sm mt-1 text-[#77736B]">{t('needs_audio_text') || 'This exercise needs an audioText field.'}</p>
       </div>
     )
   }
@@ -113,14 +113,14 @@ export default function ListeningExercise({
         </span>
         {replayCount > 0 && (
           <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
-            Replays: {replayCount}
+            {t('replays') || 'Replays'}: {replayCount}
           </span>
         )}
       </div>
 
       {/* Header Prompt */}
       <h3 className="text-xl md:text-2xl font-bold text-[#25231F] dark:text-white text-center">
-        {comprehensionQuestion || prompt || 'Listen carefully and select what you hear'}
+        {comprehensionQuestion || prompt || (t('listen_carefully_prompt') || 'Listen carefully and select what you hear')}
       </h3>
 
       {/* Audio Controls Area */}
@@ -135,12 +135,12 @@ export default function ListeningExercise({
               rate={0.88}
               variant="icon"
               size="large"
-              label="Play audio"
+              label={t('play') || 'Play audio'}
               onStateChange={handleAudioStateChange}
               className="w-20 h-20 !rounded-3xl shadow-xl hover:scale-105 transition-transform"
             />
             <span className="text-xs font-semibold text-[#77736B] dark:text-slate-400">
-              {hasPlayed ? '↻ Replay (1.0x)' : '▶ Play (1.0x)'}
+              {hasPlayed ? `↻ ${t('replay') || 'Replay'} (1.0x)` : `▶ ${t('play') || 'Play'} (1.0x)`}
             </span>
           </div>
 
@@ -152,11 +152,11 @@ export default function ListeningExercise({
               rate={0.52}
               variant="icon"
               size="medium"
-              label="Play slowly"
+              label={t('slow') || 'Play slowly'}
               onStateChange={handleAudioStateChange}
               className="w-14 h-14 !rounded-2xl shadow-md bg-[#3B82F6] hover:bg-[#2563EB] hover:scale-105 transition-transform"
             />
-            <span className="text-xs font-semibold text-[#77736B] dark:text-slate-400">🐢 Slow (0.5x)</span>
+            <span className="text-xs font-semibold text-[#77736B] dark:text-slate-400">🐢 {t('slow') || 'Slow'} (0.5x)</span>
           </div>
         </div>
 
@@ -176,7 +176,7 @@ export default function ListeningExercise({
               <button
                 type="button"
                 onClick={() => setRevealedDueToAudio(true)}
-                className="text-xs font-bold text-[#0B8F62] hover:underline flex items-center justify-center gap-1 mx-auto"
+                className="text-xs font-bold text-[#0B8F62] hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
               >
                 <Eye size={13} />
                 <span>{t('reveal_text_practice') || 'Reveal text to practice without penalty'}</span>
@@ -205,14 +205,14 @@ export default function ListeningExercise({
             className="text-xs text-[#77736B] dark:text-slate-400 mt-1 flex items-center gap-1"
           >
             <Sparkles size={13} className="text-[#F39A45]" />
-            <span>Tap the speaker icon to listen to the audio</span>
+            <span>{t('tap_speaker_hint') || 'Tap the speaker icon to listen to the audio'}</span>
           </motion.p>
         )}
       </div>
 
       {/* What did you hear? */}
       <p className="text-center text-xs font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wider">
-        {comprehensionQuestion ? 'Select the correct answer:' : 'What did you hear?'}
+        {comprehensionQuestion ? (t('select_correct_answer') || 'Select the correct answer:') : (t('what_did_you_hear') || 'What did you hear?')}
       </p>
 
       {/* Option Cards */}
@@ -255,7 +255,7 @@ export default function ListeningExercise({
       {showResult && (
         <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800/80 rounded-2xl border border-[#E8E6E0] dark:border-slate-700 text-center max-w-lg mx-auto">
           <p className="text-xs text-[#77736B] dark:text-slate-400">
-            Audio Text:&nbsp;
+            {t('audio_text') || 'Audio Text'}:&nbsp;
             <span className="font-bold text-[#0B8F62] dark:text-[#34D399]">{textToSpeak}</span>
           </p>
         </div>

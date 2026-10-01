@@ -9,7 +9,7 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const { login, loginWithGoogle } = useAuth()
-  const { t, setSiteLanguage } = useTheme()
+  const { tEn: t } = useTheme()
   
   const successMessage = location.state?.successMessage
   const prefillEmail = location.state?.email || ''

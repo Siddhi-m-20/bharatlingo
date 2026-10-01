@@ -76,7 +76,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { streak, gems } = useProgress()
-  const { t } = useTheme()
+  const { t, siteLanguage } = useTheme()
 
   const [nextLesson, setNextLesson] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -512,14 +512,14 @@ export default function Dashboard() {
                       className="w-6 h-6 border-2 border-[#0B8F62] border-t-transparent rounded-full"
                     />
                     <p className="text-xs text-[#77736B] dark:text-slate-400 font-bold">
-                      Selecting personalized exercises for {learningLang.name}...
+                      {t('selecting_personalized_exercises') || 'Selecting personalized exercises for'} {learningLang.name}...
                     </p>
                   </div>
                 ) : lessonError ? (
                   <div className="bg-rose-50 dark:bg-rose-950/40 rounded-2xl p-5 border border-rose-200 dark:border-rose-900/60 space-y-3">
                     <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 text-xs font-bold">
                       <AlertTriangle size={16} />
-                      <span>Unable to assemble adaptive lesson</span>
+                      <span>{t('unable_assemble_adaptive_lesson') || 'Unable to assemble adaptive lesson'}</span>
                     </div>
                     <p className="text-[11px] text-rose-600 dark:text-rose-300">
                       {lessonError}
@@ -530,7 +530,7 @@ export default function Dashboard() {
                       className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <RefreshCw size={12} />
-                      <span>Retry</span>
+                      <span>{t('retry') || 'Retry'}</span>
                     </button>
                   </div>
                 ) : !nextLesson ? (
@@ -619,7 +619,7 @@ export default function Dashboard() {
                   <div className="flex flex-wrap gap-2">
                     {dueReviews.map((item, idx) => {
                       const translatedMeaning = item.translation
-                        ? translateMeaning(item.translation, user?.preferredLanguage || 'mr')
+                        ? translateMeaning(item.translation, user?.preferredLanguage || siteLanguage || 'en')
                         : ''
                       return (
                         <div
@@ -914,11 +914,11 @@ export default function Dashboard() {
               {/* Today Status Pill */}
               <div className="p-3 rounded-2xl border border-[#E8E6E0] dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-[#25231F] dark:text-white block">Today's Practice</span>
+                  <span className="text-xs font-bold text-[#25231F] dark:text-white block">{t('todays_practice') || "Today's Practice"}</span>
                   <span className="text-[11px] text-[#77736B] dark:text-slate-400">
                     {practicedDates.has(todayKey)
-                      ? 'Goal accomplished! Streak preserved for today.'
-                      : 'Complete any lesson or review to keep your streak.'}
+                      ? (t('streak_preserved_today') || 'Goal accomplished! Streak preserved for today.')
+                      : (t('complete_lesson_to_keep_streak') || 'Complete any lesson or review to keep your streak.')}
                   </span>
                 </div>
                 <span
@@ -928,14 +928,14 @@ export default function Dashboard() {
                       : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                   }`}
                 >
-                  {practicedDates.has(todayKey) ? '✓ Completed' : 'Pending'}
+                  {practicedDates.has(todayKey) ? `✓ ${t('completed_status') || 'Completed'}` : (t('pending_status') || 'Pending')}
                 </span>
               </div>
 
               {/* Monthly Consistency Heat Grid (28 days) */}
               <div className="rounded-2xl border border-[#E8E6E0] dark:border-slate-800 p-3.5 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">Monthly Consistency</span>
+                  <span className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">{t('monthly_consistency') || 'Monthly Consistency'}</span>
                   <span className="text-[11px] font-bold text-[#0B8F62]">
                     {activeDays28} of 28 active days ({Math.round((activeDays28 / 28) * 100)}%)
                   </span>
@@ -967,7 +967,7 @@ export default function Dashboard() {
               {/* Weekly Calendar Row */}
               <div className="rounded-2xl border border-[#E8E6E0] dark:border-slate-800 p-3.5 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <h3 className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">This Week</h3>
+                  <h3 className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">{t('this_week') || 'This Week'}</h3>
                   <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400">
                     {daysActiveThisWeek} of 7 active
                   </span>
@@ -1002,7 +1002,7 @@ export default function Dashboard() {
               {/* Milestone Tracker */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <h3 className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">Milestone Targets</h3>
+                  <h3 className="font-black uppercase tracking-wider text-[#25231F] dark:text-white">{t('milestone_targets') || 'Milestone Targets'}</h3>
                   <span className="text-[10px] font-bold text-[#0B8F62]">
                     {nextMilestone - persistedStreak} {nextMilestone - persistedStreak === 1 ? 'day' : 'days'} to next goal
                   </span>

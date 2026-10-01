@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
@@ -73,8 +73,10 @@ function getAvatarUrl(seed, bg = 'b6e3f4,c0aede,d1d4f9') {
   return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed || 'Bharat')}&backgroundColor=${bg}`
 }
 
-function formatMinutes(seconds) {
-  return `${Math.round((Number(seconds) || 0) / 60)} min`
+function formatMinutes(seconds, t) {
+  const mins = Math.round((Number(seconds) || 0) / 60)
+  const unit = t ? t('minutes_short') : 'min'
+  return `${mins} ${unit}`
 }
 
 export default function Profile() {
@@ -88,6 +90,15 @@ export default function Profile() {
   const [notificationState, setNotificationState] = useState(() => getNotificationPermission())
   const [notificationMsg, setNotificationMsg] = useState(null)
   const [isUpdatingNotif, setIsUpdatingNotif] = useState(false)
+
+  const getGoalLabel = (goalId) => {
+    return t(`goal_${goalId}`) || GOAL_OPTIONS.find((g) => g.id === goalId)?.label || goalId
+  }
+
+  const getAgeLabel = (ageKey) => {
+    const normKey = String(ageKey || '').replace('-', '_')
+    return t(`age_${normKey}`) || AGE_LABELS[ageKey] || ageKey
+  }
 
   // Edit Form State
   const [name, setName] = useState(user?.name || '')
@@ -136,7 +147,7 @@ export default function Profile() {
     ? Math.round(masteryTopics.reduce((sum, topic) => sum + (Number(topic.masteryLevel) || 0), 0) / masteryTopics.length / 5 * 100)
     : 0
   const makeStatItems = () => [
-    [t('stat_learning_time'), formatMinutes(activitySummary.seconds)],
+    [t('stat_learning_time'), formatMinutes(activitySummary.seconds, t)],
     [t('stat_exercises'), activitySummary.exercises],
     [t('stat_xp_earned'), activitySummary.xp],
     [t('stat_accuracy'), `${displaySkills.overall}%`],
@@ -207,16 +218,19 @@ export default function Profile() {
         setNotificationMsg(res.message || t('reminders_enabled'))
       } else {
         setNotificationState(getNotificationPermission())
-        setNotificationMsg(res.message || 'Could not enable notifications.')
+        setNotificationMsg(res.message || t('notif_enable_error') || 'Could not enable notifications.')
       }
     }
     setIsUpdatingNotif(false)
   }
 
   const handleSendTestAlert = async () => {
+    const courseName = activeCourse?.name || 'BharatLingo'
+    const title = (t('streak_safe_title') || '{language} Streak Safe! 🔥').replace('{language}', courseName)
+    const body = (t('streak_safe_body') || 'Keep up the great work learning {language}!').replace('{language}', courseName)
     const res = await sendPushNotificationTest(user, {
-      title: `${activeCourse?.name || 'BharatLingo'} Streak Safe! 🔥`,
-      body: `Keep up the great work learning ${activeCourse?.name || 'languages'}!`,
+      title,
+      body,
     })
     setNotificationMsg(res.message)
   }
@@ -265,7 +279,7 @@ export default function Profile() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h1 className="text-2xl font-black text-[#25231F] dark:text-white">
-                        {user?.name || 'Learner'}
+                        {user?.name || t('default_learner') || 'Learner'}
                       </h1>
                     </div>
                     <p className="text-xs text-[#77736B] dark:text-slate-400 mt-0.5">{user?.email}</p>
@@ -445,7 +459,7 @@ export default function Profile() {
                   maxLength={160}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="e.g. Learning Marathi for travel and discovering Indian regional literature!"
+                  placeholder={t('bio_placeholder') || 'e.g. Learning Indian languages for conversations and cultural discovery!'}
                   className="w-full px-4 py-2 text-xs font-medium bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white resize-none"
                 />
                 <p className="text-[10px] text-right text-[#77736B] dark:text-slate-400 mt-0.5">
@@ -503,7 +517,7 @@ export default function Profile() {
                   >
                     {GOAL_OPTIONS.map((g) => (
                       <option key={g.id} value={g.id}>
-                        {g.icon} {g.label}
+                        {g.icon} {getGoalLabel(g.id)}
                       </option>
                     ))}
                   </select>
@@ -518,9 +532,9 @@ export default function Profile() {
                     onChange={(e) => setAgeRange(e.target.value)}
                     className="w-full px-3.5 py-2 text-xs font-bold bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white"
                   >
-                    {Object.entries(AGE_LABELS).map(([k, v]) => (
+                    {Object.keys(AGE_LABELS).map((k) => (
                       <option key={k} value={k}>
-                        {v}
+                        {getAgeLabel(k)}
                       </option>
                     ))}
                   </select>
@@ -544,7 +558,7 @@ export default function Profile() {
                           : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF] dark:bg-slate-800 text-[#25231F] dark:text-slate-300'
                       }`}
                     >
-                      {mins} mins
+                      {mins} {t('minutes_short') || 'mins'}
                     </button>
                   ))}
                 </div>
@@ -582,18 +596,18 @@ export default function Profile() {
               </div>
               <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
                 <p className="font-black text-sm text-[#3B82F6]">
-                  {GOAL_OPTIONS.find((g) => g.id === (user.goal || user.learningPlan.goal))?.label || user.learningPlan.goal}
+                  {getGoalLabel(user.goal || user.learningPlan.goal)}
                 </p>
                 <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">{t('plan_goal_label')}</p>
               </div>
               <div className="p-2.5 bg-[#F7F5EF] dark:bg-slate-800 rounded-xl">
-                <p className="font-black text-sm text-[#F39A45]">{user.dailyGoal || 10} mins</p>
+                <p className="font-black text-sm text-[#F39A45]">{user.dailyGoal || 10} {t('minutes_short') || 'mins'}</p>
                 <p className="text-[10px] text-[#77736B] dark:text-slate-400 mt-0.5">{t('plan_daily_goal_label')}</p>
               </div>
             </div>
             {user.ageRange && (
               <p className="text-xs text-[#77736B] dark:text-slate-400">
-                {t('age_group_display')} <span className="font-bold text-[#25231F] dark:text-white">{AGE_LABELS[user.ageRange] || user.ageRange}</span>
+                {t('age_group_display')} <span className="font-bold text-[#25231F] dark:text-white">{getAgeLabel(user.ageRange)}</span>
               </p>
             )}
             <div className="flex flex-wrap gap-1.5">
@@ -632,9 +646,11 @@ export default function Profile() {
                   className="bg-[#0B8F62]/10 border border-[#0B8F62]/30 rounded-2xl p-4 text-center space-y-1"
                 >
                   <div className="text-3xl">{achievement.icon}</div>
-                  <p className="font-black text-xs text-[#25231F] dark:text-white">{achievement.name}</p>
+                  <p className="font-black text-xs text-[#25231F] dark:text-white">
+                    {t(`achievement_${achievement.id}_name`) || achievement.name}
+                  </p>
                   <p className="text-[10px] text-[#77736B] dark:text-slate-400 leading-tight">
-                    {achievement.description}
+                    {t(`achievement_${achievement.id}_desc`) || achievement.description}
                   </p>
                 </motion.div>
               ))}

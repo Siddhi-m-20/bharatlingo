@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Volume2, BookOpen } from 'lucide-react'
 import { AudioService } from '../../services/audio/AudioService'
+import { useTheme } from '../../services/themeContext'
 
 export default function ReadingExercise({
   prompt,
@@ -14,6 +15,7 @@ export default function ReadingExercise({
   disabled,
   showResult,
 }) {
+  const { t } = useTheme()
   const [selectedOption, setSelectedOption] = useState(null)
 
   const handleSelect = (opt) => {
@@ -32,14 +34,14 @@ export default function ReadingExercise({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-          <BookOpen className="w-4 h-4" /> Reading Comprehension
+          <BookOpen className="w-4 h-4" /> {t('reading_comprehension') || 'Reading Comprehension'}
         </div>
         {passage && (
           <button
             type="button"
             onClick={playPassageAudio}
             className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 transition-all shadow-sm"
-            title={t('listen_to_passage')}
+            title={t('listen_to_passage') || 'Listen to passage'}
           >
             <Volume2 className="w-4 h-4" />
           </button>

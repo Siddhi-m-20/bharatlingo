@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useTheme } from '../../services/themeContext'
@@ -12,10 +11,10 @@ import { Sun, Moon, Sparkles, Leaf, Check, Volume2, VolumeX, Mic, MicOff } from 
 import { speechRecognitionService } from '../../services/audio/SpeechRecognitionService'
 
 const THEMES = [
-  { id: 'light', name: 'Light Theme', icon: Sun, color: '#0B8F62' },
-  { id: 'dark', name: 'Dark Theme', icon: Moon, color: '#10B981' },
-  { id: 'saffron', name: 'Saffron Theme', icon: Sparkles, color: '#EA580C' },
-  { id: 'emerald', name: 'Emerald Theme', icon: Leaf, color: '#059669' },
+  { id: 'light', nameKey: 'theme_light', defaultName: 'Light Theme', icon: Sun, color: '#0B8F62' },
+  { id: 'dark', nameKey: 'theme_dark', defaultName: 'Dark Theme', icon: Moon, color: '#10B981' },
+  { id: 'saffron', nameKey: 'theme_saffron', defaultName: 'Saffron Theme', icon: Sparkles, color: '#EA580C' },
+  { id: 'emerald', nameKey: 'theme_emerald', defaultName: 'Emerald Theme', icon: Leaf, color: '#059669' },
 ]
 
 // Audio settings stored in localStorage
@@ -53,7 +52,7 @@ function Toggle({ checked, onChange, label }) {
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:ring-offset-2 ${checked ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0]'}`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B8F62] focus:ring-offset-2 ${checked ? 'bg-[#0B8F62]' : 'bg-[#E8E6E0] dark:bg-slate-700'}`}
       aria-label={label}
     >
       <span
@@ -70,16 +69,26 @@ export default function Settings() {
   const { audioEnabled, setAudioEnabled, soundFX, setSoundFX, speakingEnabled, setSpeakingEnabled } = useAudioSettings()
   const asrSupported = speechRecognitionService.isSupported()
 
-  const handleLanguageChange = (field, value) => {
-    updateUser({ [field]: value })
+  const handleSiteLanguageChange = (langId) => {
+    setSiteLanguage(langId)
+    updateUser({ preferredLanguage: langId })
+  }
+
+  const handlePreferredLanguageChange = (langId) => {
+    setSiteLanguage(langId)
+    updateUser({ preferredLanguage: langId })
+  }
+
+  const handleLearningLanguageChange = (langId) => {
+    updateUser({ learningLanguage: langId })
   }
 
   const handleDailyGoalChange = (value) => {
-    updateUser({ dailyGoal: parseInt(value) })
+    updateUser({ dailyGoal: parseInt(value, 10) })
   }
 
   const handleResetProgress = () => {
-    if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+    if (confirm(t('reset_progress_confirm') || 'Are you sure you want to reset all progress? This cannot be undone.')) {
       updateUser({
         xp: 0,
         streak: 0,
@@ -88,7 +97,7 @@ export default function Settings() {
         achievements: [],
         level: 'beginner',
       })
-      alert('Progress has been reset.')
+      alert(t('reset_progress_success') || 'Progress has been reset.')
     }
   }
 
@@ -110,9 +119,9 @@ export default function Settings() {
         {/* Appearance & Themes */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6">
           <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">
-            {t('theme')} (Color Palette)
+            {t('theme')}
           </h3>
-          <p className="text-xs text-[#77736B] dark:text-slate-400 mb-4">Choose your preferred visual theme</p>
+          <p className="text-xs text-[#77736B] dark:text-slate-400 mb-4">{t('choose_theme_desc')}</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {THEMES.map((th) => {
@@ -135,7 +144,7 @@ export default function Settings() {
                     <Icon size={18} />
                   </div>
                   <span className="flex items-center gap-1">
-                    {th.name}
+                    {t(th.nameKey) || th.defaultName}
                     {isSelected && <Check size={13} className="text-[#0B8F62] dark:text-[#34D399]" />}
                   </span>
                 </button>
@@ -146,11 +155,11 @@ export default function Settings() {
 
         {/* Site Language & Courses */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-4">
-          <h3 className="text-lg font-black text-[#25231F] dark:text-white">Language Options</h3>
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white">{t('language_options')}</h3>
 
           <div>
             <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-              {t('site_language')} (UI Text)
+              {t('site_language')} ({t('site_language_desc')})
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {languages.map((lang) => {
@@ -158,9 +167,7 @@ export default function Settings() {
                 return (
                   <button
                     key={lang.id}
-                    onClick={() => {
-                      setSiteLanguage(lang.id)
-                    }}
+                    onClick={() => handleSiteLanguageChange(lang.id)}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
                         ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
@@ -180,15 +187,15 @@ export default function Settings() {
 
           <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800">
             <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-              {t('questions_in') || 'Questions & Explanations In'} (Preferred Language)
+              {t('questions_in')} ({t('questions_in_desc')})
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {languages.map((lang) => {
-                const isSelected = user?.preferredLanguage === lang.id
+                const isSelected = (user?.preferredLanguage || siteLanguage) === lang.id
                 return (
                   <button
                     key={lang.id}
-                    onClick={() => handleLanguageChange('preferredLanguage', lang.id)}
+                    onClick={() => handlePreferredLanguageChange(lang.id)}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
                         ? 'border-[#F39A45] bg-[#F39A45]/10 text-[#F39A45] dark:text-[#FBBF24] shadow-sm'
@@ -208,7 +215,7 @@ export default function Settings() {
 
           <div className="pt-2 border-t border-[#E8E6E0] dark:border-slate-800">
             <label className="block text-xs font-black text-[#77736B] dark:text-slate-400 uppercase tracking-wider mb-2">
-              Active Learning Course
+              {t('active_learning_course')}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {languages.filter((l) => l.id !== 'en').map((lang) => {
@@ -216,7 +223,7 @@ export default function Settings() {
                 return (
                   <button
                     key={lang.id}
-                    onClick={() => handleLanguageChange('learningLanguage', lang.id)}
+                    onClick={() => handleLearningLanguageChange(lang.id)}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
                         ? 'border-[#3B82F6] bg-[#3B82F6]/10 text-[#3B82F6] dark:text-[#60A5FA] shadow-sm'
@@ -235,11 +242,9 @@ export default function Settings() {
           </div>
         </div>
 
-
-
         {/* Audio Settings */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-4">
-          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">Audio Settings</h3>
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-1">{t('audio_settings')}</h3>
 
           <div className="space-y-4">
             {/* Audio ON/OFF */}
@@ -247,11 +252,11 @@ export default function Settings() {
               <div className="flex items-center gap-2">
                 {audioEnabled ? <Volume2 size={16} className="text-[#0B8F62]" /> : <VolumeX size={16} className="text-[#77736B]" />}
                 <div>
-                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Audio</p>
-                  <p className="text-xs text-[#77736B] dark:text-slate-400">Enable or disable all audio playback</p>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">{t('audio')}</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400">{t('audio_desc')}</p>
                 </div>
               </div>
-              <Toggle checked={audioEnabled} onChange={setAudioEnabled} label="Toggle audio" />
+              <Toggle checked={audioEnabled} onChange={setAudioEnabled} label={t('audio')} />
             </div>
 
             {/* Sound FX */}
@@ -259,11 +264,11 @@ export default function Settings() {
               <div className="flex items-center gap-2">
                 <span className="text-base">🎵</span>
                 <div>
-                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Sound Effects</p>
-                  <p className="text-xs text-[#77736B] dark:text-slate-400">Correct / wrong answer sounds</p>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">{t('sound_effects')}</p>
+                  <p className="text-xs text-[#77736B] dark:text-slate-400">{t('sound_effects_desc')}</p>
                 </div>
               </div>
-              <Toggle checked={soundFX} onChange={setSoundFX} label="Toggle sound effects" />
+              <Toggle checked={soundFX} onChange={setSoundFX} label={t('sound_effects')} />
             </div>
 
             {/* Speaking practice */}
@@ -271,20 +276,20 @@ export default function Settings() {
               <div className="flex items-center gap-2">
                 {speakingEnabled ? <Mic size={16} className="text-[#0B8F62]" /> : <MicOff size={16} className="text-[#77736B]" />}
                 <div>
-                  <p className="text-sm font-bold text-[#25231F] dark:text-white">Speaking Practice</p>
+                  <p className="text-sm font-bold text-[#25231F] dark:text-white">{t('speaking_practice_setting')}</p>
                   <p className="text-xs text-[#77736B] dark:text-slate-400">
                     {asrSupported
-                      ? 'Uses your microphone to evaluate pronunciation'
-                      : 'Speech recognition not available in this browser'}
+                      ? t('speaking_practice_desc')
+                      : t('speech_not_available')}
                   </p>
                 </div>
               </div>
-              <Toggle checked={speakingEnabled && asrSupported} onChange={setSpeakingEnabled} label="Toggle speaking practice" />
+              <Toggle checked={speakingEnabled && asrSupported} onChange={setSpeakingEnabled} label={t('speaking_practice_setting')} />
             </div>
 
             {!asrSupported && (
               <p className="text-xs text-[#F39A45] bg-[#F39A45]/10 rounded-xl p-3">
-                ⚠ Speaking practice requires a Chromium browser (Chrome or Edge) with microphone access enabled.
+                {t('speaking_browser_warning')}
               </p>
             )}
           </div>
@@ -298,29 +303,29 @@ export default function Settings() {
             onChange={(e) => handleDailyGoalChange(e.target.value)}
             className="w-full px-4 py-2.5 bg-[#F7F5EF] dark:bg-slate-800 border border-[#E8E6E0] dark:border-slate-700 rounded-xl font-bold focus:outline-none focus:border-[#0B8F62] text-[#25231F] dark:text-white"
           >
-            <option value={5}>5 minutes casual (5 XP)</option>
-            <option value={10}>10 minutes regular (10 XP)</option>
-            <option value={15}>15 minutes serious (15 XP)</option>
-            <option value={20}>20 minutes intense (20 XP)</option>
+            <option value={5}>{t('goal_5min') || '5 minutes casual'} (5 XP)</option>
+            <option value={10}>{t('goal_10min') || '10 minutes regular'} (10 XP)</option>
+            <option value={15}>{t('goal_15min') || '15 minutes serious'} (15 XP)</option>
+            <option value={20}>{t('goal_20min') || '20 minutes intense'} (20 XP)</option>
           </select>
         </div>
 
         {/* Account Actions */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border-2 border-[#E8E6E0] dark:border-slate-800 p-6 space-y-3">
-          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-2">Account Actions</h3>
+          <h3 className="text-lg font-black text-[#25231F] dark:text-white mb-2">{t('account_actions')}</h3>
           <div className="flex gap-3">
             <Button variant="danger" className="flex-1 font-bold" onClick={handleResetProgress}>
-              Reset Progress
+              {t('reset_progress')}
             </Button>
             <Button variant="outline" className="flex-1 font-bold" onClick={handleLogout}>
-              Log Out
+              {t('log_out_account')}
             </Button>
           </div>
         </div>
 
         <div className="text-center text-xs text-[#77736B] pt-2">
           <p>BharatLingo v1.0.0</p>
-          <p>© {new Date().getFullYear()} BharatLingo. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} BharatLingo. {t('all_rights_reserved')}</p>
         </div>
         </div>
       </main>

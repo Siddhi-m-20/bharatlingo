@@ -28,6 +28,7 @@ import { useTheme } from '../../services/themeContext'
 
 // ── Word meaning tooltip ──────────────────────────────────────────────────────
 function WordPill({ word, meaning, languageId }) {
+  const { t } = useTheme()
   const [showMeaning, setShowMeaning] = useState(false)
   return (
     <span className="relative inline-block">
@@ -38,7 +39,7 @@ function WordPill({ word, meaning, languageId }) {
           AudioService.speak(word, languageId)
         }}
         className="underline decoration-dotted decoration-amber-500 cursor-pointer hover:text-amber-600 transition-colors"
-        title={meaning || 'Tap to hear & see meaning'}
+        title={meaning || t('tap_to_hear_meaning') || 'Tap to hear & see meaning'}
       >
         {word}
       </button>
@@ -74,7 +75,7 @@ function SpeakingSegment({ segment, languageId, onComplete }) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-purple-200 dark:border-purple-800 p-6 md:p-8 shadow-lg">
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 dark:bg-purple-950/50 mb-4">
-        <Mic className="w-3.5 h-3.5" /> Speaking Practice
+        <Mic className="w-3.5 h-3.5" /> {t('speaking_practice') || 'Speaking Practice'}
       </div>
       {done ? (
         <motion.div
@@ -87,7 +88,7 @@ function SpeakingSegment({ segment, languageId, onComplete }) {
         </motion.div>
       ) : (
         <SpeakingExercise
-          prompt={segment.prompt || `Say this aloud: "${segment.targetText}"`}
+          prompt={segment.prompt || (t('say_this_aloud_prompt') || 'Say this aloud: "{text}"').replace('{text}', segment.targetText || '')}
           targetWord={segment.targetText}
           pronunciation={segment.pronunciation}
           languageId={languageId}
@@ -201,7 +202,7 @@ export default function StoryReader() {
         exercisesCompleted: story.segments.filter((segment) => segment.isCheckpoint || segment.isSpeakingPractice).length,
         xpEarned: totalXP,
         sessionDurationSeconds: Math.max(1, Math.round((Date.now() - storyStartTimeRef.current) / 1000)),
-        languageId,
+        languageId: story.languageId || user?.learningLanguage || 'hi',
         sessionType: 'story',
       })
     }
@@ -251,7 +252,7 @@ export default function StoryReader() {
                 : 'border-slate-300 dark:border-slate-700 text-slate-500'
             }`}
           >
-            {showTranslation ? 'Hide translation' : 'Show translation'}
+            {showTranslation ? (t('hide_translation') || 'Hide translation') : (t('show_translation') || 'Show translation')}
           </button>
         </div>
       </header>
@@ -272,7 +273,7 @@ export default function StoryReader() {
                     {story.titleEn}
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${levelColor}`}>
-                    {story.level}
+                    {t(story.level?.toLowerCase()) || story.level}
                   </span>
                 </div>
               </div>
@@ -291,7 +292,7 @@ export default function StoryReader() {
                 {isCheckpoint && (
                   <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-amber-400/50 dark:border-amber-500/50 p-6 md:p-8 shadow-xl">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-950/50 mb-4">
-                      <Sparkles className="w-3.5 h-3.5" /> Story Checkpoint
+                      <Sparkles className="w-3.5 h-3.5" /> {t('story_checkpoint') || 'Story Checkpoint'}
                     </div>
 
                     <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-5">
@@ -331,12 +332,12 @@ export default function StoryReader() {
                         className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-start gap-2"
                       >
                         <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span>✓ Correct! {currentSegment.explanation}</span>
+                        <span>✓ {t('correct_checkpoint') || 'Correct!'} {currentSegment.explanation}</span>
                       </motion.div>
                     )}
                     {checkpointStatus === 'wrong' && (
                       <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs font-semibold">
-                        ✗ Try again! Select the right answer to continue.
+                        ✗ {t('try_again_checkpoint') || 'Try again! Select the right answer to continue.'}
                       </div>
                     )}
                   </div>
@@ -365,7 +366,7 @@ export default function StoryReader() {
                             {currentSegment.speaker}
                           </h4>
                           <span className="text-[11px] text-slate-400">
-                            {story.languageId.toUpperCase()} Speaker
+                            {story.languageId.toUpperCase()} {t('speaker_label') || 'Speaker'}
                           </span>
                         </div>
                       </div>
@@ -377,7 +378,7 @@ export default function StoryReader() {
                           languageId={story.languageId}
                           variant="icon"
                           size="medium"
-                          label="Play sentence audio"
+                          label={t('play_sentence_audio') || "Play sentence audio"}
                         />
                       )}
                     </div>
@@ -416,7 +417,7 @@ export default function StoryReader() {
                     {currentSegment.keyWords && currentSegment.keyWords.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                          Key Words — tap to hear:
+                          {t('key_words_tap_to_hear') || 'Key Words — tap to hear:'}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {currentSegment.keyWords.map((kw, ki) => (
@@ -439,7 +440,7 @@ export default function StoryReader() {
             {!isSpeaking && (
               <div className="flex items-center justify-between pt-2">
                 <div className="text-xs text-slate-400 font-medium">
-                  {currentStepIndex + 1} of {story.segments.length}
+                  {currentStepIndex + 1} {t('of') || 'of'} {story.segments.length}
                 </div>
                 {isCheckpoint ? (
                   <button
@@ -451,14 +452,14 @@ export default function StoryReader() {
                         : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    Continue →
+                    {t('continue_action') || 'Continue →'}
                   </button>
                 ) : (
                   <button
                     onClick={handleNext}
                     className="px-8 py-3 rounded-full font-bold text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                   >
-                    {currentStepIndex + 1 === story.segments.length ? 'Finish Story 🏆' : 'Next →'}
+                    {currentStepIndex + 1 === story.segments.length ? (t('finish_story') || 'Finish Story 🏆') : (t('next_action') || 'Next →')}
                   </button>
                 )}
               </div>
@@ -476,12 +477,10 @@ export default function StoryReader() {
                 🎉
               </div>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-2">
-                Story Complete!
+                {t('story_complete') || 'Story Complete!'}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto mb-8">
-                You finished{' '}
-                <span className="font-bold text-amber-600 dark:text-amber-400">"{story.title}"</span>{' '}
-                and tested your comprehension.
+                {(t('story_finished_desc') || 'You finished "{title}" and tested your comprehension.').replace('{title}', story.title)}
               </p>
 
               {/* Rewards */}
@@ -490,13 +489,13 @@ export default function StoryReader() {
                   <div className="flex items-center justify-center gap-1 text-amber-600 dark:text-amber-400 font-black text-xl">
                     <Trophy className="w-5 h-5" /> +{xpEarned}
                   </div>
-                  <div className="text-[11px] font-semibold text-slate-500 mt-1">XP Earned</div>
+                  <div className="text-[11px] font-semibold text-slate-500 mt-1">{t('xp_earned') || 'XP Earned'}</div>
                 </div>
                 <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 min-w-[100px]">
                   <div className="flex items-center justify-center gap-1 text-sky-600 dark:text-sky-400 font-black text-xl">
                     💎 +{story.rewardGems}
                   </div>
-                  <div className="text-[11px] font-semibold text-slate-500 mt-1">Gems Earned</div>
+                  <div className="text-[11px] font-semibold text-slate-500 mt-1">{t('gems_earned') || 'Gems Earned'}</div>
                 </div>
               </div>
 
@@ -505,13 +504,13 @@ export default function StoryReader() {
                   onClick={() => navigate('/lesson/' + (user?.learningLanguage || 'hi') + '-gen-greetings-0')}
                   className="flex-1 py-3.5 rounded-2xl bg-[#0B8F62] text-white font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
                 >
-                  Next Lesson →
+                  {t('next_lesson') || 'Next Lesson →'}
                 </button>
                 <button
                   onClick={() => navigate('/stories')}
                   className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
                 >
-                  More Stories
+                  {t('more_stories') || 'More Stories'}
                 </button>
               </div>
             </div>

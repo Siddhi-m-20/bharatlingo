@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../services/auth'
 import { useProgress } from '../../services/progress'
+import { useTheme } from '../../services/themeContext'
 import { getLanguageById } from '../../data/languages'
 import { fetchAssessmentQuestions, generatePersonalizedPlan } from '../../services/dynamicLessonService'
 import { recordExerciseAttempt } from '../../services/learnerModel'
@@ -91,7 +92,7 @@ function PersonalizedPlanScreen({ plan, user, onContinue }) {
             <span className="text-3xl">{language.flag}</span>
             <div>
               <p className="font-bold text-[#25231F] dark:text-white text-sm">
-                {t('learning_lang_label', { language: language.name })}
+                {`${t('learning_language') || 'Learning Language'}: ${language.name}`}
               </p>
               <p className="text-xs text-[#77736B] dark:text-slate-400">{language.nativeName}</p>
             </div>
@@ -146,6 +147,7 @@ export default function Assessment() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
   const { addXP, addGems } = useProgress()
+  const { t, siteLanguage } = useTheme()
 
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -171,10 +173,9 @@ export default function Assessment() {
     }
     const isExistingLearner = Boolean(
       user.hasCompletedAssessment ||
-      (Array.isArray(user.completedLessons) && user.completedLessons.length > 0) ||
-      (Number(user.xp) || 0) > 0 ||
       user.learningPlan ||
-      (user.assessmentScore !== null && user.assessmentScore !== undefined)
+      (user.assessmentScore !== null && user.assessmentScore !== undefined) ||
+      (Array.isArray(user.completedLessons) && user.completedLessons.length > 0)
     )
     if (isExistingLearner) {
       sessionStorage.removeItem('bharatlingo_assessment_required')
@@ -237,7 +238,7 @@ export default function Assessment() {
 
     loadQuestions()
     return () => { cancelled = true }
-  }, [user?.learningLanguage, user?.ageRange, user?.goal, user?.hasCompletedAssessment, user?.assessmentScore, user?.completedLessons, navigate])
+  }, [user?.learningLanguage, user?.ageRange, user?.goal, user?.hasCompletedAssessment, user?.assessmentScore, user?.completedLessons, user?.learningPlan, navigate])
 
   const handleAnswer = useCallback((answer, { skipped = false } = {}) => {
     if (showResult || !questions[currentQuestion]) return

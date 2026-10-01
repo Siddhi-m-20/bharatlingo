@@ -572,7 +572,7 @@ export default function Lesson() {
               </p>
               {exercise.audioText && (
                 <div className="mt-4 flex justify-center">
-                  <AudioButton text={exercise.audioText} languageId={user?.learningLanguage || 'gu'} />
+                  <AudioButton text={exercise.audioText} languageId={user?.learningLanguage || 'hi'} />
                 </div>
               )}
             </div>
@@ -590,7 +590,7 @@ export default function Lesson() {
                         : selectedAnswer === option
                           ? showResult
                             ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
-                          : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
+                            : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
                         : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
                       }
                       ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
@@ -635,7 +635,7 @@ export default function Lesson() {
           <div className="text-center py-8 space-y-3">
             <p className="text-[#D84B42] font-semibold">{t('unknown_exercise_type') || 'Unknown exercise type'}: {exercise.type || 'undefined'}</p>
             <Button onClick={() => handleAnswer(exercise.correctAnswer || 'skip')}>
-              Skip
+              {t('skip') || 'Skip'}
             </Button>
           </div>
         )
@@ -689,7 +689,7 @@ export default function Lesson() {
   if (!lesson) {
     return (
       <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center">
-        <p className="text-[#77736B] dark:text-slate-400 font-medium">Generating your personalized lesson...</p>
+        <p className="text-[#77736B] dark:text-slate-400 font-medium">{t('generating_personalized_lesson') || 'Generating your personalized lesson...'}</p>
       </div>
     )
   }

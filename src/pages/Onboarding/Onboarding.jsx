@@ -37,7 +37,7 @@ const TOTAL_STEPS = Object.keys(STEPS).length
 export default function Onboarding() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
-  const { t } = useTheme()
+  const { tEn: t } = useTheme()
   const [currentStep, setCurrentStep] = useState(STEPS.AGE)
   const [selectedAge, setSelectedAge]               = useState(user?.ageRange || '')
   const [selectedPreferredLang, setSelectedPreferredLang] = useState(user?.preferredLanguage || 'en')

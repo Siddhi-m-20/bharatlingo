@@ -211,7 +211,7 @@ export default function WritingPractice() {
                           : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
                       }`}
                     >
-                      {scriptData?.vowelsTitle || 'Vowels'} • {scriptData?.vowels?.length || 0}
+                      {t('vowels_label') || 'Vowels'} • {scriptData?.vowels?.length || 0}
                     </button>
                     <button
                       onClick={() => {
@@ -224,7 +224,7 @@ export default function WritingPractice() {
                           : 'text-[#77736B] dark:text-slate-400 hover:text-[#25231F] dark:hover:text-white'
                       }`}
                     >
-                      {scriptData?.consonantsTitle || 'Consonants'} • {scriptData?.consonants?.length || 0}
+                      {t('consonants_label') || 'Consonants'} • {scriptData?.consonants?.length || 0}
                     </button>
                   </div>
 

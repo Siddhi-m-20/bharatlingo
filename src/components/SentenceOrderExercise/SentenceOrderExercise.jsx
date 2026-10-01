@@ -35,7 +35,7 @@ export default function SentenceOrderExercise({
 
   const handleDeselectWord = (item) => {
     if (disabled || showResult) return
-    setSelectedWords((prev) => prev.filter((w) => w.id !== item.id))
+    setSelectedWords((prev) => [...prev, item])
     setAvailableWords((prev) => [...prev, item])
   }
 
@@ -68,7 +68,7 @@ export default function SentenceOrderExercise({
             type="button"
             onClick={playAudio}
             className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 transition-all shadow-sm"
-            title={t('listen_to_sentence')}
+            title={t('listen_to_sentence') || 'Listen to sentence'}
           >
             <Volume2 className="w-5 h-5" />
           </button>
@@ -79,7 +79,7 @@ export default function SentenceOrderExercise({
       <div className="min-h-[72px] p-3 md:p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex flex-wrap items-center gap-2">
         {selectedWords.length === 0 ? (
           <span className="text-slate-400 dark:text-slate-500 text-sm font-medium italic">
-            Tap words below to arrange them here...
+            {t('tap_words_to_arrange') || t('tap_words_prompt') || 'Tap words below to arrange them here...'}
           </span>
         ) : (
           selectedWords.map((item) => (
@@ -120,16 +120,16 @@ export default function SentenceOrderExercise({
             type="button"
             onClick={handleReset}
             disabled={selectedWords.length === 0 || disabled}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Clear
+            <RotateCcw className="w-3.5 h-3.5" /> {t('clear') || 'Clear'}
           </button>
 
           <button
             type="button"
             onClick={handleCheck}
             disabled={selectedWords.length === 0 || disabled}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             {t('check_answer') || 'Check Answer'}
           </button>

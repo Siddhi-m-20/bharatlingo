@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Flame, Zap, ArrowRight, Home, RotateCcw, Target, Sparkles } from 'lucide-react'
 import Button from '../Button'
 import BharatMascot from '../Mascot/BharatMascot'
+import { useTheme } from '../../services/themeContext'
 
 export default function CelebrationModal({
   totalXP = 25,
@@ -15,6 +16,8 @@ export default function CelebrationModal({
   onPracticeWeak,
   onGoDashboard,
 }) {
+  const { t } = useTheme()
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
@@ -31,9 +34,11 @@ export default function CelebrationModal({
         >
           <BharatMascot size={84} mood="celebrating" />
         </motion.div>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white">Lesson Complete!</h2>
+        <h2 className="text-2xl sm:text-3xl font-black text-[#25231F] dark:text-white">
+          {t('lesson_complete') || 'Lesson Complete!'}
+        </h2>
         <p className="text-xs sm:text-sm font-semibold text-[#77736B] dark:text-slate-400 mt-0.5">
-          {accuracy}% Accuracy {isPerfect && '• Perfect Score! ⭐'}
+          {accuracy}% {t('accuracy') || 'Accuracy'} {isPerfect && `• ${t('perfect_score') || 'Perfect Score! ⭐'}`}
         </p>
       </div>
 
@@ -50,7 +55,9 @@ export default function CelebrationModal({
             <Zap size={20} fill="currentColor" />
           </div>
           <span className="text-xl sm:text-2xl font-black text-[#F39A45] dark:text-[#FBBF24]">+{totalXP} XP</span>
-          <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wide">Total Earned</span>
+          <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wide">
+            {t('total_earned') || 'Total Earned'}
+          </span>
         </motion.div>
 
         {/* Streak Card */}
@@ -73,10 +80,10 @@ export default function CelebrationModal({
             <Flame size={20} fill="currentColor" />
           </motion.div>
           <span className="text-xl sm:text-2xl font-black text-[#D84B42] dark:text-[#F87171]">
-            {streak} {streak === 1 ? 'Day' : 'Days'}
+            {streak} {streak === 1 ? (t('day') || 'Day') : (t('days') || 'Days')}
           </span>
           <span className="text-[11px] font-bold text-[#77736B] dark:text-slate-400 uppercase tracking-wide">
-            {streakIncreased ? 'Streak Increased!' : 'Streak Active'}
+            {streakIncreased ? (t('streak_increased') || 'Streak Increased!') : (t('streak_active') || 'Streak Active')}
           </span>
         </motion.div>
       </div>
@@ -95,7 +102,9 @@ export default function CelebrationModal({
               {nextLesson.topicIcon || '🎯'}
             </div>
             <div>
-              <p className="text-[10px] font-black text-[#0B8F62] dark:text-[#34D399] uppercase tracking-wider">Up Next</p>
+              <p className="text-[10px] font-black text-[#0B8F62] dark:text-[#34D399] uppercase tracking-wider">
+                {t('up_next') || 'Up Next'}
+              </p>
               <p className="text-sm font-black text-[#25231F] dark:text-white leading-tight">{nextLesson.name}</p>
               <p className="text-[11px] text-[#77736B] dark:text-slate-400 truncate max-w-[210px] mt-0.5">
                 {nextLesson.rationale || nextLesson.nameNative}
@@ -114,7 +123,7 @@ export default function CelebrationModal({
           className="w-full justify-center flex items-center gap-2 font-bold py-3 text-base sm:text-lg bg-[#0B8F62] hover:bg-[#0FB878] text-white shadow-md shadow-[#0B8F62]/20 rounded-xl"
           onClick={onContinueNext}
         >
-          <span>Continue to Next Lesson</span>
+          <span>{t('continue_next_lesson') || 'Continue to Next Lesson'}</span>
           <ArrowRight size={18} />
         </Button>
 
@@ -126,7 +135,7 @@ export default function CelebrationModal({
           onClick={onGoDashboard}
         >
           <Home size={18} />
-          <span>Return to Dashboard</span>
+          <span>{t('return_to_dashboard') || 'Return to Dashboard'}</span>
         </Button>
 
         {/* Quick Practice Alternatives */}
@@ -139,7 +148,7 @@ export default function CelebrationModal({
                 className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
               >
                 <RotateCcw size={14} className="text-amber-500" />
-                <span>Practice Again</span>
+                <span>{t('practice_again') || 'Practice Again'}</span>
               </button>
             )}
 
@@ -150,7 +159,7 @@ export default function CelebrationModal({
                 className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
               >
                 <Target size={14} className="text-blue-500" />
-                <span>Review Words</span>
+                <span>{t('review_words') || 'Review Words'}</span>
               </button>
             )}
           </div>

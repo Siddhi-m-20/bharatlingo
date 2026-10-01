@@ -111,7 +111,7 @@ export default function GameArena() {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current)
-            handleAnswer(false, 'Time ran out!')
+            handleAnswer(false, t('time_ran_out') || 'Time ran out!')
             return 0
           }
           return prev - 1
@@ -122,7 +122,7 @@ export default function GameArena() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [session, currentRoundIdx, isCompleted, feedback])
+  }, [session, currentRoundIdx, isCompleted, feedback, t])
 
   // 3. Audio Playback
   const handlePlayAudio = useCallback((text) => {
@@ -139,7 +139,7 @@ export default function GameArena() {
 
     setFeedback({
       isCorrect,
-      message: customMessage || (isCorrect ? '✓ Excellent work!' : '✗ Keep practicing!'),
+      message: customMessage || (isCorrect ? (t('excellent_work') || '✓ Excellent work!') : (t('keep_practicing') || '✗ Keep practicing!')),
     })
 
     // Record attempt for learner profile
@@ -152,7 +152,7 @@ export default function GameArena() {
       const updatedStats = recordExerciseAttempt(user?.learningLanguage || 'hi', qMeta, isCorrect)
       if (user?.id && updatedStats) persistLearnerStats(user.id, updatedStats)
     } catch {}
-  }, [feedback, session, user?.learningLanguage, user?.id])
+  }, [feedback, session, user?.learningLanguage, user?.id, t])
 
   // 5. Proceed to Next Round or Finish
   const handleNextRound = async () => {
@@ -211,9 +211,9 @@ export default function GameArena() {
           const evalResult = PronunciationScorer.scorePronunciation(transcript, referenceWord, user?.learningLanguage || 'hi')
           setPronunciationScore(evalResult.score)
           if (evalResult.score >= 65) {
-            handleAnswer(true, `Great pronunciation! Score: ${evalResult.score}%`)
+            handleAnswer(true, `${t('great_pronunciation') || 'Great pronunciation!'} ${evalResult.score}%`)
           } else {
-            handleAnswer(false, `Keep practicing! Pronunciation score: ${evalResult.score}%`)
+            handleAnswer(false, `${t('keep_practicing') || 'Keep practicing!'} ${evalResult.score}%`)
           }
         }
       },
@@ -295,10 +295,10 @@ export default function GameArena() {
                 <div className="space-y-4">
                   <div className="text-center space-y-1">
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white">
-                      Match the Word Pairs
+                      {t('match_word_pairs') || 'Match the Word Pairs'}
                     </h2>
                     <p className="text-xs text-[#77736B] dark:text-slate-400">
-                      Tap a word on the left, then tap its corresponding meaning on the right.
+                      {t('match_pairs_instruction') || 'Tap a word on the left, then tap its corresponding meaning on the right.'}
                     </p>
                   </div>
 
@@ -322,7 +322,7 @@ export default function GameArena() {
                                   setSelectedLeft(null)
                                   setSelectedRight(null)
                                   if (nextMatched.size === currentRound.pairs.length) {
-                                    handleAnswer(true, 'All pairs matched flawlessly!')
+                                    handleAnswer(true, t('all_pairs_matched') || 'All pairs matched flawlessly!')
                                   }
                                 } else {
                                   setSelectedLeft(null)
@@ -375,7 +375,7 @@ export default function GameArena() {
                                   setSelectedLeft(null)
                                   setSelectedRight(null)
                                   if (nextMatched.size === currentRound.pairs.length) {
-                                    handleAnswer(true, 'All pairs matched flawlessly!')
+                                    handleAnswer(true, t('all_pairs_matched') || 'All pairs matched flawlessly!')
                                   }
                                 } else {
                                   setSelectedLeft(null)
@@ -407,7 +407,7 @@ export default function GameArena() {
                 <div className="space-y-5">
                   <div className="text-center space-y-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-[#0B8F62] dark:text-[#34D399] bg-[#0B8F62]/10 px-2 py-0.5 rounded-full">
-                      Sentence Assembly
+                      {t('sentence_assembly') || 'Sentence Assembly'}
                     </span>
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white pt-1">
                       {currentRound.prompt}
@@ -417,7 +417,7 @@ export default function GameArena() {
                   {/* Sentence Assembly Strip */}
                   <div className="min-h-16 p-4 rounded-2xl border-2 border-dashed border-[#0B8F62]/40 bg-white dark:bg-slate-900 flex flex-wrap items-center gap-2">
                     {constructedSentence.length === 0 ? (
-                      <span className="text-xs text-slate-400 italic">Tap words below in order...</span>
+                      <span className="text-xs text-slate-400 italic">{t('tap_words_in_order') || 'Tap words below in order...'}</span>
                     ) : (
                       constructedSentence.map((tokenObj, tIdx) => (
                         <button
@@ -467,11 +467,11 @@ export default function GameArena() {
                         const built = constructedSentence.map((t) => t.word || t).join(' ')
                         const expected = currentRound.correctTokens.join(' ')
                         const isCorrect = built.trim() === expected.trim()
-                        handleAnswer(isCorrect, isCorrect ? 'Perfect sentence structure!' : `Correct: ${expected}`)
+                        handleAnswer(isCorrect, isCorrect ? (t('perfect_sentence_structure') || 'Perfect sentence structure!') : `Correct: ${expected}`)
                       }}
                       className="py-3 px-8 bg-[#0B8F62] hover:bg-[#097b54] disabled:opacity-40 text-white rounded-xl font-black text-sm transition-all cursor-pointer"
                     >
-                      Check Sentence
+                      {t('check_sentence') || 'Check Sentence'}
                     </button>
                   </div>
                 </div>
@@ -484,10 +484,10 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white">
-                      Listen and Choose
+                      {t('listen_and_choose') || 'Listen and Choose'}
                     </h2>
                     <p className="text-xs text-[#77736B] dark:text-slate-400">
-                      Tap the audio button to hear the spoken phrase.
+                      {t('tap_audio_phrase_instruction') || 'Tap the audio button to hear the spoken phrase.'}
                     </p>
                   </div>
 
@@ -529,7 +529,7 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                      {currentRound.direction === 'target_to_native' ? 'Translate to Your Language' : 'Translate to Target Script'}
+                      {currentRound.direction === 'target_to_native' ? (t('translate_to_your_language') || 'Translate to Your Language') : (t('translate_to_target_script') || 'Translate to Target Script')}
                     </span>
                     <h2 className="text-3xl font-black text-[#25231F] dark:text-white">
                       {currentRound.prompt}
@@ -549,7 +549,7 @@ export default function GameArena() {
                         disabled={Boolean(feedback)}
                         onClick={() => {
                           const isCorrect = opt === currentRound.correctAnswer
-                          handleAnswer(isCorrect, isCorrect ? 'Fast & Accurate!' : `Correct translation: ${currentRound.correctAnswer}`)
+                          handleAnswer(isCorrect, isCorrect ? (t('fast_and_accurate') || 'Fast & Accurate!') : `Correct translation: ${currentRound.correctAnswer}`)
                         }}
                         className="p-4 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white font-black text-base hover:border-[#0B8F62] transition-all cursor-pointer"
                       >
@@ -632,13 +632,13 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full">
-                      Spot The Intruder
+                      {t('spot_the_intruder') || 'Spot The Intruder'}
                     </span>
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white pt-1">
-                      Which word does NOT belong?
+                      {t('which_word_not_belong') || 'Which word does NOT belong?'}
                     </h2>
                     <p className="text-xs text-[#77736B] dark:text-slate-400">
-                      Three words share a category, one is an outsider.
+                      {t('intruder_instruction') || 'Three words share a category, one is an outsider.'}
                     </p>
                   </div>
 
@@ -672,10 +672,10 @@ export default function GameArena() {
                 <div className="space-y-5 text-center">
                   <div className="space-y-1">
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white">
-                      Memory Match
+                      {t('memory_match') || 'Memory Match'}
                     </h2>
                     <p className="text-xs text-[#77736B] dark:text-slate-400">
-                      Flip cards to find pairs of target words and meanings.
+                      {t('memory_match_instruction') || 'Flip cards to find pairs of target words and meanings.'}
                     </p>
                   </div>
 
@@ -704,7 +704,7 @@ export default function GameArena() {
                                   setMatchedCardIds(nextSet)
                                   setFlippedCards([])
                                   if (nextSet.size === currentRound.cards.length) {
-                                    handleAnswer(true, 'All memory cards revealed!')
+                                    handleAnswer(true, t('all_cards_revealed') || 'All memory cards revealed!')
                                   }
                                 }, 600)
                               } else {
@@ -738,10 +738,10 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 rounded-full">
-                      Authentic Script Reading
+                      {t('authentic_script_reading') || 'Authentic Script Reading'}
                     </span>
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white pt-1">
-                      Identify the Character
+                      {t('identify_the_character') || 'Identify the Character'}
                     </h2>
                   </div>
 
@@ -776,10 +776,10 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 px-2.5 py-0.5 rounded-full">
-                      Voice Practice
+                      {t('voice_practice') || 'Voice Practice'}
                     </span>
                     <h2 className="text-xl font-black text-[#25231F] dark:text-white pt-1">
-                      Speak the Phrase Clearly
+                      {t('speak_phrase_clearly') || 'Speak the Phrase Clearly'}
                     </h2>
                   </div>
 
@@ -788,10 +788,10 @@ export default function GameArena() {
                       {currentRound.targetWord}
                     </h3>
                     <p className="text-xs text-slate-500 font-bold">
-                      Pronunciation: <span className="text-[#25231F] dark:text-white">{currentRound.pronunciation}</span>
+                      {t('pronunciation') || 'Pronunciation'}: <span className="text-[#25231F] dark:text-white">{currentRound.pronunciation}</span>
                     </p>
                     <p className="text-xs text-slate-400">
-                      Meaning: {currentRound.meaning}
+                      {t('concept_meaning') || 'Meaning'}: {currentRound.meaning}
                     </p>
 
                     <div className="flex justify-center pt-2">
@@ -801,7 +801,7 @@ export default function GameArena() {
                         className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 hover:bg-slate-200 transition-colors cursor-pointer"
                       >
                         <Volume2 size={14} />
-                        <span>Listen Sample</span>
+                        <span>{t('listen_sample') || 'Listen Sample'}</span>
                       </button>
                     </div>
                   </div>
@@ -823,11 +823,11 @@ export default function GameArena() {
                       {isRecording ? <MicOff size={32} /> : <Mic size={32} />}
                     </motion.button>
                     <p className="text-xs text-slate-500 font-medium">
-                      {isRecording ? 'Listening... Speak now!' : 'Tap mic to speak'}
+                      {isRecording ? (t('listening_speak_now') || 'Listening... Speak now!') : (t('tap_mic_to_speak') || 'Tap mic to speak')}
                     </p>
                     {recordedText && (
                       <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Heard: "{recordedText}"
+                        {t('heard_label') || 'Heard:'} "{recordedText}"
                       </p>
                     )}
                   </div>
@@ -841,7 +841,7 @@ export default function GameArena() {
                 <div className="space-y-6 text-center">
                   <div className="space-y-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 rounded-full">
-                      Rapid Sprint · Round {currentRoundIdx + 1}
+                      {t('rapid_sprint') || 'Rapid Sprint'} · {currentRoundIdx + 1}
                     </span>
                     <h2 className="text-3xl font-black text-[#25231F] dark:text-white pt-2">
                       {currentRound.prompt}
@@ -859,7 +859,7 @@ export default function GameArena() {
                         disabled={Boolean(feedback)}
                         onClick={() => {
                           const isCorrect = opt === currentRound.correctAnswer
-                          handleAnswer(isCorrect, isCorrect ? 'Fast!' : `Answer: ${currentRound.correctAnswer}`)
+                          handleAnswer(isCorrect, isCorrect ? (t('fast_and_accurate') || 'Fast!') : `Answer: ${currentRound.correctAnswer}`)
                         }}
                         className="p-4 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white font-black text-base hover:border-[#0B8F62] transition-all cursor-pointer"
                       >
@@ -890,26 +890,26 @@ export default function GameArena() {
                 {t('game_completed') || 'Game Completed!'}
               </h2>
               <p className="text-xs text-[#77736B] dark:text-slate-400">
-                You reinforced your {learningLang.name} knowledge with authentic practice.
+                {(t('game_completed_desc') || 'You reinforced your {language} knowledge with authentic practice.').replace('{language}', learningLang.name)}
               </p>
             </div>
 
             {/* Score & Rewards Cards */}
             <div className="grid grid-cols-3 gap-2.5">
               <div className="p-3 bg-[#F7F5EF] dark:bg-slate-800/60 rounded-2xl border border-[#E8E6E0] dark:border-slate-700 text-center">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Score</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">{t('score_label') || 'Score'}</p>
                 <p className="text-lg font-black text-[#25231F] dark:text-white mt-0.5">
                   {score} / {session.totalRounds}
                 </p>
               </div>
               <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900/60 text-center">
-                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase">XP Earned</p>
+                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase">{t('xp_earned') || 'XP Earned'}</p>
                 <p className="text-lg font-black text-amber-700 dark:text-amber-400 mt-0.5">
                   +{rewards.xpEarned}
                 </p>
               </div>
               <div className="p-3 bg-sky-50 dark:bg-sky-950/40 rounded-2xl border border-sky-200 dark:border-sky-900/60 text-center">
-                <p className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase">Gems</p>
+                <p className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase">{t('gems_earned') || 'Gems'}</p>
                 <p className="text-lg font-black text-sky-700 dark:text-sky-400 mt-0.5">
                   +{rewards.gemsEarned}
                 </p>
@@ -940,7 +940,7 @@ export default function GameArena() {
                 onClick={() => navigate('/games')}
                 className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-colors cursor-pointer"
               >
-                Back to Games Hub
+                {t('back_to_games_hub') || 'Back to Games Hub'}
               </button>
             </div>
           </motion.div>
@@ -985,7 +985,7 @@ export default function GameArena() {
                     : 'bg-rose-600 hover:bg-rose-700'
                 }`}
               >
-                Continue →
+                {t('continue_action') || 'Continue →'}
               </button>
             </div>
           </motion.footer>

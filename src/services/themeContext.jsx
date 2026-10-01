@@ -20,6 +20,19 @@ const defaultThemeContext = {
     }
     return key
   },
+  tEn: (key, fallback = null) => {
+    if (!key) return fallback || ''
+    const entry = uiTranslations[key]
+    if (entry) {
+      const val = entry['en']
+      if (val) return val
+    }
+    if (fallback) return fallback
+    if (typeof key === 'string' && key.includes('_')) {
+      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    }
+    return key
+  },
 }
 
 // Singleton ThemeContext instance across Vite HMR Fast Refresh reloads
@@ -116,6 +129,21 @@ export function ThemeProvider({ children }) {
     return key
   }
 
+  // Strictly English translation helper (used for pre-login & onboarding pages)
+  const tEn = (key, fallback = null) => {
+    if (!key) return fallback || ''
+    const entry = uiTranslations[key]
+    if (entry) {
+      const val = entry['en']
+      if (val) return val
+    }
+    if (fallback) return fallback
+    if (typeof key === 'string' && key.includes('_')) {
+      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    }
+    return key
+  }
+
   return (
     <ThemeContext.Provider
       value={{
@@ -125,6 +153,7 @@ export function ThemeProvider({ children }) {
         siteLanguage,
         setSiteLanguage,
         t,
+        tEn,
       }}
     >
       {children}

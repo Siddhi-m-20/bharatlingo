@@ -142,13 +142,13 @@ export default function Alphabet() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 md:p-8 text-white shadow-xl mb-6">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> {t('script_alphabet_mastery')}
+              <Sparkles className="w-3.5 h-3.5" /> {t('script_alphabet_mastery') || 'Script & Alphabet Mastery'}
             </div>
             <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
               {scriptData.scriptName}
             </h1>
             <p className="text-white/90 text-sm md:text-base max-w-xl">
-              Learn authentic letters, vowels (स्वर), consonants (व्यंजन), writing strokes, and native pronunciations for {langMeta.name}.
+              {(t('alphabet_banner_desc') || 'Learn authentic letters, vowels, consonants, writing strokes, and native pronunciations for {language}.').replace('{language}', langMeta.name)}
             </p>
           </div>
           <div className="absolute right-6 -bottom-6 text-8xl md:text-9xl opacity-20 select-none font-bold">
@@ -166,7 +166,7 @@ export default function Alphabet() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {scriptData.vowelsTitle || t('vowels_tab')}
+            {t('vowels_tab') || scriptData.vowelsTitle || 'Vowels'}
           </button>
 
           <button
@@ -177,7 +177,7 @@ export default function Alphabet() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {scriptData.consonantsTitle || t('consonants_tab')}
+            {t('consonants_tab') || scriptData.consonantsTitle || 'Consonants'}
           </button>
 
           <button
@@ -222,7 +222,7 @@ export default function Alphabet() {
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  Vowels ({scriptData.vowels?.length || 0})
+                  {t('vowels_label') || 'Vowels'} ({scriptData.vowels?.length || 0})
                 </button>
                 <button
                   type="button"
@@ -236,7 +236,7 @@ export default function Alphabet() {
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  Consonants ({scriptData.consonants?.length || 0})
+                  {t('consonants_label') || 'Consonants'} ({scriptData.consonants?.length || 0})
                 </button>
               </div>
 
@@ -323,7 +323,7 @@ export default function Alphabet() {
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
               <span className="text-xs font-bold text-slate-500">{t('letter_recognition_test')}</span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 font-bold text-xs">
-                <Award className="w-3.5 h-3.5" /> Score: {score}
+                <Award className="w-3.5 h-3.5" /> {t('score_label') || 'Score'}: {score}
               </span>
             </div>
 

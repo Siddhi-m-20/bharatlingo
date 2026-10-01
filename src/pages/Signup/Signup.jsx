@@ -8,7 +8,7 @@ import { useTheme } from '../../services/themeContext'
 export default function Signup() {
   const navigate = useNavigate()
   const { signup, loginWithGoogle } = useAuth()
-  const { t } = useTheme()
+  const { tEn: t } = useTheme()
   const [formData, setFormData] = useState({
     name: '',
     email: '',

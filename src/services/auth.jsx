@@ -5,6 +5,21 @@ import { hydrateSM2FromCloud, clearSM2Data } from './spacedRepetition'
 
 const AuthContext = createContext(null)
 
+// Helper: Synchronize site language across storage and events
+export function syncSiteLanguage(langId) {
+  if (!langId) return
+  try {
+    localStorage.setItem('bharatlingo_site_lang', langId)
+    window.dispatchEvent(
+      new CustomEvent('bharatlingo_site_lang_changed', {
+        detail: { langId },
+      })
+    )
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 // Helper: Synchronize user's cloud spaced repetition deck into local storage
 async function syncUserSpacedRepetition(userId) {
   if (!userId || !isSupabaseConfigured() || !supabase) return
@@ -374,6 +389,9 @@ export function AuthProvider({ children }) {
           if (isMounted) {
             setUser(localUser)
             userRef.current = localUser
+            if (localUser.preferredLanguage) {
+              syncSiteLanguage(localUser.preferredLanguage)
+            }
           }
         } catch (e) {}
       }
@@ -393,6 +411,9 @@ export function AuthProvider({ children }) {
               setUser(mergedProfile)
               userRef.current = mergedProfile
               localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
+              if (mergedProfile.preferredLanguage) {
+                syncSiteLanguage(mergedProfile.preferredLanguage)
+              }
               syncProfileToSupabase(mergedProfile)
               await syncUserSpacedRepetition(session.user.id)
             }
@@ -425,6 +446,9 @@ export function AuthProvider({ children }) {
             setUser(mergedProfile)
             userRef.current = mergedProfile
             localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
+            if (mergedProfile.preferredLanguage) {
+              syncSiteLanguage(mergedProfile.preferredLanguage)
+            }
             syncProfileToSupabase(mergedProfile)
             await syncUserSpacedRepetition(session.user.id)
           }
@@ -442,6 +466,7 @@ export function AuthProvider({ children }) {
             sessionStorage.removeItem('bharatlingo_assessment_required')
             sessionStorage.removeItem('bharatlingo_just_assessed')
             clearSM2Data(currentId)
+            syncSiteLanguage('en')
           }
         }
       })
@@ -543,6 +568,9 @@ export function AuthProvider({ children }) {
           setUser(fallbackUser)
           userRef.current = fallbackUser
           localStorage.setItem('bharatlingo_user', JSON.stringify(fallbackUser))
+          if (fallbackUser.preferredLanguage) {
+            syncSiteLanguage(fallbackUser.preferredLanguage)
+          }
           return fallbackUser
         }
         throw new Error(error.message)
@@ -562,6 +590,9 @@ export function AuthProvider({ children }) {
         localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
         sessionStorage.removeItem('bharatlingo_assessment_required')
         sessionStorage.removeItem('bharatlingo_just_assessed')
+        if (mergedProfile.preferredLanguage) {
+          syncSiteLanguage(mergedProfile.preferredLanguage)
+        }
         syncProfileToSupabase(mergedProfile)
         await syncUserSpacedRepetition(data.user.id)
         return mergedProfile
@@ -593,6 +624,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('bharatlingo_user', JSON.stringify(resolvedUser))
       sessionStorage.removeItem('bharatlingo_assessment_required')
       sessionStorage.removeItem('bharatlingo_just_assessed')
+      if (resolvedUser.preferredLanguage) {
+        syncSiteLanguage(resolvedUser.preferredLanguage)
+      }
       return resolvedUser
     }
 
@@ -627,6 +661,9 @@ export function AuthProvider({ children }) {
     localStorage.setItem('bharatlingo_user', JSON.stringify(mockUser))
     sessionStorage.removeItem('bharatlingo_assessment_required')
     sessionStorage.removeItem('bharatlingo_just_assessed')
+    if (mockUser.preferredLanguage) {
+      syncSiteLanguage(mockUser.preferredLanguage)
+    }
     return mockUser
   }
 
@@ -689,6 +726,9 @@ export function AuthProvider({ children }) {
     localStorage.setItem('bharatlingo_user', JSON.stringify(googleUser))
     sessionStorage.removeItem('bharatlingo_assessment_required')
     sessionStorage.removeItem('bharatlingo_just_assessed')
+    if (googleUser.preferredLanguage) {
+      syncSiteLanguage(googleUser.preferredLanguage)
+    }
     return googleUser
   }
 
@@ -713,6 +753,7 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem('bharatlingo_assessment_required')
     sessionStorage.removeItem('bharatlingo_just_assessed')
     clearSM2Data(currentId)
+    syncSiteLanguage('en')
   }
 
   // Update User profile & progress
@@ -728,16 +769,7 @@ export function AuthProvider({ children }) {
 
     // Rule 2: Permanent Synchronization between preferredLanguage and siteLanguage
     if (resolvedUpdates.preferredLanguage) {
-      try {
-        localStorage.setItem('bharatlingo_site_lang', resolvedUpdates.preferredLanguage)
-        window.dispatchEvent(
-          new CustomEvent('bharatlingo_site_lang_changed', {
-            detail: { langId: resolvedUpdates.preferredLanguage },
-          })
-        )
-      } catch (e) {
-        console.error(e)
-      }
+      syncSiteLanguage(resolvedUpdates.preferredLanguage)
     }
 
 

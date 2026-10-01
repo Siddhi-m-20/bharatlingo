@@ -11,7 +11,7 @@ import { useTheme } from '../../services/themeContext'
 import './Welcome.css'
 
 export default function Welcome() {
-  const { t } = useTheme()
+  const { tEn: t } = useTheme()
   const [selectedLangId, setSelectedLangId] = useState('hi')
   const [isSpeaking, setIsSpeaking] = useState(false)
 
@@ -110,10 +110,10 @@ export default function Welcome() {
                       }`}
                       title={t('click_to_hear_greeting')}
                     >
-                      {/* Greeting Text in Native Script (Extra Bold) */}
+                      {/* Greeting Text in English Transliteration */}
                       <div className="flex items-center justify-center gap-2">
                         <span className="text-2xl sm:text-3xl font-black text-[#0B8F62] dark:text-[#34D399] tracking-tight">
-                          {currentGreeting.greeting}!
+                          {currentGreeting.transliteration}!
                         </span>
                         <Volume2
                           size={18}
@@ -123,14 +123,14 @@ export default function Welcome() {
                         />
                       </div>
 
-                      {/* Language Source & Transliteration (Bold) */}
+                      {/* Language Source in English */}
                       <div className="flex items-center justify-center gap-1.5 text-xs text-[#25231F] dark:text-slate-100 font-extrabold mt-0.5">
                         <span className="px-2 py-0.5 bg-[#0B8F62]/15 dark:bg-[#0B8F62]/30 text-[#0B8F62] dark:text-[#34D399] rounded-md font-black text-[11px]">
-                          {currentGreeting.languageName} ({currentGreeting.nativeName})
+                          {currentGreeting.languageName} Greeting
                         </span>
                         <span>•</span>
                         <span className="text-slate-600 dark:text-slate-300 font-bold">
-                          "{currentGreeting.transliteration}"
+                          Click to listen
                         </span>
                       </div>
 
@@ -164,16 +164,13 @@ export default function Welcome() {
                           key={lang.id}
                           type="button"
                           onClick={() => handleLanguageSelect(lang.id)}
-                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
                             isSelected
                               ? 'bg-[#0B8F62] text-white shadow-md shadow-[#0B8F62]/30 scale-105 ring-2 ring-[#0B8F62]/30'
                               : 'bg-[#F7F5EF] dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:bg-[#0B8F62]/15 hover:text-[#0B8F62]'
                           }`}
                         >
-                          <span>{lang.nativeName}</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-[#77736B] dark:text-slate-400'}`}>
-                            {lang.name}
-                          </span>
+                          <span>{lang.name}</span>
                         </button>
                       )
                     })}

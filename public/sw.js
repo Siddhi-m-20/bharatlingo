@@ -1,5 +1,5 @@
 // BharatLingo Service Worker — Production App Shell & Push Notifications
-const CACHE_NAME = 'bharatlingo-shell-v3'
+const CACHE_NAME = 'bharatlingo-shell-v4'
 
 const PRECACHE_ASSETS = [
   '/',

@@ -319,7 +319,7 @@ export default function SpeakingExercise({
         <div className="inline-flex flex-col items-center p-6 bg-[#F7F5EF] rounded-2xl border-2 border-[#E8E6E0] min-w-[280px]">
           <span className="text-3xl md:text-4xl font-bold text-[#0B8F62] mb-1">{targetWord}</span>
           {pronunciation && <span className="text-sm text-[#77736B] mb-3">({pronunciation})</span>}
-          <AudioButton text={targetWord} languageId={languageId} label="Listen" />
+          <AudioButton text={targetWord} languageId={languageId} label={t('listen') || 'Listen'} />
         </div>
 
         <AsrFallback targetText={targetWord} languageId={languageId} onSkip={handleSkip} />
@@ -340,7 +340,7 @@ export default function SpeakingExercise({
         <AudioButton
           text={targetWord}
           languageId={languageId}
-          label="🔊 Listen"
+          label={`🔊 ${t('listen') || 'Listen'}`}
           className="text-xs"
         />
       </div>
@@ -409,7 +409,7 @@ export default function SpeakingExercise({
                 onClick={() => speechRecognitionService.stop()}
                 className="text-xs text-[#77736B] underline hover:text-[#25231F]"
               >
-                Stop
+                {t('stop') || 'Stop'}
               </button>
             </motion.div>
           )}
@@ -417,7 +417,7 @@ export default function SpeakingExercise({
           {/* Privacy notice */}
           {recState === REC_STATE.IDLE && asrSupported && (
             <p className="text-[10px] text-[#77736B] max-w-xs mx-auto">
-              Your recording is used only to check your pronunciation.
+              {t('speaking_privacy_notice') || 'Your recording is used only to check your pronunciation.'}
             </p>
           )}
         </div>
@@ -448,12 +448,12 @@ export default function SpeakingExercise({
             className="p-3 bg-[#F39A45]/10 border border-[#F39A45] text-[#25231F] text-sm rounded-xl max-w-md mx-auto"
           >
             <p className="font-semibold text-[#F39A45] mb-1">
-              {isTechError ? 'Technical issue' : 'Could not understand'}
+              {isTechError ? (t('technical_issue') || 'Technical issue') : (t('could_not_understand') || 'Could not understand')}
             </p>
             <p>{errorMsg}</p>
             {isTechError && (
               <p className="text-xs text-[#77736B] mt-1">
-                This technical issue won't affect your score.
+                {t('technical_issue_no_penalty') || "This technical issue won't affect your score."}
               </p>
             )}
           </motion.div>
