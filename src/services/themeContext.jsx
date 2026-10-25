@@ -1,38 +1,56 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { uiTranslations } from './uiTranslations.js'
 
+const interpolateTranslation = (rawText, params) => {
+  if (typeof rawText !== 'string') return ''
+  if (!params || typeof params !== 'object') return rawText
+  return Object.entries(params).reduce((acc, [k, v]) => {
+    return acc.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+  }, rawText)
+}
+
+const resolveTranslation = (key, fallbackOrParams = null, maybeParams = null, lang = 'en') => {
+  if (!key) return ''
+
+  const isSecondArgParams = typeof fallbackOrParams === 'object' && fallbackOrParams !== null
+  const fallback = isSecondArgParams ? null : (typeof fallbackOrParams === 'string' ? fallbackOrParams : null)
+  const params = isSecondArgParams
+    ? fallbackOrParams
+    : (typeof maybeParams === 'object' && maybeParams !== null ? maybeParams : null)
+
+  const entry = uiTranslations[key]
+  let template = ''
+  if (entry) {
+    template = entry[lang] || entry['en'] || ''
+  }
+
+  if (!template) {
+    if (fallback) {
+      template = fallback
+    } else if (key === 'step_x_of_y' && params) {
+      template = `Step ${params.current} of ${params.total}`
+    } else if (key === 'modules_count' && params) {
+      template = `${params.count} Modules`
+    } else if (key === 'matched_words_count' && params) {
+      template = `Matched ${params.count} words`
+    } else if (typeof key === 'string' && key.includes('_')) {
+      template = key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    } else {
+      template = String(key)
+    }
+  }
+
+  return interpolateTranslation(template, params)
+}
+
 const defaultThemeContext = {
   theme: 'light',
   setTheme: () => {},
   toggleTheme: () => {},
   siteLanguage: 'en',
   setSiteLanguage: () => {},
-  t: (key, fallback = null) => {
-    if (!key) return fallback || ''
-    const entry = uiTranslations[key]
-    if (entry) {
-      const val = entry['en']
-      if (val) return val
-    }
-    if (fallback) return fallback
-    if (typeof key === 'string' && key.includes('_')) {
-      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    }
-    return key
-  },
-  tEn: (key, fallback = null) => {
-    if (!key) return fallback || ''
-    const entry = uiTranslations[key]
-    if (entry) {
-      const val = entry['en']
-      if (val) return val
-    }
-    if (fallback) return fallback
-    if (typeof key === 'string' && key.includes('_')) {
-      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    }
-    return key
-  },
+  t: (key, fallback = null, params = null) => resolveTranslation(key, fallback, params, 'en'),
+  tEn: (key, fallback = null, params = null) => resolveTranslation(key, fallback, params, 'en'),
 }
 
 // Singleton ThemeContext instance across Vite HMR Fast Refresh reloads
@@ -115,33 +133,13 @@ export function ThemeProvider({ children }) {
   }
 
   // Translation helper for UI labels
-  const t = (key, fallback = null) => {
-    if (!key) return fallback || ''
-    const entry = uiTranslations[key]
-    if (entry) {
-      const val = entry[siteLanguage] || entry['en']
-      if (val) return val
-    }
-    if (fallback) return fallback
-    if (typeof key === 'string' && key.includes('_')) {
-      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    }
-    return key
+  const t = (key, fallbackOrParams = null, params = null) => {
+    return resolveTranslation(key, fallbackOrParams, params, siteLanguage)
   }
 
   // Strictly English translation helper (used for pre-login & onboarding pages)
-  const tEn = (key, fallback = null) => {
-    if (!key) return fallback || ''
-    const entry = uiTranslations[key]
-    if (entry) {
-      const val = entry['en']
-      if (val) return val
-    }
-    if (fallback) return fallback
-    if (typeof key === 'string' && key.includes('_')) {
-      return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    }
-    return key
+  const tEn = (key, fallbackOrParams = null, params = null) => {
+    return resolveTranslation(key, fallbackOrParams, params, 'en')
   }
 
   return (

@@ -240,7 +240,7 @@ export default function Onboarding() {
               भा
             </div>
             <div className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
-              {t('step_x_of_y', { current: currentStep + 1, total: TOTAL_STEPS })}
+              {t('step_x_of_y', `Step ${currentStep + 1} of ${TOTAL_STEPS}`, { current: currentStep + 1, total: TOTAL_STEPS })}
             </div>
           </div>
           {/* Progress bar */}

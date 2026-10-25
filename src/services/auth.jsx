@@ -497,6 +497,14 @@ export function AuthProvider({ children }) {
       })
 
       if (error) {
+        if (error.message?.toLowerCase().includes('database error saving new user')) {
+          console.error(
+            'Supabase auth.users trigger error: "Database error saving new user". ' +
+            'This means the PostgreSQL trigger `handle_new_user()` failed in your Supabase project. ' +
+            'Execute `supabase/fix_database_error_saving_new_user.sql` in your Supabase SQL Editor to fix it.'
+          )
+          throw new Error('Database error saving new user. Please run `supabase/fix_database_error_saving_new_user.sql` in your Supabase SQL Editor to fix the database trigger.')
+        }
         throw new Error(error.message)
       }
 
