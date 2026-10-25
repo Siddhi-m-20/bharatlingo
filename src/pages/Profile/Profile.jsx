@@ -415,7 +415,7 @@ export default function Profile() {
                         onClick={() => setAvatarSeed(p.seed)}
                         className={`p-1 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${
                           isSelected
-                            ? 'border-[#0B8F62] ring-2 ring-[#0B8F62]/30 bg-[#0B8F62]/10 scale-105'
+                            ? 'border-[#0B8F62] dark:border-emerald-400 ring-2 ring-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/70 scale-105 shadow-sm'
                             : 'border-[#E8E6E0] dark:border-slate-800 hover:border-[#0B8F62]/50'
                         }`}
                       >
@@ -554,7 +554,7 @@ export default function Profile() {
                       onClick={() => setDailyGoal(mins)}
                       className={`py-2 text-xs font-bold rounded-xl border transition-all ${
                         dailyGoal === mins
-                          ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] ring-2 ring-[#0B8F62]/30'
+                          ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-black ring-2 ring-emerald-500/40 shadow-sm'
                           : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF] dark:bg-slate-800 text-[#25231F] dark:text-slate-300'
                       }`}
                     >

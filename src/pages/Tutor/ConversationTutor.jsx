@@ -235,8 +235,8 @@ export default function ConversationTutor() {
                 onClick={() => setSelectedScenario(sc)}
                 className={`px-3.5 py-2 rounded-2xl border-2 shrink-0 flex items-center gap-2 text-xs font-black transition-all ${
                   isSelected
-                    ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
-                    : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#77736B] hover:border-[#0B8F62]/40'
+                    ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 shadow-sm ring-2 ring-emerald-500/40'
+                    : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-[#0B8F62]/40'
                 }`}
               >
                 <span>{sc.icon}</span>

@@ -314,11 +314,11 @@ export default function SpeakingExercise({
   if (!asrSupported && !showResult) {
     return (
       <div className="space-y-4 text-center">
-        <h3 className="text-xl md:text-2xl font-semibold text-[#25231F]">{prompt}</h3>
+        <h3 className="text-xl md:text-2xl font-bold text-[#25231F] dark:text-white">{prompt}</h3>
 
-        <div className="inline-flex flex-col items-center p-6 bg-[#F7F5EF] rounded-2xl border-2 border-[#E8E6E0] min-w-[280px]">
-          <span className="text-3xl md:text-4xl font-bold text-[#0B8F62] mb-1">{targetWord}</span>
-          {pronunciation && <span className="text-sm text-[#77736B] mb-3">({pronunciation})</span>}
+        <div className="inline-flex flex-col items-center p-6 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-700 min-w-[280px]">
+          <span className="text-3xl md:text-4xl font-bold text-[#0B8F62] dark:text-emerald-400 mb-1">{targetWord}</span>
+          {pronunciation && <span className="text-sm text-[#77736B] dark:text-slate-300 mb-3">({pronunciation})</span>}
           <AudioButton text={targetWord} languageId={languageId} label={t('listen') || 'Listen'} />
         </div>
 
@@ -329,13 +329,13 @@ export default function SpeakingExercise({
 
   return (
     <div className="space-y-5 text-center">
-      <h3 className="text-xl md:text-2xl font-semibold text-[#25231F]">{prompt}</h3>
+      <h3 className="text-xl md:text-2xl font-bold text-[#25231F] dark:text-white">{prompt}</h3>
 
       {/* Target word card */}
-      <div className="inline-flex flex-col items-center p-5 bg-[#F7F5EF] rounded-2xl border-2 border-[#E8E6E0] min-w-[260px]">
-        <span className="text-3xl md:text-4xl font-bold text-[#0B8F62] mb-1">{targetWord}</span>
+      <div className="inline-flex flex-col items-center p-5 bg-[#F7F5EF] dark:bg-slate-800 rounded-2xl border-2 border-[#E8E6E0] dark:border-slate-700 min-w-[260px]">
+        <span className="text-3xl md:text-4xl font-bold text-[#0B8F62] dark:text-emerald-400 mb-1">{targetWord}</span>
         {pronunciation && (
-          <span className="text-sm text-[#77736B] mb-3">({pronunciation})</span>
+          <span className="text-sm text-[#77736B] dark:text-slate-300 mb-3">({pronunciation})</span>
         )}
         <AudioButton
           text={targetWord}

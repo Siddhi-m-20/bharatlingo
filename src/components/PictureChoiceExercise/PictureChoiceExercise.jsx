@@ -108,12 +108,12 @@ export default function PictureChoiceExercise({
           let borderStyle = 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900'
           if (showResult) {
             if (isCorrect) {
-              borderStyle = 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 ring-2 ring-[#0B8F62]'
+              borderStyle = 'border-emerald-500 dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500 text-emerald-950 dark:text-emerald-100'
             } else if (isWrong) {
-              borderStyle = 'border-[#D84B42] bg-[#D84B42]/10 dark:bg-[#D84B42]/20 ring-2 ring-[#D84B42]'
+              borderStyle = 'border-rose-500 dark:border-rose-400 bg-rose-50 dark:bg-rose-950/70 ring-2 ring-rose-500 text-rose-950 dark:text-rose-100'
             }
           } else if (isSelected) {
-            borderStyle = 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20 ring-2 ring-[#0B8F62]/40 shadow-md'
+            borderStyle = 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500/40 shadow-md text-emerald-950 dark:text-emerald-100'
           }
 
           return (

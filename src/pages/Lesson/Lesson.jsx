@@ -416,12 +416,12 @@ export default function Lesson() {
                     className={`
                       p-4 rounded-xl border-2 text-left transition-all
                       ${showResult && isMatch
-                        ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+                        ? 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold'
                         : selectedAnswer === option
                           ? showResult
-                            ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
-                          : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
-                        : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
+                            ? 'border-[#D84B42] bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-100 dark:border-rose-400 font-bold'
+                            : 'border-[#0B8F62] bg-emerald-50 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold ring-2 ring-emerald-500/40 shadow-sm'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-100'
                       }
                       ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
@@ -430,7 +430,7 @@ export default function Lesson() {
                     whileHover={!showResult ? { scale: 1.02 } : {}}
                     whileTap={!showResult ? { scale: 0.98 } : {}}
                   >
-                    <span className="font-medium">{option}</span>
+                    <span className="font-semibold">{option}</span>
                   </motion.button>
                 )
               })}
@@ -558,11 +558,11 @@ export default function Lesson() {
                       <span className={`inline-block min-w-[90px] px-3 py-1 mx-2 border-b-4 text-center font-black transition-all ${
                         showResult
                           ? selectedAnswer === exercise.correctAnswer
-                            ? 'border-[#2F9E69] text-[#2F9E69] bg-[#2F9E69]/10 rounded-lg'
-                            : 'border-[#D84B42] text-[#D84B42] bg-[#D84B42]/10 rounded-lg'
+                            ? 'border-[#2F9E69] text-emerald-900 bg-emerald-100 dark:bg-emerald-950/70 dark:text-emerald-100 rounded-lg'
+                            : 'border-[#D84B42] text-rose-900 bg-rose-100 dark:bg-rose-950/70 dark:text-rose-100 rounded-lg'
                           : selectedAnswer
-                            ? 'border-[#0B8F62] text-[#0B8F62] bg-[#0B8F62]/10 rounded-lg'
-                            : 'border-amber-400 text-amber-500 bg-amber-500/10 rounded-lg animate-pulse'
+                            ? 'border-[#0B8F62] text-emerald-950 bg-emerald-50 dark:bg-emerald-950/70 dark:text-emerald-100 rounded-lg'
+                            : 'border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 rounded-lg animate-pulse'
                       }`}>
                         {selectedAnswer || '______'}
                       </span>
@@ -586,12 +586,12 @@ export default function Lesson() {
                     className={`
                       p-4 rounded-xl border-2 text-left transition-all
                       ${showResult && option === exercise.correctAnswer
-                        ? 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+                        ? 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold'
                         : selectedAnswer === option
                           ? showResult
-                            ? 'border-[#D84B42] bg-[#D84B42]/10 text-[#D84B42]'
-                            : 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62]'
-                        : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-200'
+                            ? 'border-[#D84B42] bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-100 dark:border-rose-400 font-bold'
+                            : 'border-[#0B8F62] bg-emerald-50 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold ring-2 ring-emerald-500/40 shadow-sm'
+                        : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-100'
                       }
                       ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
@@ -600,7 +600,7 @@ export default function Lesson() {
                     whileHover={!showResult ? { scale: 1.02 } : {}}
                     whileTap={!showResult ? { scale: 0.98 } : {}}
                   >
-                    <span className="font-medium">{option}</span>
+                    <span className="font-semibold">{option}</span>
                   </motion.button>
                 ))}
               </div>

@@ -412,12 +412,12 @@ export default function Assessment() {
                       ${selectedAnswer === option
                         ? showResult
                           ? isMatch
-                            ? 'border-[#2F9E69] bg-[#2F9E69]/10'
-                            : 'border-[#D84B42] bg-[#D84B42]/10'
-                          : 'border-[#0B8F62] bg-[#0B8F62]/10'
+                            ? 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold'
+                            : 'border-[#D84B42] bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-100 dark:border-rose-400 font-bold'
+                          : 'border-[#0B8F62] bg-emerald-50 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold ring-2 ring-emerald-500/40 shadow-sm'
                         : showResult && isMatch
-                          ? 'border-[#2F9E69] bg-[#2F9E69]/10'
-                          : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
+                          ? 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold'
+                          : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-100'
                       }
                       ${showResult ? 'cursor-default' : 'cursor-pointer'}
                     `}
@@ -426,7 +426,7 @@ export default function Assessment() {
                     whileHover={!showResult ? { scale: 1.02 } : {}}
                     whileTap={!showResult ? { scale: 0.98 } : {}}
                   >
-                    <span className="font-medium text-[#25231F] dark:text-white">{option}</span>
+                    <span className="font-semibold">{option}</span>
                   </motion.button>
                 )
               })}

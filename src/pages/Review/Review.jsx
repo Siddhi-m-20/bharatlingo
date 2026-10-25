@@ -364,7 +364,7 @@ export default function Review() {
                                 btnStyle = 'bg-rose-50 border-rose-500 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
                               }
                             } else if (isSelected) {
-                              btnStyle = 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] font-black'
+                              btnStyle = 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-black ring-2 ring-emerald-500/40 shadow-xs'
                             }
 
                             return (

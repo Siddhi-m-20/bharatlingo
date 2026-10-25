@@ -226,13 +226,13 @@ export default function ListeningExercise({
           if (isSelected) {
             if (showResult) {
               cardStyle = isCorrect
-                ? 'border-[#2F9E69] bg-[#2F9E69]/15 text-[#2F9E69] font-extrabold shadow-md'
-                : 'border-[#D84B42] bg-[#D84B42]/15 text-[#D84B42] font-extrabold'
+                ? 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-extrabold shadow-md'
+                : 'border-[#D84B42] bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-100 dark:border-rose-400 font-extrabold'
             } else {
-              cardStyle = 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] font-bold shadow-sm'
+              cardStyle = 'border-[#0B8F62] bg-emerald-50 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold shadow-sm ring-2 ring-emerald-500/40'
             }
           } else if (showResult && isCorrect) {
-            cardStyle = 'border-[#2F9E69] bg-[#2F9E69]/10 text-[#2F9E69] font-bold'
+            cardStyle = 'border-[#2F9E69] bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-400 font-bold'
           }
 
           return (

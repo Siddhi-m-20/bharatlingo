@@ -170,7 +170,7 @@ export default function Settings() {
                     onClick={() => handleSiteLanguageChange(lang.id)}
                     className={`flex items-center justify-between p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
                       isSelected
-                        ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] shadow-sm'
+                        ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-black ring-2 ring-emerald-500/40 shadow-sm'
                         : 'border-[#E8E6E0] dark:border-slate-800 bg-[#F7F5EF]/50 dark:bg-slate-800 text-[#25231F] dark:text-slate-300 hover:border-[#0B8F62]/40'
                     }`}
                   >

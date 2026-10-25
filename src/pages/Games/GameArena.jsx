@@ -334,7 +334,7 @@ export default function GameArena() {
                               isMatched
                                 ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 opacity-60'
                                 : isSelected
-                                ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]'
+                                ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/40 shadow-xs'
                                 : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white hover:border-[#0B8F62]/40'
                             }`}
                           >
@@ -387,7 +387,7 @@ export default function GameArena() {
                               isMatched
                                 ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 opacity-60'
                                 : isSelected
-                                ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399]'
+                                ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/40 shadow-xs'
                                 : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-[#25231F] dark:text-white hover:border-[#0B8F62]/40'
                             }`}
                           >
@@ -719,7 +719,7 @@ export default function GameArena() {
                             isMatched
                               ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 opacity-60'
                               : isFlipped
-                              ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] dark:text-[#34D399] text-sm'
+                              ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-bold text-sm ring-2 ring-emerald-500/40'
                               : 'border-[#E8E6E0] dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 text-2xl hover:border-[#0B8F62]/50'
                           }`}
                         >

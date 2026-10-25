@@ -997,7 +997,7 @@ export default function Dashboard() {
                       key={milestone}
                       className={`rounded-xl p-2 text-center border ${
                         persistedStreak >= milestone
-                          ? 'bg-[#0B8F62]/10 border-[#0B8F62]/30 text-[#0B8F62]'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-500 text-emerald-900 dark:text-emerald-100 font-black shadow-xs'
                           : 'bg-[#F7F5EF] dark:bg-slate-800 border-[#E8E6E0] dark:border-slate-700 text-[#77736B] dark:text-slate-400'
                       }`}
                     >

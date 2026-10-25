@@ -96,37 +96,44 @@ export default function Onboarding() {
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
               {t('how_old_are_you')}
             </h2>
-            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+            <p className="text-slate-600 dark:text-slate-200 font-medium mb-6">
               {t('age_desc')}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {AGE_RANGES.map((range) => (
-                <motion.button
-                  key={range.id}
-                  type="button"
-                  className={`
-                    p-4 rounded-2xl border-2 text-left transition-all
-                    ${selectedAge === range.id
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
-                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
-                    }
-                  `}
-                  onClick={() => setSelectedAge(range.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="text-2xl mb-1">{range.icon}</div>
-                  <p className="font-bold text-[#25231F] dark:text-white text-sm">{t(range.labelKey)}</p>
-                  <p className="text-xs text-[#77736B] dark:text-slate-400 mt-0.5">{t(range.descKey)}</p>
-                  {selectedAge === range.id && (
-                    <div className="mt-2 w-5 h-5 bg-[#0B8F62] rounded-full flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </motion.button>
-              ))}
+              {AGE_RANGES.map((range) => {
+                const isSelected = selectedAge === range.id
+                return (
+                  <motion.button
+                    key={range.id}
+                    type="button"
+                    className={`
+                      p-4 rounded-2xl border-2 text-left transition-all
+                      ${isSelected
+                        ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 shadow-lg ring-2 ring-[#0B8F62]/40'
+                        : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
+                      }
+                    `}
+                    onClick={() => setSelectedAge(range.id)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="text-2xl mb-1">{range.icon}</div>
+                    <p className={`font-bold text-sm ${isSelected ? 'text-emerald-950 dark:text-emerald-100 font-extrabold' : 'text-[#25231F] dark:text-white'}`}>
+                      {t(range.labelKey)}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${isSelected ? 'text-emerald-700 dark:text-emerald-200 font-semibold' : 'text-[#77736B] dark:text-slate-300'}`}>
+                      {t(range.descKey)}
+                    </p>
+                    {isSelected && (
+                      <div className="mt-2 w-5 h-5 bg-[#0B8F62] dark:bg-emerald-500 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </motion.button>
+                )
+              })}
             </div>
           </motion.div>
         )
@@ -142,7 +149,7 @@ export default function Onboarding() {
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
               {t('what_preferred_language')}
             </h2>
-            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+            <p className="text-slate-600 dark:text-slate-200 font-medium mb-6">
               {t('preferred_lang_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -169,7 +176,7 @@ export default function Onboarding() {
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
               {t('what_want_to_learn')}
             </h2>
-            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+            <p className="text-slate-600 dark:text-slate-200 font-medium mb-6">
               {t('target_lang_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -198,29 +205,34 @@ export default function Onboarding() {
             <h2 className="text-2xl font-bold text-[#25231F] dark:text-white mb-2">
               {t('whats_your_goal')}
             </h2>
-            <p className="text-[#77736B] dark:text-slate-400 mb-6">
+            <p className="text-slate-600 dark:text-slate-200 font-medium mb-6">
               {t('goal_desc')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {GOALS.map((goal) => (
-                <motion.button
-                  key={goal.id}
-                  type="button"
-                  className={`
-                    p-6 rounded-2xl border-2 text-left transition-all
-                    ${selectedGoal === goal.id
-                      ? 'border-[#0B8F62] bg-[#0B8F62]/10 dark:bg-[#0B8F62]/20'
-                      : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
-                    }
-                  `}
-                  onClick={() => setSelectedGoal(goal.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="text-3xl mb-2">{goal.icon}</div>
-                  <p className="font-semibold text-[#25231F] dark:text-white">{t(goal.key)}</p>
-                </motion.button>
-              ))}
+              {GOALS.map((goal) => {
+                const isSelected = selectedGoal === goal.id
+                return (
+                  <motion.button
+                    key={goal.id}
+                    type="button"
+                    className={`
+                      p-6 rounded-2xl border-2 text-left transition-all
+                      ${isSelected
+                        ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 shadow-lg ring-2 ring-[#0B8F62]/40'
+                        : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50'
+                      }
+                    `}
+                    onClick={() => setSelectedGoal(goal.id)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="text-3xl mb-2">{goal.icon}</div>
+                    <p className={`font-semibold ${isSelected ? 'text-emerald-950 dark:text-emerald-100 font-extrabold' : 'text-[#25231F] dark:text-white'}`}>
+                      {t(goal.key)}
+                    </p>
+                  </motion.button>
+                )
+              })}
             </div>
           </motion.div>
         )
@@ -239,7 +251,7 @@ export default function Onboarding() {
             <div className="w-10 h-10 rounded-full bg-[#0B8F62] flex items-center justify-center text-white font-bold text-lg">
               भा
             </div>
-            <div className="text-sm text-[#77736B] dark:text-slate-400 font-medium">
+            <div className="text-sm text-slate-700 dark:text-slate-200 font-bold">
               {t('step_x_of_y', `Step ${currentStep + 1} of ${TOTAL_STEPS}`, { current: currentStep + 1, total: TOTAL_STEPS })}
             </div>
           </div>
@@ -275,7 +287,7 @@ export default function Onboarding() {
 
           <div className="flex justify-between mt-8">
             {currentStep > STEPS.AGE ? (
-              <Button variant="ghost" onClick={handleBack}>
+              <Button variant="ghost" onClick={handleBack} className="text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold">
                 {t('back')}
               </Button>
             ) : (

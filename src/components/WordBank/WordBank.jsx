@@ -37,14 +37,14 @@ export default function WordBank({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] mb-4">
+      <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] dark:text-white mb-4">
         {prompt}
       </h3>
 
       {/* Assemble Line */}
-      <div className="min-h-[64px] p-4 bg-[#F7F5EF] border-2 border-dashed border-[#D2CFC7] rounded-2xl flex flex-wrap gap-2 items-center">
+      <div className="min-h-[64px] p-4 bg-[#F7F5EF] dark:bg-slate-800/80 border-2 border-dashed border-[#D2CFC7] dark:border-slate-700 rounded-2xl flex flex-wrap gap-2 items-center">
         {selectedWords.length === 0 && (
-          <p className="text-sm text-[#77736B] italic select-none">
+          <p className="text-sm text-[#77736B] dark:text-slate-300 italic select-none">
             {t('tap_words_prompt') || 'Tap words below to build the sentence...'}
           </p>
         )}
@@ -57,7 +57,7 @@ export default function WordBank({
               exit={{ scale: 0.8, opacity: 0 }}
               onClick={() => handleRemoveWord(item)}
               disabled={disabled || showResult}
-              className="px-4 py-2.5 bg-white border-2 border-[#0B8F62] text-[#0B8F62] font-semibold rounded-xl shadow-sm hover:bg-[#0B8F62]/10 transition-colors"
+              className="px-4 py-2.5 bg-emerald-50 dark:bg-emerald-950/70 border-2 border-[#0B8F62] dark:border-emerald-400 text-emerald-950 dark:text-emerald-100 font-bold rounded-xl shadow-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition-colors"
             >
               {item.word}
             </motion.button>
@@ -74,7 +74,7 @@ export default function WordBank({
             disabled={disabled || showResult}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-4 py-2.5 bg-white border-2 border-[#E8E6E0] hover:border-[#0B8F62] text-[#25231F] font-medium rounded-xl shadow-sm hover:shadow transition-all"
+            className="px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-[#E8E6E0] dark:border-slate-700 hover:border-[#0B8F62] dark:hover:border-emerald-400 text-[#25231F] dark:text-slate-100 font-medium rounded-xl shadow-sm hover:shadow transition-all"
           >
             {item.word}
           </motion.button>

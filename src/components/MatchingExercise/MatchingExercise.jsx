@@ -72,7 +72,7 @@ export default function MatchingExercise({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl md:text-2xl font-semibold text-[#25231F] text-center mb-4">
+      <h3 className="text-xl md:text-2xl font-bold text-[#25231F] dark:text-white text-center mb-4">
         {prompt}
       </h3>
 
@@ -97,8 +97,8 @@ export default function MatchingExercise({
                     : isWrong
                     ? 'border-[#D84B42] bg-[#D84B42]/15 text-[#D84B42] animate-shake'
                     : isSelected
-                    ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] shadow-md'
-                    : 'border-[#E8E6E0] bg-white hover:border-[#0B8F62]/50 text-[#25231F]'
+                    ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-bold shadow-md ring-2 ring-emerald-500/40'
+                    : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-100'
                   }
                 `}
               >
@@ -132,8 +132,8 @@ export default function MatchingExercise({
                     : isWrong
                     ? 'border-[#D84B42] bg-[#D84B42]/15 text-[#D84B42] animate-shake'
                     : isSelected
-                    ? 'border-[#0B8F62] bg-[#0B8F62]/10 text-[#0B8F62] shadow-md'
-                    : 'border-[#E8E6E0] bg-white hover:border-[#0B8F62]/50 text-[#25231F]'
+                    ? 'border-[#0B8F62] dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-100 font-bold shadow-md ring-2 ring-emerald-500/40'
+                    : 'border-[#E8E6E0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0B8F62]/50 text-[#25231F] dark:text-slate-100'
                   }
                 `}
               >
