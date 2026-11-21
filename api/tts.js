@@ -1,11 +1,32 @@
 import { synthesizeSpeech, SUPPORTED_LANGUAGES } from '../server/services/tts.js'
 
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+].filter(Boolean)
+
+function getCorsOrigin(req) {
+  const origin = req.headers.origin
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    return origin
+  }
+  if (process.env.NODE_ENV !== 'production' && origin) {
+    return origin
+  }
+  return ALLOWED_ORIGINS[0] || false
+}
+
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = getCorsOrigin(req)
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -47,10 +68,9 @@ export default async function handler(req, res) {
 
     return res.status(200).send(result.audioBuffer)
   } catch (err) {
-    console.error('[Vercel Serverless TTS Error]', err)
+    console.error('[Vercel Serverless TTS Error]')
     return res.status(500).json({
       error: 'TTS synthesis error',
-      message: err.message,
     })
   }
 }

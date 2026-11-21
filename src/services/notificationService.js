@@ -1,5 +1,5 @@
 /**
- * Notification Service — BharatLingo PWA & Push Notifications
+ * Notification Service � BharatLingo PWA & Push Notifications
  *
  * Implements browser Push API and Service Worker notification infrastructure.
  * - Explicit user-initiated opt-in (never on page load)
@@ -219,9 +219,18 @@ export async function unsubscribeFromPush(user) {
  */
 export async function sendServerPush(subscription, payload = {}) {
   try {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData?.session?.access_token
+    if (!accessToken) {
+      return { success: false, statusCode: 401, message: 'Authentication required' }
+    }
+
     const res = await fetch('/api/push/send-test', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({ subscription, payload }),
     })
 
@@ -245,7 +254,7 @@ export async function sendServerPush(subscription, payload = {}) {
 
     return {
       success: true,
-      message: 'Push notification delivered from server via Web Push! 🔥',
+      message: 'Push notification delivered from server via Web Push!',
       data,
     }
   } catch (err) {
@@ -257,17 +266,13 @@ export async function sendServerPush(subscription, payload = {}) {
 }
 
 /**
- * End-to-end Test Reminder: dispatches via server Web Push if subscribed,
- * or falls back to local service worker notification.
- *
- * @param {object} user - Authenticated user
- * @param {object} options - Notification options { title, body, url }
- * @returns {Promise<{ success: boolean, message: string }>}
+ * Send a test notification - tries server-side push first, falls back to local
  */
 export async function sendPushNotificationTest(user, options = {}) {
   if (!isPushSupported()) {
     return { success: false, message: 'Notifications unsupported on this device' }
   }
+
   if (Notification.permission !== 'granted') {
     return { success: false, message: 'Notification permission not granted' }
   }
@@ -281,49 +286,46 @@ export async function sendPushNotificationTest(user, options = {}) {
       if (serverRes.success) {
         return serverRes
       }
+
       if (serverRes.expired) {
         await unsubscribeFromPush(user)
-        return {
-          success: false,
-          message: 'Push subscription expired. Please re-enable reminders.',
-        }
+        return { success: false, message: 'Push subscription expired. Please re-enable reminders.' }
       }
+
+      // Fall back to local notification on server failure
+      return await sendLocalStreakReminder(options)
     }
 
-    // Fallback to local Service Worker notification
     return await sendLocalStreakReminder(options)
-  } catch (err) {
+  } catch {
     return await sendLocalStreakReminder(options)
   }
 }
 
 /**
- * Trigger a local test reminder notification via Service Worker
+ * Display a local notification via Service Worker (no server push required)
  */
 export async function sendLocalStreakReminder(options = {}) {
   if (!isPushSupported()) {
     return { success: false, message: 'Notifications unsupported' }
   }
+
   if (Notification.permission !== 'granted') {
     return { success: false, message: 'Notification permission not granted' }
   }
 
   try {
     const registration = await navigator.serviceWorker.ready
-    const title = options.title || 'BharatLingo — Daily Streak Reminder 🔥'
-    const notificationOptions = {
-      body:
-        options.body ||
-        'Keep your daily language streak going! Quick 3-minute practice waiting.',
+    const title = options.title || 'BharatLingo � Daily Streak Reminder'
+    const body = {
+      body: options.body || 'Keep your daily language streak going! Quick 3-minute practice waiting.',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       data: { url: options.url || '/dashboard' },
     }
-
-    await registration.showNotification(title, notificationOptions)
+    await registration.showNotification(title, body)
     return { success: true, message: 'Test reminder notification sent!' }
   } catch (err) {
     return { success: false, message: err.message }
   }
 }
-

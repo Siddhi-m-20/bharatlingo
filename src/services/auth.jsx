@@ -5,20 +5,25 @@ import { hydrateSM2FromCloud, clearSM2Data } from './spacedRepetition'
 
 const AuthContext = createContext(null)
 
-// Helper: Synchronize site language across storage and events
-export function syncSiteLanguage(langId) {
-  if (!langId) return
-  try {
-    localStorage.setItem('bharatlingo_site_lang', langId)
-    window.dispatchEvent(
-      new CustomEvent('bharatlingo_site_lang_changed', {
-        detail: { langId },
-      })
-    )
-  } catch (e) {
-    console.error(e)
-  }
-}
+export {
+  syncSiteLanguage,
+  hasUserCompletedOnboarding,
+  hasUserCompletedAssessment,
+  getNextAuthRedirect,
+  mapProfileToUser,
+  mapUserUpdatesToProfile,
+  mergeUserProfiles,
+} from './authUtils.js'
+
+import {
+  syncSiteLanguage,
+  hasUserCompletedOnboarding,
+  hasUserCompletedAssessment,
+  getNextAuthRedirect,
+  mapProfileToUser,
+  mapUserUpdatesToProfile,
+  mergeUserProfiles,
+} from './authUtils.js'
 
 // Helper: Synchronize user's cloud spaced repetition deck into local storage
 async function syncUserSpacedRepetition(userId) {
@@ -30,247 +35,6 @@ async function syncUserSpacedRepetition(userId) {
     }
   } catch (err) {
     console.warn('Failed to hydrate SM-2 from cloud:', err)
-  }
-}
-
-// Helper: Determine next route for authenticated user
-export function getNextAuthRedirect(user) {
-  if (!user) return '/login'
-  // If user has completed assessment, has completed lessons, has accumulated XP,
-  // has a learning plan, or already selected a learning language -> go straight to dashboard
-  if (
-    user.hasCompletedAssessment ||
-    (Array.isArray(user.completedLessons) && user.completedLessons.length > 0) ||
-    (Number(user.xp) || 0) > 0 ||
-    user.learningPlan ||
-    user.learningLanguage
-  ) {
-    return '/dashboard'
-  }
-  // Only true newcomers without a target learning language go to onboarding
-  return '/onboarding'
-}
-
-// Helper: map DB snake_case profile to App user format
-export function mapProfileToUser(profile, authUser) {
-  if (!profile && !authUser) return null
-
-  const learningLang = profile?.learning_language || null
-  const existingCompleted = Array.isArray(profile?.completed_lessons) ? profile.completed_lessons : []
-  const initialLangProgress = profile?.language_progress || {}
-
-  // Initialize or ensure active learning language progress exists
-  if (learningLang && !initialLangProgress[learningLang]) {
-    initialLangProgress[learningLang] = {
-      completedLessons: existingCompleted,
-      xp: profile?.xp || 0,
-      level: profile?.level || 'beginner',
-      assessmentScore: profile?.assessment_score ?? null,
-      learningPlan: profile?.learning_plan || null,
-      legendaryCompleted: profile?.legendary_completed || [],
-    }
-  }
-
-  return {
-    id: profile?.id || authUser?.id,
-    name: profile?.name || authUser?.user_metadata?.name || authUser?.email?.split('@')[0] || 'Learner',
-    email: profile?.email || authUser?.email,
-    avatar: profile?.avatar_url || profile?.avatar || null,
-    bio: profile?.bio || '',
-    preferredLanguage: profile?.preferred_language || 'en',
-    learningLanguage: learningLang,
-    goal: profile?.goal || 'conversation',
-    level: profile?.level || 'beginner',
-    dailyGoal: profile?.daily_goal || 10,
-    ageRange: profile?.age_range || 'adult',
-    assessmentScore: profile?.assessment_score ?? null,
-    hasCompletedAssessment: Boolean(
-      profile?.has_completed_assessment ||
-      (profile?.assessment_score !== null && profile?.assessment_score !== undefined) ||
-      existingCompleted.length > 0 ||
-      (Number(profile?.xp) || 0) > 0 ||
-      profile?.learning_plan
-    ),
-    learningPlan: profile?.learning_plan || null,
-    xp: Number(profile?.xp) || 0,
-    gems: profile?.gems !== undefined ? Number(profile.gems) : 0,
-    streak: Number(profile?.streak) || 0,
-    lastActiveDate: profile?.last_active_date || null,
-    completedLessons: existingCompleted,
-    languageProgress: initialLangProgress,
-    legendaryCompleted: profile?.legendary_completed || [],
-    vocabulary: profile?.vocabulary || {},
-    achievements: profile?.achievements || [],
-    completedStories: profile?.completed_stories || [],
-    learnerStats: profile?.learner_stats || {},
-    settings: profile?.settings || { audio: true, soundFx: true, speaking: true },
-    activeQuests: profile?.active_quests || null,
-    createdAt: profile?.created_at || new Date().toISOString(),
-  }
-}
-
-// Helper: map App user updates to DB snake_case columns (strictly maps supported DB columns)
-export function mapUserUpdatesToProfile(updates) {
-  const mapped = {}
-  if (updates.name !== undefined) mapped.name = updates.name
-  if (updates.avatar !== undefined) mapped.avatar_url = updates.avatar
-  if (updates.avatar_url !== undefined) mapped.avatar_url = updates.avatar_url
-  if (updates.preferredLanguage !== undefined) mapped.preferred_language = updates.preferredLanguage
-  if (updates.learningLanguage !== undefined) mapped.learning_language = updates.learningLanguage
-  if (updates.goal !== undefined) mapped.goal = updates.goal
-  if (updates.level !== undefined) mapped.level = updates.level
-  if (updates.dailyGoal !== undefined) mapped.daily_goal = updates.dailyGoal
-  if (updates.ageRange !== undefined) mapped.age_range = updates.ageRange
-  if (updates.assessmentScore !== undefined) mapped.assessment_score = updates.assessmentScore
-  if (updates.hasCompletedAssessment !== undefined) mapped.has_completed_assessment = updates.hasCompletedAssessment
-  if (updates.learningPlan !== undefined) mapped.learning_plan = updates.learningPlan
-  if (updates.xp !== undefined) mapped.xp = Number(updates.xp)
-  if (updates.streak !== undefined) mapped.streak = Number(updates.streak)
-  if (updates.lastActiveDate !== undefined) mapped.last_active_date = updates.lastActiveDate
-  if (updates.completedLessons !== undefined) mapped.completed_lessons = updates.completedLessons
-  if (updates.vocabulary !== undefined) mapped.vocabulary = updates.vocabulary
-  if (updates.achievements !== undefined) mapped.achievements = updates.achievements
-  if (updates.bio !== undefined) mapped.bio = updates.bio
-  if (updates.gems !== undefined) mapped.gems = Number(updates.gems)
-  if (updates.languageProgress !== undefined) mapped.language_progress = updates.languageProgress
-  if (updates.legendaryCompleted !== undefined) mapped.legendary_completed = updates.legendaryCompleted
-  if (updates.activeQuests !== undefined) mapped.active_quests = updates.activeQuests
-  if (updates.completedStories !== undefined) mapped.completed_stories = updates.completedStories
-  if (updates.learnerStats !== undefined) mapped.learner_stats = updates.learnerStats
-  if (updates.settings !== undefined) mapped.settings = updates.settings
-  return mapped
-}
-
-/**
- * Robust Profile Merger:
- * Combines remote database profile with locally cached user state.
- * Guaranteed to NEVER decrease XP, gems, streak or lose completed lessons upon refresh.
- */
-export function mergeUserProfiles(remoteProfile, localProfile) {
-  if (!remoteProfile && !localProfile) return null
-  if (!remoteProfile) return localProfile
-  if (!localProfile) return remoteProfile
-
-  // CRITICAL USER ISOLATION GUARD:
-  // If remoteProfile and localProfile do not have matching ID or email, they belong to DIFFERENT users!
-  // Progress (XP, gems, streak, lessons) must NEVER leak across accounts.
-  const isSameUser =
-    (remoteProfile.id && localProfile.id && String(remoteProfile.id) === String(localProfile.id)) ||
-    (remoteProfile.email && localProfile.email && remoteProfile.email.toLowerCase() === localProfile.email.toLowerCase())
-
-  if (!isSameUser) {
-    // If profiles belong to different users, the incoming remote profile must be kept cleanly isolated
-    return remoteProfile
-  }
-
-  // Merge completed lessons (union)
-  const mergedCompleted = Array.from(
-    new Set([
-      ...(Array.isArray(remoteProfile.completedLessons) ? remoteProfile.completedLessons : []),
-      ...(Array.isArray(localProfile.completedLessons) ? localProfile.completedLessons : []),
-    ])
-  )
-
-  // Merge legendary completed (union)
-  const mergedLegendary = Array.from(
-    new Set([
-      ...(Array.isArray(remoteProfile.legendaryCompleted) ? remoteProfile.legendaryCompleted : []),
-      ...(Array.isArray(localProfile.legendaryCompleted) ? localProfile.legendaryCompleted : []),
-    ])
-  )
-
-  // Merge achievements (union)
-  const mergedAchievements = Array.from(
-    new Set([
-      ...(Array.isArray(remoteProfile.achievements) ? remoteProfile.achievements : []),
-      ...(Array.isArray(localProfile.achievements) ? localProfile.achievements : []),
-    ])
-  )
-
-  // Merge language progress dictionaries
-  const mergedLangProgress = { ...(remoteProfile.languageProgress || {}), ...(localProfile.languageProgress || {}) }
-  const allLangKeys = Array.from(
-    new Set([
-      ...Object.keys(remoteProfile.languageProgress || {}),
-      ...Object.keys(localProfile.languageProgress || {}),
-    ])
-  )
-
-  allLangKeys.forEach((langKey) => {
-    const remoteLang = remoteProfile.languageProgress?.[langKey] || {}
-    const localLang = localProfile.languageProgress?.[langKey] || {}
-
-    const langCompleted = Array.from(
-      new Set([
-        ...(Array.isArray(remoteLang.completedLessons) ? remoteLang.completedLessons : []),
-        ...(Array.isArray(localLang.completedLessons) ? localLang.completedLessons : []),
-      ])
-    )
-
-    const langLegendary = Array.from(
-      new Set([
-        ...(Array.isArray(remoteLang.legendaryCompleted) ? remoteLang.legendaryCompleted : []),
-        ...(Array.isArray(localLang.legendaryCompleted) ? localLang.legendaryCompleted : []),
-      ])
-    )
-
-    mergedLangProgress[langKey] = {
-      ...remoteLang,
-      ...localLang,
-      completedLessons: langCompleted,
-      legendaryCompleted: langLegendary,
-      xp: Math.max(Number(remoteLang.xp) || 0, Number(localLang.xp) || 0),
-      level: localLang.level || remoteLang.level || 'beginner',
-    }
-  })
-
-  // Monotonic metrics (never decrease on sync/reload)
-  const remoteXP = Number(remoteProfile.xp) || 0
-  const localXP = Number(localProfile.xp) || 0
-  const mergedXP = Math.max(remoteXP, localXP)
-
-  const remoteGems = remoteProfile.gems !== undefined ? Number(remoteProfile.gems) : 0
-  const localGems = localProfile.gems !== undefined ? Number(localProfile.gems) : 0
-  const mergedGems = Math.max(remoteGems, localGems)
-
-  const remoteStreak = Number(remoteProfile.streak) || 0
-  const localStreak = Number(localProfile.streak) || 0
-  const mergedStreak = Math.max(remoteStreak, localStreak)
-
-  // Active quests
-  const mergedQuests = localProfile.activeQuests || remoteProfile.activeQuests || null
-  const mergedLearnerStats = {
-    ...(remoteProfile.learnerStats || {}),
-    ...(localProfile.learnerStats || {}),
-  }
-
-  return {
-    ...remoteProfile,
-    ...localProfile,
-    id: remoteProfile.id || localProfile.id,
-    name: localProfile.name || remoteProfile.name || 'Learner',
-    email: remoteProfile.email || localProfile.email,
-    preferredLanguage: localProfile.preferredLanguage || remoteProfile.preferredLanguage || 'en',
-    learningLanguage: localProfile.learningLanguage || remoteProfile.learningLanguage || null,
-    goal: localProfile.goal || remoteProfile.goal || null,
-    level: localProfile.level || remoteProfile.level || 'beginner',
-    dailyGoal: localProfile.dailyGoal || remoteProfile.dailyGoal || 10,
-    ageRange: localProfile.ageRange || remoteProfile.ageRange || 'adult',
-    assessmentScore: localProfile.assessmentScore ?? remoteProfile.assessmentScore ?? null,
-    hasCompletedAssessment: Boolean(localProfile.hasCompletedAssessment || remoteProfile.hasCompletedAssessment),
-    learningPlan: localProfile.learningPlan || remoteProfile.learningPlan || null,
-    xp: mergedXP,
-    gems: mergedGems,
-    streak: mergedStreak,
-    lastActiveDate: localProfile.lastActiveDate || remoteProfile.lastActiveDate || null,
-    completedLessons: mergedCompleted,
-    legendaryCompleted: mergedLegendary,
-    achievements: mergedAchievements,
-    languageProgress: mergedLangProgress,
-    vocabulary: { ...(remoteProfile.vocabulary || {}), ...(localProfile.vocabulary || {}) },
-    activeQuests: mergedQuests,
-    learnerStats: mergedLearnerStats,
-    settings: { ...(remoteProfile.settings || {}), ...(localProfile.settings || {}) },
   }
 }
 
@@ -296,19 +60,20 @@ export function AuthProvider({ children }) {
     try {
       const dbUpdates = mapUserUpdatesToProfile(profile)
       if (Object.keys(dbUpdates).length > 0) {
-        const { error } = await supabase
+        let { error } = await supabase
           .from('profiles')
           .update(dbUpdates)
           .eq('id', profile.id)
 
         if (error) {
           console.warn('syncProfileToSupabase fallback:', error.message)
-          const coreUpdates = {
-            xp: Number(profile.xp) || 0,
-            streak: Number(profile.streak) || 0,
-            completed_lessons: profile.completedLessons || [],
+          const nonRewardUpdates = { ...dbUpdates }
+          delete nonRewardUpdates.xp
+          delete nonRewardUpdates.gems
+          delete nonRewardUpdates.streak
+          if (Object.keys(nonRewardUpdates).length > 0) {
+            await supabase.from('profiles').update(nonRewardUpdates).eq('id', profile.id)
           }
-          await supabase.from('profiles').update(coreUpdates).eq('id', profile.id)
         }
       }
     } catch (err) {
@@ -508,12 +273,35 @@ export function AuthProvider({ children }) {
         throw new Error(error.message)
       }
 
-      // Explicitly sign out so the user does NOT auto-login and is redirected to /login
-      if (data.session) {
-        await supabase.auth.signOut()
+      // If an authenticated session is active (e.g. email confirmation disabled in Supabase):
+      if (data?.session && data?.user) {
+        const remoteProfile = await fetchSupabaseProfile(data.user)
+        const currentLocal = userRef.current
+        const mergedProfile = mergeUserProfiles(remoteProfile, currentLocal)
+        setUser(mergedProfile)
+        userRef.current = mergedProfile
+        localStorage.setItem('bharatlingo_user', JSON.stringify(mergedProfile))
+        if (mergedProfile?.preferredLanguage) {
+          syncSiteLanguage(mergedProfile.preferredLanguage)
+        }
+        syncProfileToSupabase(mergedProfile)
+        return {
+          user: mergedProfile,
+          session: data.session,
+          requiresConfirmation: false,
+          name: name.trim(),
+          email: normalizedEmail,
+        }
       }
 
-      return { name: name.trim(), email: normalizedEmail }
+      // If email confirmation is required and no session exists:
+      return {
+        user: null,
+        session: null,
+        requiresConfirmation: true,
+        name: name.trim(),
+        email: normalizedEmail,
+      }
     }
 
     // Local fallback
@@ -526,7 +314,7 @@ export function AuthProvider({ children }) {
     const hashedPassword = await bcryptjs.hash(password, 10)
 
     const newUser = {
-      id: Date.now().toString(),
+      id: 'local_' + Date.now().toString(),
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
@@ -535,10 +323,17 @@ export function AuthProvider({ children }) {
       goal: null,
       level: 'beginner',
       dailyGoal: 10,
+      ageRange: 'adult',
+      hasCompletedAssessment: false,
+      assessmentScore: null,
+      learningPlan: null,
       xp: 0,
+      gems: 0,
       streak: 0,
       lastActiveDate: null,
       completedLessons: [],
+      languageProgress: {},
+      legendaryCompleted: [],
       vocabulary: {},
       achievements: [],
       createdAt: new Date().toISOString(),
@@ -547,7 +342,19 @@ export function AuthProvider({ children }) {
     users.push(newUser)
     saveLocalRegisteredUsers(users)
 
-    return { name: newUser.name, email: newUser.email }
+    const { password: _, ...userData } = newUser
+    setUser(userData)
+    userRef.current = userData
+    localStorage.setItem('bharatlingo_user', JSON.stringify(userData))
+    syncSiteLanguage('en')
+
+    return {
+      user: userData,
+      session: { local: true },
+      requiresConfirmation: false,
+      name: newUser.name,
+      email: newUser.email,
+    }
   }
 
   // Login
@@ -570,9 +377,7 @@ export function AuthProvider({ children }) {
             .maybeSingle()
 
           const fallbackUser = mapProfileToUser(profile, { id: profile?.id || 'usr-' + Date.now(), email: normalizedEmail })
-          if (normalizedEmail === 'admin@bharatlingo.com' || normalizedEmail === 'admin@bharatlingo.org') {
-            fallbackUser.role = 'admin'
-          }
+          // Admin role is determined by profiles.role in the database only — never hardcoded here
           setUser(fallbackUser)
           userRef.current = fallbackUser
           localStorage.setItem('bharatlingo_user', JSON.stringify(fallbackUser))
@@ -638,41 +443,8 @@ export function AuthProvider({ children }) {
       return resolvedUser
     }
 
-    // If account was not pre-registered locally, create fresh demo profile
-    const mockUser = {
-      id: Date.now().toString(),
-      name: normalizedEmail.split('@')[0],
-      email: normalizedEmail,
-      preferredLanguage: 'en',
-      learningLanguage: null,
-      goal: 'conversation',
-      level: 'beginner',
-      dailyGoal: 10,
-      ageRange: 'adult',
-      assessmentScore: null,
-      hasCompletedAssessment: false,
-      xp: 0,
-      gems: 100,
-      streak: 0,
-      lastActiveDate: null,
-      completedLessons: [],
-      vocabulary: {},
-      achievements: [],
-      createdAt: new Date().toISOString(),
-    }
-    const hashedPassword = await bcryptjs.hash(password, 10)
-    users.push({ ...mockUser, password: hashedPassword })
-    saveLocalRegisteredUsers(users)
-
-    setUser(mockUser)
-    userRef.current = mockUser
-    localStorage.setItem('bharatlingo_user', JSON.stringify(mockUser))
-    sessionStorage.removeItem('bharatlingo_assessment_required')
-    sessionStorage.removeItem('bharatlingo_just_assessed')
-    if (mockUser.preferredLanguage) {
-      syncSiteLanguage(mockUser.preferredLanguage)
-    }
-    return mockUser
+    // No matching local account found — do NOT silently create one
+    throw new Error('No account found with this email. Please sign up first.')
   }
 
   // Login with Google OAuth
@@ -771,41 +543,52 @@ export function AuthProvider({ children }) {
 
     const resolvedUpdates = typeof updates === 'function' ? updates(currentUser) : updates
     const updatedUser = { ...currentUser, ...resolvedUpdates }
+
+    // Update in Supabase if active
+    if (isSupabaseConfigured() && supabase && currentUser.id) {
+      const dbUpdates = mapUserUpdatesToProfile(resolvedUpdates)
+      if (Object.keys(dbUpdates).length > 0) {
+        let { error } = await supabase
+          .from('profiles')
+          .update(dbUpdates)
+          .eq('id', currentUser.id)
+
+        // If error was caused by reward field protection trigger, strip reward fields and retry core profile fields
+        if (error && error.message?.toLowerCase().includes('cannot update xp, gems, or streak directly')) {
+          console.warn('Supabase reward field protection active; updating non-reward profile fields...')
+          const nonRewardUpdates = { ...dbUpdates }
+          delete nonRewardUpdates.xp
+          delete nonRewardUpdates.gems
+          delete nonRewardUpdates.streak
+          if (Object.keys(nonRewardUpdates).length > 0) {
+            const retryRes = await supabase
+              .from('profiles')
+              .update(nonRewardUpdates)
+              .eq('id', currentUser.id)
+            error = retryRes.error
+          } else {
+            error = null
+          }
+        }
+
+        if (error) {
+          console.error('Failed to commit profile updates to Supabase:', error.message)
+          // For critical onboarding/assessment state transitions: do NOT commit locally if DB rejected it!
+          if (resolvedUpdates.hasCompletedAssessment !== undefined || resolvedUpdates.learningLanguage !== undefined) {
+            throw new Error(error.message || 'Database update failed')
+          }
+        }
+      }
+    }
+
+    // Only commit locally when DB update has succeeded or in offline fallback
     userRef.current = updatedUser
     setUser(updatedUser)
     localStorage.setItem('bharatlingo_user', JSON.stringify(updatedUser))
 
-    // Rule 2: Permanent Synchronization between preferredLanguage and siteLanguage
+    // Permanent Synchronization between preferredLanguage and siteLanguage
     if (resolvedUpdates.preferredLanguage) {
       syncSiteLanguage(resolvedUpdates.preferredLanguage)
-    }
-
-
-    // Update in Supabase if active
-    if (isSupabaseConfigured() && supabase && currentUser.id) {
-      try {
-        const dbUpdates = mapUserUpdatesToProfile(resolvedUpdates)
-        if (Object.keys(dbUpdates).length > 0) {
-          const { error } = await supabase
-            .from('profiles')
-            .update(dbUpdates)
-            .eq('id', currentUser.id)
-
-          if (error) {
-            console.warn('Failed to update profile in Supabase:', error.message)
-            const coreUpdates = {}
-            if (dbUpdates.xp !== undefined) coreUpdates.xp = dbUpdates.xp
-            if (dbUpdates.streak !== undefined) coreUpdates.streak = dbUpdates.streak
-            if (dbUpdates.last_active_date !== undefined) coreUpdates.last_active_date = dbUpdates.last_active_date
-            if (dbUpdates.completed_lessons !== undefined) coreUpdates.completed_lessons = dbUpdates.completed_lessons
-            if (Object.keys(coreUpdates).length > 0) {
-              await supabase.from('profiles').update(coreUpdates).eq('id', currentUser.id)
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Error saving to Supabase:', err)
-      }
     }
 
     // Also update in local storage users list

@@ -8,8 +8,14 @@ import { useTheme } from '../../services/themeContext'
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loginWithGoogle } = useAuth()
+  const { user, loading: authLoading, login, loginWithGoogle } = useAuth()
   const { tEn: t } = useTheme()
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(getNextAuthRedirect(user), { replace: true })
+    }
+  }, [user, authLoading, navigate])
   
   const successMessage = location.state?.successMessage
   const prefillEmail = location.state?.email || ''

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../services/auth'
+import { useAuth, hasUserCompletedAssessment } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { useTheme } from '../../services/themeContext'
 import { getLanguageById } from '../../data/languages'
@@ -159,6 +159,9 @@ export default function Assessment() {
   const [showPlan, setShowPlan] = useState(false)
   const [plan, setPlan] = useState(null)
   const [generatingPlan, setGeneratingPlan] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState(null)
+  const [pendingAnswers, setPendingAnswers] = useState(null)
   const assessmentStartTimeRef = useRef(Date.now())
 
   const language = getLanguageById(user?.learningLanguage)
@@ -168,21 +171,10 @@ export default function Assessment() {
     if (!user) return
 
     if (!user?.learningLanguage) {
-      navigate('/onboarding')
+      navigate('/onboarding', { replace: true })
       return
     }
-    const isExistingLearner = Boolean(
-      user.hasCompletedAssessment ||
-      user.learningPlan ||
-      (user.assessmentScore !== null && user.assessmentScore !== undefined) ||
-      (Array.isArray(user.completedLessons) && user.completedLessons.length > 0)
-    )
-    if (isExistingLearner) {
-      sessionStorage.removeItem('bharatlingo_assessment_required')
-      navigate('/dashboard', { replace: true })
-      return
-    }
-    if (sessionStorage.getItem('bharatlingo_assessment_required') !== '1') {
+    if (hasUserCompletedAssessment(user)) {
       navigate('/dashboard', { replace: true })
       return
     }
@@ -295,6 +287,12 @@ export default function Assessment() {
   }
 
   const completeAssessment = async (latestAnswers = answers) => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    setSubmissionError(null)
+    setPendingAnswers(latestAnswers)
+
+    try {
     const correctCount = latestAnswers.filter((a) => a.isCorrect).length
     const total = questions.length
     const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0
@@ -319,17 +317,19 @@ export default function Assessment() {
       lastActiveDate: new Date().toISOString().split('T')[0],
       streak: 1,
     })
-    sessionStorage.removeItem('bharatlingo_assessment_required')
-
-    await recordLearningActivity({
-      userId: user.id,
-      activityDate: new Date().toISOString().split('T')[0],
-      exercisesCompleted: total,
-      xpEarned: completionBonusXP + latestAnswers.reduce((sum, answer) => sum + (answer.isCorrect ? 10 : 0), 0),
-      sessionDurationSeconds: Math.max(1, Math.round((Date.now() - assessmentStartTimeRef.current) / 1000)),
-      languageId: user.learningLanguage,
-      sessionType: 'assessment',
-    })
+      try {
+        await recordLearningActivity({
+          userId: user.id,
+          activityDate: new Date().toISOString().split('T')[0],
+          exercisesCompleted: total,
+          xpEarned: completionBonusXP + latestAnswers.reduce((sum, answer) => sum + (answer.isCorrect ? 10 : 0), 0),
+          sessionDurationSeconds: Math.max(1, Math.round((Date.now() - assessmentStartTimeRef.current) / 1000)),
+          languageId: user.learningLanguage,
+          sessionType: 'assessment',
+        })
+      } catch (activityErr) {
+        console.warn('Learning activity logging non-fatal error:', activityErr)
+      }
 
     // Generate personalized learning plan (server-side — no provider details exposed)
     setGeneratingPlan(true)
@@ -358,7 +358,13 @@ export default function Assessment() {
       setGeneratingPlan(false)
       setShowPlan(true)
     }
+  } catch (err) {
+    console.error('Failed to complete assessment:', err)
+    setSubmissionError(err?.message || t('assessment_submit_failed') || 'Failed to save assessment results.')
+  } finally {
+    setIsSubmitting(false)
   }
+}
 
   const handlePlanContinue = () => {
     // Signal dashboard to show the personalized plan banner
@@ -620,6 +626,37 @@ export default function Assessment() {
           <div className="text-4xl">⚠️</div>
           <p className="text-[#D84B42] font-semibold">{loadError}</p>
           <Button onClick={() => window.location.reload()}>{t('try_again')}</Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (submissionError) {
+    return (
+      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border border-rose-200 dark:border-rose-900">
+          <div className="text-4xl">⚠️</div>
+          <p className="text-[#D84B42] font-semibold">{submissionError}</p>
+          <Button onClick={() => completeAssessment(pendingAnswers || answers)}>
+            {t('retry_submission') || t('retry') || 'Retry Submission'}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isSubmitting) {
+    return (
+      <div className="min-h-screen bg-[#F7F5EF] dark:bg-slate-950 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+            className="w-12 h-12 border-4 border-[#0B8F62] border-t-transparent rounded-full mx-auto"
+          />
+          <p className="text-[#77736B] dark:text-slate-400 font-medium">
+            {t('saving_assessment_results') || 'Saving your results...'}
+          </p>
         </div>
       </div>
     )

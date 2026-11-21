@@ -114,7 +114,7 @@ export function calculateSM2(item, quality) {
       newInterval = 6 // 6 days
       newRepetition = 2
     } else {
-      newInterval = Math.round(interval * newEF)
+      newInterval = Math.min(365, Math.round(interval * newEF))
       newRepetition = repetition + 1
     }
   } else {
@@ -124,7 +124,9 @@ export function calculateSM2(item, quality) {
   }
 
   const now = new Date()
-  const nextDate = new Date(now.getTime() + newInterval * 24 * 60 * 60 * 1000)
+  // Cap interval at 365 days to prevent Date overflow for highly-mastered items
+  const safeInterval = Math.min(365, Math.max(1, newInterval))
+  const nextDate = new Date(now.getTime() + safeInterval * 24 * 60 * 60 * 1000)
 
   // Estimated retention calculation using Ebbinghaus forgetting curve approximation
   // R = e^(-t/S) where S is stability based on interval and ease factor

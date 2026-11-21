@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, getNextAuthRedirect } from '../../services/auth'
@@ -7,8 +7,15 @@ import { useTheme } from '../../services/themeContext'
 
 export default function Signup() {
   const navigate = useNavigate()
-  const { signup, loginWithGoogle } = useAuth()
+  const { user, loading: authLoading, signup, loginWithGoogle } = useAuth()
   const { tEn: t } = useTheme()
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(getNextAuthRedirect(user), { replace: true })
+    }
+  }, [user, authLoading, navigate])
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,13 +72,25 @@ export default function Signup() {
     
     setLoading(true)
     try {
-      await signup(formData.name, formData.email, formData.password)
-      navigate('/login', {
-        state: {
-          successMessage: t('account_created_success'),
-          email: formData.email,
-        },
-      })
+      const result = await signup(formData.name, formData.email, formData.password)
+      if (result?.requiresConfirmation) {
+        navigate('/login', {
+          state: {
+            successMessage: t('check_email_confirm') || 'Registration successful! Please check your email to confirm your account before logging in.',
+            email: formData.email,
+          },
+        })
+      } else if (result?.user) {
+        const destination = getNextAuthRedirect(result.user)
+        navigate(destination)
+      } else {
+        navigate('/login', {
+          state: {
+            successMessage: t('account_created_success'),
+            email: formData.email,
+          },
+        })
+      }
     } catch (error) {
       setErrors({ general: error.message || t('failed_create_account') })
     } finally {

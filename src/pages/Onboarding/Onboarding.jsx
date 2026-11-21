@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../services/auth'
+import { useAuth, hasUserCompletedAssessment } from '../../services/auth'
 import { languages } from '../../data/languages'
 import LanguageCard from '../../components/LanguageCard'
 import Button from '../../components/Button'
@@ -38,7 +38,24 @@ export default function Onboarding() {
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
   const { tEn: t } = useTheme()
-  const [currentStep, setCurrentStep] = useState(STEPS.AGE)
+
+  useEffect(() => {
+    if (user && hasUserCompletedAssessment(user)) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('bharatlingo_onboarding_step')
+      if (saved !== null) {
+        const parsed = Number(saved)
+        if (parsed >= STEPS.AGE && parsed <= STEPS.GOAL) return parsed
+      }
+    } catch {}
+    return STEPS.AGE
+  })
+
   const [selectedAge, setSelectedAge]               = useState(user?.ageRange || '')
   const [selectedPreferredLang, setSelectedPreferredLang] = useState(user?.preferredLanguage || 'en')
   const [selectedTargetLang, setSelectedTargetLang] = useState(user?.learningLanguage || '')
@@ -46,7 +63,11 @@ export default function Onboarding() {
 
   const handleNext = () => {
     if (currentStep < STEPS.GOAL) {
-      setCurrentStep(currentStep + 1)
+      const next = currentStep + 1
+      setCurrentStep(next)
+      try {
+        sessionStorage.setItem('bharatlingo_onboarding_step', String(next))
+      } catch {}
     } else {
       completeOnboarding()
     }
@@ -54,7 +75,11 @@ export default function Onboarding() {
 
   const handleBack = () => {
     if (currentStep > STEPS.AGE) {
-      setCurrentStep(currentStep - 1)
+      const prev = currentStep - 1
+      setCurrentStep(prev)
+      try {
+        sessionStorage.setItem('bharatlingo_onboarding_step', String(prev))
+      } catch {}
     }
   }
 
@@ -69,7 +94,9 @@ export default function Onboarding() {
       assessmentScore: null,
       learningPlan: null,
     })
-    sessionStorage.setItem('bharatlingo_assessment_required', '1')
+    try {
+      sessionStorage.removeItem('bharatlingo_onboarding_step')
+    } catch {}
     navigate('/assessment')
   }
 

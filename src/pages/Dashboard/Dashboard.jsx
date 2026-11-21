@@ -16,7 +16,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../services/auth'
+import { useAuth, hasUserCompletedOnboarding, hasUserCompletedAssessment } from '../../services/auth'
 import { useProgress } from '../../services/progress'
 import { fetchNextAdaptiveLesson, getLessonLibrary } from '../../services/dynamicLessonService'
 import { fetchLearningAnalytics } from '../../services/dbService'
@@ -154,8 +154,15 @@ export default function Dashboard() {
   }, [user?.learningLanguage, user?.preferredLanguage, user?.level, user?.goal, user?.id])
 
   useEffect(() => {
-    if (!user?.learningLanguage) {
-      navigate('/onboarding')
+    if (!user) return
+
+    if (!hasUserCompletedOnboarding(user)) {
+      navigate('/onboarding', { replace: true })
+      return
+    }
+
+    if (!hasUserCompletedAssessment(user)) {
+      navigate('/assessment', { replace: true })
       return
     }
 
