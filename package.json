@@ -8,7 +8,8 @@
     "dev:client": "vite",
     "dev:server": "node server/index.js",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/pushAuth.test.mjs tests/mergeUserProfiles.test.mjs tests/spacedRepetition.test.mjs tests/authUtils.test.mjs tests/translationCoverage.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
