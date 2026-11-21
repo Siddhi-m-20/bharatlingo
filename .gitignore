@@ -15,3 +15,19 @@ dist
 .agent/
 .agents/
 Springboard-BharatLingo-Submission/
+
+# Internal developer documentation (kept locally, not published)
+docs/developer-guide/
+AUDIT_REPORT.md
+PRODUCTION_READINESS_REPORT.md
+SECURITY_VERIFICATION_REPORT.md
+push-auth-step1.patch
+
+# Playwright test result artifacts
+test-results/
+tests/onboarding-e2e.spec.js
+tests/onboarding-e2e.spec.mjs
+tests/newUserOnboardingFlow.test.mjs
+
+# Vite build timestamp files
+vite.config.js.timestamp-*.mjs
