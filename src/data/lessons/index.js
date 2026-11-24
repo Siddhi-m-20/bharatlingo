@@ -192,7 +192,24 @@ export function localizeLesson(lesson, targetLangId, preferredLangId = 'en') {
     } else if (ex.type === 'fill-blank') {
       const instruction = getPromptText('fill_blank', preferredLangId, targetLangName)
       localized.instruction = instruction
-      const blanked = ex.blankedSentence || ex.sentence || (ex.prompt && ex.prompt.includes('___') ? ex.prompt : '')
+      let blanked = ex.blankedSentence || ex.sentence || ''
+      if (!blanked && ex.prompt && ex.prompt.includes('___')) {
+        blanked = ex.prompt
+          .replace(/^Complete(?: the[^:]*|):?\s*/i, '')
+          .replace(/^(?:Sequence|Complete):?\s*/i, '')
+      }
+      if (!blanked) {
+        blanked = ex.sentenceContext || ex.example || ''
+      }
+      if (blanked && ex.correctAnswer) {
+        const answer = String(ex.correctAnswer)
+        if (!blanked.includes('___') && blanked.includes(answer)) {
+          blanked = blanked.replace(answer, '___')
+        }
+      }
+      if (!blanked) {
+        blanked = ex.prompt?.includes('___') ? ex.prompt : '... ___ ...'
+      }
       if (blanked) {
         localized.blankedSentence = blanked
         localized.sentence = blanked

@@ -127,6 +127,7 @@ export const englishLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: One, Two, ___ , Four',
+        sentence: 'One, Two, ___ , Four',
         options: ['Three', 'Five', 'Ten', 'Six'],
         correctAnswer: 'Three',
         xp: 15,
@@ -348,6 +349,7 @@ export const englishLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "Please ___ me" (Asking for assistance)',
+        sentence: 'Please ___ me',
         options: ['help', 'call', 'doctor', 'pain'],
         correctAnswer: 'help',
         xp: 15,

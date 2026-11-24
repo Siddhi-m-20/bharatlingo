@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, getNextAuthRedirect } from '../../services/auth'
 import Button from '../../components/Button'
 import { useTheme } from '../../services/themeContext'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, loading: authLoading, signup, loginWithGoogle } = useAuth()
   const { tEn: t } = useTheme()
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate(getNextAuthRedirect(user), { replace: true })
+      navigate(getNextAuthRedirect(user, location.state?.from?.pathname), { replace: true })
     }
-  }, [user, authLoading, navigate])
+  }, [user, authLoading, navigate, location.state])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -55,8 +56,11 @@ export default function Signup() {
   const handleGoogleSignup = async () => {
     setLoading(true)
     try {
+      if (location.state?.from?.pathname) {
+        sessionStorage.setItem('bharatlingo_requested_route', location.state.from.pathname)
+      }
       const loggedUser = await loginWithGoogle()
-      const destination = getNextAuthRedirect(loggedUser)
+      const destination = getNextAuthRedirect(loggedUser, location.state?.from?.pathname)
       navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || t('google_signin_failed') })
@@ -81,7 +85,7 @@ export default function Signup() {
           },
         })
       } else if (result?.user) {
-        const destination = getNextAuthRedirect(result.user)
+        const destination = getNextAuthRedirect(result.user, location.state?.from?.pathname)
         navigate(destination)
       } else {
         navigate('/login', {

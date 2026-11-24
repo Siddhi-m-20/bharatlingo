@@ -127,6 +127,7 @@ export const teluguLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: ఒకటి, రెండు, ___ , నాలుగు',
+        sentence: 'ఒకటి, రెండు, ___ , నాలుగు',
         options: ['మూడు', 'ఐదు', 'పది', 'ఆరు'],
         correctAnswer: 'మూడు',
         xp: 15,
@@ -347,6 +348,7 @@ export const teluguLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "దయచేసి ___ చేయండి" (Please help)',
+        sentence: 'దయచేసి ___ చేయండి',
         options: ['సహాయం', 'మందు', 'వైద్యుడు', 'నొప్పి'],
         correctAnswer: 'సహాయం',
         xp: 15,

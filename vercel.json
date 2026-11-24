@@ -25,6 +25,7 @@
     { "source": "/api/speech-to-text", "destination": "/api/speech-to-text.js" },
     { "source": "/api/learning-plan", "destination": "/api/learning-plan.js" },
     { "source": "/api/assessment/questions", "destination": "/api/assessment-questions.js" },
+    { "source": "/api/tutor/respond", "destination": "/api/tutor.js" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

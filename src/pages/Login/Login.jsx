@@ -13,9 +13,10 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate(getNextAuthRedirect(user), { replace: true })
+      const requestedPath = location.state?.from?.pathname
+      navigate(getNextAuthRedirect(user, requestedPath), { replace: true })
     }
-  }, [user, authLoading, navigate])
+  }, [user, authLoading, navigate, location.state])
   
   const successMessage = location.state?.successMessage
   const prefillEmail = location.state?.email || ''
@@ -47,8 +48,11 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
+      if (location.state?.from?.pathname) {
+        sessionStorage.setItem('bharatlingo_requested_route', location.state.from.pathname)
+      }
       const loggedUser = await loginWithGoogle()
-      const destination = getNextAuthRedirect(loggedUser)
+      const destination = getNextAuthRedirect(loggedUser, location.state?.from?.pathname)
       navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || t('google_signin_failed') })
@@ -65,7 +69,7 @@ export default function Login() {
     setLoading(true)
     try {
       const loggedUser = await login(formData.email, formData.password)
-      const destination = getNextAuthRedirect(loggedUser)
+      const destination = getNextAuthRedirect(loggedUser, location.state?.from?.pathname)
       navigate(destination)
     } catch (error) {
       setErrors({ general: error.message || t('invalid_email_password') })

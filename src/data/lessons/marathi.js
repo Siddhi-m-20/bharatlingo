@@ -135,6 +135,7 @@ export const marathiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: एक, दोन, ___ , चार',
+        sentence: 'एक, दोन, ___ , चार',
         options: ['तीन', 'पाच', 'दहा', 'सहा'],
         correctAnswer: 'तीन',
         xp: 15,
@@ -356,6 +357,7 @@ export const marathiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "कृपया ___ करा" (Please help)',
+        sentence: 'कृपया ___ करा',
         options: ['मदत', 'औषध', 'डॉक्टर', 'त्रास'],
         correctAnswer: 'मदत',
         xp: 15,

@@ -127,6 +127,7 @@ export const bengaliLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: এক, দুই, ___ , চার',
+        sentence: 'এক, দুই, ___ , চার',
         options: ['তিন', 'পাঁচ', 'দশ', 'ছয়'],
         correctAnswer: 'তিন',
         xp: 15,
@@ -259,9 +260,9 @@ export const bengaliLessons = [
       {
         type: 'sentence-order',
         prompt: 'Arrange: "Where is the station?"',
-        sentence: 'স্টেশন কোথায়',
-        words: ['কোথায়', 'স্টেশন'],
-        correctAnswer: 'স্টেশন কোথায়',
+        sentence: 'স্টেশনটি কোথায় আছে',
+        words: ['কোথায়', 'স্টেশনটি', 'আছে'],
+        correctAnswer: 'স্টেশনটি কোথায় আছে',
         xp: 15,
       },
       {
@@ -347,6 +348,7 @@ export const bengaliLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "দয়া করে ___ করুন" (Please help)',
+        sentence: 'দয়া করে ___ করুন',
         options: ['সাহায্য', 'ওষুধ', 'ডাক্তার', 'ব্যথা'],
         correctAnswer: 'সাহায্য',
         xp: 15,

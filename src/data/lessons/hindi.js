@@ -143,6 +143,7 @@ export const hindiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete the number sequence: एक, दो, ___ , चार',
+        sentence: 'एक, दो, ___ , चार',
         options: ['तीन', 'पाँच', 'दस', 'छह'],
         correctAnswer: 'तीन',
         xp: 15,
@@ -397,6 +398,7 @@ export const hindiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "मुझे सिर में ___ है" (I have a headache)',
+        sentence: 'मुझे सिर में ___ है',
         options: ['दर्द', 'दवा', 'मदद', 'डॉक्टर'],
         correctAnswer: 'दर्द',
         xp: 15,
@@ -439,10 +441,10 @@ export const hindiLessons = [
       },
       {
         type: 'sentence-order',
-        prompt: 'Arrange: "Send a message"',
-        sentence: 'संदेश भेजिए',
-        words: ['भेजिए', 'संदेश'],
-        correctAnswer: 'संदेश भेजिए',
+        prompt: 'Arrange: "Please send a message"',
+        sentence: 'कृपया संदेश भेजिए',
+        words: ['कृपया', 'भेजिए', 'संदेश'],
+        correctAnswer: 'कृपया संदेश भेजिए',
         xp: 15,
       },
       {

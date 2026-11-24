@@ -44,7 +44,7 @@ export function hasUserCompletedAssessment(user) {
 }
 
 // Helper: Determine next route for authenticated user
-export function getNextAuthRedirect(user) {
+export function getNextAuthRedirect(user, requestedPath = null) {
   if (!user) return '/login'
   // 1. If onboarding is incomplete, must go to onboarding
   if (!hasUserCompletedOnboarding(user)) {
@@ -54,7 +54,14 @@ export function getNextAuthRedirect(user) {
   if (!hasUserCompletedAssessment(user)) {
     return '/assessment'
   }
-  // 3. Both completed -> dashboard
+  // 3. Both completed -> return the route that triggered login, never overwrite it with dashboard
+  if (typeof requestedPath === 'string' && requestedPath.startsWith('/')) {
+    const publicAndJourneyPaths = ['/', '/login', '/signup', '/onboarding', '/assessment']
+    if (!publicAndJourneyPaths.includes(requestedPath)) {
+      return requestedPath
+    }
+  }
+  // 4. No valid requested route -> dashboard
   return '/dashboard'
 }
 

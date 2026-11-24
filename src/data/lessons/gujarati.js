@@ -127,6 +127,7 @@ export const gujaratiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: એક, બે, ___ , ચાર',
+        sentence: 'એક, બે, ___ , ચાર',
         options: ['ત્રણ', 'પાંચ', 'દસ', 'છ'],
         correctAnswer: 'ત્રણ',
         xp: 15,
@@ -348,6 +349,7 @@ export const gujaratiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "કૃપા કરીને ___ કરો" (Please help)',
+        sentence: 'કૃપા કરીને ___ કરો',
         options: ['મદદ', 'દવા', 'ડૉક્ટર', 'દુખાવો'],
         correctAnswer: 'મદદ',
         xp: 15,

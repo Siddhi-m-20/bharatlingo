@@ -57,6 +57,27 @@ export const getAssessmentQuestions = (languageId, preferredLangId = 'en') => {
       localized.prompt = getPromptText('translate_to_target', preferredLangId, targetLangName, translatedSource)
     } else if (q.type === 'listening') {
       localized.prompt = getPromptText('listening', preferredLangId, targetLangName)
+    } else if (q.type === 'fill-blank') {
+      let blankedSentence = q.blankedSentence || q.sentence || ''
+      if (!blankedSentence && q.prompt) {
+        const promptText = q.prompt
+        if (promptText.includes('___')) {
+          blankedSentence = promptText
+        } else {
+          const sentenceMatch = promptText.match(/:\s*(.+?)\s*(?:\(|$)/)
+          blankedSentence = sentenceMatch?.[1] || ''
+          if (blankedSentence && q.correctAnswer && blankedSentence.includes(q.correctAnswer)) {
+            blankedSentence = blankedSentence.replace(q.correctAnswer, '___')
+          }
+        }
+      }
+      if (!blankedSentence) {
+        blankedSentence = '... ___ ...'
+      }
+      localized.sentence = blankedSentence
+      localized.blankedSentence = blankedSentence
+      localized.prompt = getPromptText('fill_blank', preferredLangId, targetLangName)
+      localized.instruction = localized.prompt
     }
     return localized
   })

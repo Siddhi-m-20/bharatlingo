@@ -127,6 +127,7 @@ export const punjabiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: ਇੱਕ, ਦੋ, ___ , ਚਾਰ',
+        sentence: 'ਇੱਕ, ਦੋ, ___ , ਚਾਰ',
         options: ['ਤਿੰਨ', 'ਪੰਜ', 'ਦਸ', 'ਛੇ'],
         correctAnswer: 'ਤਿੰਨ',
         xp: 15,
@@ -347,6 +348,7 @@ export const punjabiLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "ਕਿਰਪਾ ਕਰਕੇ ___ ਕਰੋ" (Please help)',
+        sentence: 'ਕਿਰਪਾ ਕਰਕੇ ___ ਕਰੋ',
         options: ['ਮਦਦ', 'ਦਵਾਈ', 'ਡਾਕਟਰ', 'ਦਰਦ'],
         correctAnswer: 'ਮਦਦ',
         xp: 15,

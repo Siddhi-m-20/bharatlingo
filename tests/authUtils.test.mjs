@@ -123,6 +123,18 @@ test('fully set up user is redirected to /dashboard', () => {
   assert.equal(getNextAuthRedirect(user), '/dashboard')
 })
 
+test('fully set up user returns to the protected route that triggered login', () => {
+  const user = {
+    learningLanguage: 'hi',
+    hasCompletedAssessment: true,
+    assessmentScore: 75,
+    completedLessons: [],
+    learningPlan: null,
+  }
+  assert.equal(getNextAuthRedirect(user, '/games'), '/games')
+  assert.equal(getNextAuthRedirect(user, '/speaking'), '/speaking')
+})
+
 test('user with learningPlan but no hasCompletedAssessment flag still goes to /dashboard', () => {
   // learningPlan existing = assessment was completed; hasCompletedAssessment might not be set in older profiles
   const user = {

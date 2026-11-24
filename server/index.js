@@ -7,6 +7,7 @@ import lessonsRoutes from './routes/lessons.js'
 import ttsRoutes from './routes/tts.js'
 import indicNlpRoutes from './routes/indicNlp.js'
 import pushRoutes from './routes/push.js'
+import tutorRoutes from './routes/tutor.js'
 import { indicNlpCapabilities } from './services/indicNlp.js'
 
 dotenv.config()
@@ -46,6 +47,7 @@ app.use('/api', lessonsRoutes)
 app.use('/api', ttsRoutes)
 app.use('/api', indicNlpRoutes)
 app.use('/api', pushRoutes)
+app.use('/api', tutorRoutes)
 
 app.use((err, req, res, next) => {
   console.error('[Server Error]')

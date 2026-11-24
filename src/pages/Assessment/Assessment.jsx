@@ -406,6 +406,22 @@ export default function Assessment() {
             <h3 className="text-xl font-semibold text-[#25231F] dark:text-white mb-4">
               {displayPrompt}
             </h3>
+            {q.type === 'fill-blank' && (
+              <div className="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center">
+                <p className="text-2xl font-bold text-slate-900 dark:text-white leading-relaxed">
+                  {(q.blankedSentence || q.sentence || '... ___ ...').split('___').map((segment, idx, segments) => (
+                    <span key={idx}>
+                      {segment}
+                      {idx < segments.length - 1 && (
+                        <span className="inline-block min-w-[90px] px-3 py-1 mx-2 border-b-4 border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 rounded-lg">
+                          {selectedAnswer || '______'}
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {sanitizedOptions.map((option, idx) => {
                 const isMatch = option === cleanCorrect || option === q.correctAnswer

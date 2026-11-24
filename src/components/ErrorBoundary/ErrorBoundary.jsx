@@ -13,26 +13,20 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.warn('[BharatLingo Auto-Recovery] Silently healing view issue:', error?.message || error)
 
-    // Auto-heal: navigate smoothly without blocking the user
+    // Retry the exact attempted route. Never replace an unexpected page error with /dashboard.
     try {
       const attempts = Number(sessionStorage.getItem('bharatlingo_recovery_attempts') || 0)
       if (attempts < 2) {
         sessionStorage.setItem('bharatlingo_recovery_attempts', String(attempts + 1))
         setTimeout(() => {
-          const userStr = localStorage.getItem('bharatlingo_user')
-          const destination = userStr ? '/dashboard' : '/'
-          if (window.location.pathname !== destination) {
-            window.location.replace(destination)
-          } else {
-            this.setState({ hasError: false, error: null })
-          }
+          window.location.reload()
         }, 300)
       } else {
         sessionStorage.removeItem('bharatlingo_recovery_attempts')
-        window.location.replace('/dashboard')
+        this.setState({ hasError: false, error: null })
       }
     } catch {
-      window.location.replace('/')
+      this.setState({ hasError: false, error: null })
     }
   }
 

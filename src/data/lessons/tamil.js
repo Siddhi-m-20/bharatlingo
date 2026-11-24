@@ -127,6 +127,7 @@ export const tamilLessons = [
       {
         type: 'fill-blank',
         prompt: 'Sequence: ஒன்று, இரண்டு, ___ , நான்கு',
+        sentence: 'ஒன்று, இரண்டு, ___ , நான்கு',
         options: ['மூன்று', 'ஐந்து', 'பத்து', 'ஆறு'],
         correctAnswer: 'மூன்று',
         xp: 15,
@@ -348,6 +349,7 @@ export const tamilLessons = [
       {
         type: 'fill-blank',
         prompt: 'Complete: "தயவுசெய்து ___ செய்யுங்கள்" (Please help)',
+        sentence: 'தயவுசெய்து ___ செய்யுங்கள்',
         options: ['உதவி', 'மருந்து', 'மருத்துவர்', 'வலி'],
         correctAnswer: 'உதவி',
         xp: 15,
